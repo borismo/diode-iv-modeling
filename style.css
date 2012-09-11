@@ -1,0 +1,64 @@
+body {
+	margin-left:auto;
+	margin-right:auto;
+	font-family: “Lucida Sans Unicode”, “Lucida Grande”, Geneva, sans-serif;
+max-width: 880px; } 
+
+header {
+	background-color: orange; border: none;   padding: 10px;   margin: 0px; text-align: center; color: white;}
+
+/* Format the floating figure box. */
+.FloatFigure {
+	float: left;
+	margin-left: 0px;
+	margin-top: 0px;
+	margin-right: 20px;
+	margin-bottom: 0px;
+	width: 25%;
+}
+/* Format the figure caption text. */
+Figcaption {
+	max-width: 200px;
+	font-size: small;
+	font-style: italic;
+	margin-bottom: 5px; }
+canvas {}
+form {float: left;}
+
+label {
+ width:70px;
+    float:left;
+ }
+
+#rightCol {
+	float:right;
+}
+#graphParam {
+	float:right;
+}
+#localFile {
+	float:left;
+}
+
+#startFit {
+	float:left;
+}
+#fit {
+	float:left;
+}
+
+#currentCalculation {
+	float:left;
+}
+#underGraph {
+	width:200px;
+}
+
+ 
+.linearScaleBox {
+	width: 50px;
+}
+
+.LogScaleBox {
+	width: 70px;
+}
