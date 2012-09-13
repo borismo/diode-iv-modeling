@@ -265,9 +265,10 @@ function calcIV() {
 		Is1 		= parseFloat(document.getElementById('Is1').value);
 		
 	if (document.getElementById('singleDiode').checked) {var n2 = 1,Is2 = 0, Rp2;}
-		else {var 	n2 	= parseFloat(document.getElementById('n2').value),
-					Is2 = parseFloat(document.getElementById('Is2').value),
-					Rp2 = parseFloat(document.getElementById('Rp2').value);
+		else {
+			var n2 	= parseFloat(document.getElementById('n2').value),
+				Is2 = parseFloat(document.getElementById('Is2').value),
+				Rp2 = parseFloat(document.getElementById('Rp2').value);
 		}
 		
 	var	Rp = parseFloat(document.getElementById('Rp').value),
@@ -327,15 +328,15 @@ function calcIV() {
 	switch (model) {
 		case 'parallel':
 			arrayCalc = [arrayVI,arrayVId1,arrayVId2,arrayVIrp1];
-			plotStyle = [['line','black'],['line','orange'],['line','orange'],['line','purple']];			
+			plotStyle = [['line','black','I'],['line','orange','Id1'],['line','orange','Id2'],['line','purple','Irp']];			
 			break;
 		case 'single':
 			arrayCalc = [arrayVI,arrayVId1,arrayVIrp1];
-			plotStyle = [['line','black'],['line','orange'],['line','purple']];
+			plotStyle = [['line','black','I'],['line','orange','Id1'],['line','purple','Irp']];
 			break;
 		case 'series':
 			arrayCalc = [arrayVI,arrayVId1,arrayVId2,arrayVIrp1,arrayVIrp1];
-			plotStyle = [['line','black'],['line','orange'],['line','orange'],['line','purple'],['line','purple']];
+			plotStyle = [['line','black','I'],['line','orange','Id1'],['line','orange','Id2'],['line','purple','Irp1'],['line','purple','Irp2']];
 			break;
 	}
 
@@ -395,7 +396,7 @@ function stringToArray(data) {
 	}
 	dataArray = [dataArray];
 	modifDataArray = dataArray
-	dataStyle = [['verticalCross','purple']];
+	dataStyle = [['verticalCross','purple','Data']];
 	combDataAndCalc(arrayCalc,plotStyle,scale);
 }
 

@@ -93,6 +93,8 @@ function drawGraph(arrayMult,focusedPlot,plotStyle,scaleType,xTitle,yTitle) {
 		
 		drawTicks (context,scaleType,margin,xAxisMin,xAxisMax,xStep,canvasWidth,xUnitPx,xAxisPosition,xTicksSide,yAxisMin,yAxisMax,yStep,canvasHeight,yUnitPx,yAxisPosition,yTicksSide)
 		
+		legend (context,scaleType,arrayMult,plotStyle,margin,xAxisMin,xUnitPx,yAxisMin,yUnitPx,canvasHeight);
+		
 		for (var i = 0; i < arrayMult.length; i++) {
 			plot (arrayMult[i],context,scaleType,plotStyle[i],margin,xAxisMin,xAxisMax,canvasWidth,xUnitPx,yAxisMin,yAxisMax,canvasHeight,yUnitPx,yAxisPosition)
 		}
@@ -311,53 +313,64 @@ function drawTicks (context,type,margin,xAxisMin,xAxisMax,xStep,canvasWidth,xUni
 	context.stroke();
 }
 
-function plot (array,context,type,plotStyle,margin,xAxisMin,xAxisMax,canvasWidth,xUnitPx,yAxisMin,yAxisMax,canvasHeight,yUnitPx,yAxisPosition) {
-	
-	var xPx, yPx, y, j = 0;
-//
-	context.strokeStyle = plotStyle[1];
-	
-	for (var i = 0; i < array.length; i++) {
-		xPx = margin + Math.floor((array[i][0] - xAxisMin) * xUnitPx);
-
-		y = (array[i][1]);
-		
-		if (type == 'logScale') {y = log10(Math.abs(y))}
-		if (y != "-Infinity") {//y = "-Infinity" when y = 0 and scale is Log
-			yPx = canvasHeight - margin - Math.floor((y - yAxisMin) * yUnitPx);
-
-			switch (plotStyle[0]) {
-				case 'line':
-					if (j == 0) {
-					context.beginPath()
-					context.moveTo(xPx, yPx);
-					}
-					context.lineTo(xPx, yPx);
-					break;
-				case 'circles':
-					context.beginPath();
-					context.arc(xPx,yPx,3,0,2 * Math.PI);
-					context.stroke();
-					break;
-				case 'diagonalCross':
-					context.beginPath();
-					context.moveTo(xPx - 2,yPx - 2);
-					context.lineTo(xPx + 2, yPx + 2);
-					context.moveTo(xPx + 2,yPx - 2);
-					context.lineTo(xPx - 2, yPx + 2);
-					context.stroke();
-					break;
-				case 'verticalCross':
-					context.beginPath();
-					context.moveTo(xPx,yPx - 2);
-					context.lineTo(xPx, yPx + 2);
-					context.moveTo(xPx + 2,yPx);
-					context.lineTo(xPx - 2, yPx);
-					context.stroke();
-					break;
-			}
-			j++;
-		}
+function legend (context,type,arrayMult,plotStyle,margin,xAxisMin,xUnitPx,yAxisMin,yUnitPx,canvasHeight) {
+	context.textBaseline = 'middle';
+	context.textAlign = 'left';
+	var x, y, xPx, yPx = '+Infinity', index, xy, array = [];
+	for (var i = 0; i < arrayMult.length;i++) {
+		array = arrayMult[i];
+		index = array.length - 1;
+		xy = array[index];
+		x = xy[0];
+		y = xy[1];
+		xPx = 10 + margin + Math.floor((x - xAxisMin) * xUnitPx);
+		if (type == 'logScale') {y = log10(Math.abs(y));}
+		yPx = canvasHeight - margin - Math.floor((y - yAxisMin) * yUnitPx);
+		context.fillStyle = plotStyle[i][1]; //color
+		context.fillText(plotStyle[i][2],xPx,yPx);
 	}
+}
+
+function plot (array,context,type,plotStyle,margin,xAxisMin,xAxisMax,canvasWidth,xUnitPx,yAxisMin,yAxisMax,canvasHeight,yUnitPx,yAxisPosition) {
+	var xPx, yPx, y;
+	context.strokeStyle = plotStyle[1];
+		for (var i = 0; i < array.length; i++) { //one loop for each data point
+			xPx = margin + Math.floor((array[i][0] - xAxisMin) * xUnitPx);
+			y = (array[i][1]);
+			if (type == 'logScale') {y = log10(Math.abs(y))}
+			if (y != "-Infinity") {//y = "-Infinity" when y = 0 and scale is Log
+				yPx = canvasHeight - margin - Math.floor((y - yAxisMin) * yUnitPx);
+				switch (plotStyle[0]) {
+					case 'line':
+						if (i == 0) {
+							context.beginPath();
+							context.moveTo(xPx, yPx);
+						}
+						context.lineTo(xPx, yPx);
+						break;
+					case 'circles':
+						context.beginPath();
+						context.arc(xPx,yPx,3,0,2 * Math.PI);
+						context.stroke();
+						break;
+					case 'diagonalCross':
+						context.beginPath();
+						context.moveTo(xPx - 2,yPx - 2);
+						context.lineTo(xPx + 2, yPx + 2);
+						context.moveTo(xPx + 2,yPx - 2);
+						context.lineTo(xPx - 2, yPx + 2);
+						context.stroke();
+						break;
+					case 'verticalCross':
+						context.beginPath();
+						context.moveTo(xPx,yPx - 2);
+						context.lineTo(xPx, yPx + 2);
+						context.moveTo(xPx + 2,yPx);
+						context.lineTo(xPx - 2, yPx);
+						context.stroke();
+						break;
+				}
+			}
+		}
 	if (plotStyle[0] == 'line') {context.stroke();}
 }
