@@ -8,6 +8,16 @@
 	<script src='bobGraph.js'></script>
 	<link rel='stylesheet' href='style.css'>
 	<link rel="shortcut icon" href="file://localhost/D:/Documents/HTML/favicon.ico" />
+	<script type="text/javascript">
+		var _gaq = _gaq || [];
+		_gaq.push(['_setAccount', 'UA-34791046-1']);
+		_gaq.push(['_trackPageview']);
+		(function() {
+			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+		})();
+	</script>
 </head>
 <body>
 	<header>
@@ -80,7 +90,7 @@
 		<input type='radio' name='model' id='series' onChange=enableAndCalc(['Rp2','sliderRp2']) >Series
 	</form>
 	<div id='rightCol'>
-		<canvas id='graph' width='550' height='400'>[No canvas support]</canvas>
+		<canvas id='graph' width='550' height='400'>[No canvas support. Consider upgrade your browser to Opera or Chrome. Or at least Firefox or Internet Explorer 9]</canvas>
 		<br>
 		<div id='underGraph'>
 			
