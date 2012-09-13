@@ -371,7 +371,13 @@ function clearData() {
 	combDataAndCalc(arrayCalc,plotStyle,scale);
 	document.getElementById('clear').disabled = true;
 	document.getElementById('estimRp').disabled = true;
-	document.getElementById('removeIrp').disabled = true;
+	document.getElementById('estimatedRp').innerHTML = '';
+	var button = document.getElementById('removeIrp');
+	button.value = 'Remove Irp';
+	button.disabled = true;
+	button = document.getElementById('removeNonLinCurr');
+	button.value = 'Remove non-linear reverse current';
+	button.disabled = true;
 	window.localFile.reset();
 	Rp = undefined;
 }

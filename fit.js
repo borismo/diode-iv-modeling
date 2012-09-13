@@ -12,7 +12,6 @@ function estimRp() {
 		xy = array[i];
 		x = xy[0];
 		slope = xy[1] / x;
-		//alert(xy);
 		if (slope < min && Math.abs(x) > 0.001) {min = slope;}
 	}
 	Rp = 1 / min;
