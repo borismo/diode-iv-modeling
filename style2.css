@@ -1,0 +1,149 @@
+/* mac hide \*/
+html, body {
+	height:100%;
+	padding:0;
+	margin:0;
+	font-family: “Lucida Sans Unicode”, “Lucida Grande”, sans-serif;
+	font-size:14px;
+	line-height:110%;
+}
+
+body{
+	border-left:3px solid orange;
+}
+
+h1{
+	font:56px impact,sans-serif;
+	margin:-12px 0 0 0;
+}
+
+sub {
+	vertical-align:-3px;
+}
+
+a:link {
+	text-decoration:none;
+	color:#FFFFFF;}
+a:visited {
+	text-decoration:none;
+	color:#FFFFFF;}
+a:hover {
+	text-decoration:underline;
+	color:#FFFFFF;}
+a:active {
+	text-decoration:underline;
+	color:#FFFFFF;}
+
+label.form{
+	width:70px;
+    float:left;
+ }
+ 
+.linearScaleBox {
+	width: 50px;
+	margin-bottom:1px;
+	margin-top:1px;
+}
+
+.LogScaleBox {
+	width: 70px;
+	margin-bottom:1px;
+	margin-top:1px;
+}
+
+.LogScale,.linearScaleSlider{
+	width: 156px;
+	height: 15px;
+	margin-bottom:1px;
+	margin-top:1px;
+	margin-right:1px;
+	margin-left:1px;
+	
+}
+
+/* end hide*/
+
+#outer {
+	min-height:100%;/*for mozilla as IE treats height as min-height anyway*/
+	margin-left:340px;
+
+	border-left:3px solid orange;
+	border-right:3px solid orange;
+	margin-bottom:-32px;
+	color: #000000;
+}
+* html #outer {
+	height:100%;
+}
+header {
+	position:absolute;
+	top:0;
+	left:0;
+	width:100%;
+	height:50px;
+	background: orange;
+	/*border-top:1px solid #000;
+	border-bottom:1px solid #000;*/
+	overflow:hidden;
+	color: #FFFFFF;
+	text-align:center;
+}
+
+#left {
+	position:relative;/*ie needs this to show float */
+	width:330px;
+	float:left;
+	margin-left:-339px;/*must be 1px less than width otherwise won't push footer down */
+	left:-1px;/* line things up exactly*/
+	padding:62px 0 0 10px;	
+}
+
+* html #left {
+	margin-right:-3px
+}/* three pixel jog*/
+
+#left p {
+	padding-left:3px;
+	padding-right:2px
+}
+
+#centrecontent {
+	float:right;
+	width:100%;
+	margin:0 0 0 -1px;
+	position:relative;
+	z-index:1;
+	padding:52px 0 0;
+}
+
+footer {
+	width:100%;
+	clear:both;
+	height:30px;
+	border-top:1px solid #FFC04D;
+	border-bottom:1px solid #FFC04D;
+	background: orange;
+	color: #FFFFFF;
+	text-align:center;
+	position:relative;
+	margin-top:-32px;
+}
+
+address {
+	font-style:inherit;	
+	margin:7px 0 0 0;
+}
+
+#clearfooter {
+	clear:both;
+	height:32px;
+}/*needed to make room for footer*/
+
+canvas {
+	float:left;
+	margin-left:10px;
+}
+
+#graphParam {
+	margin-left:50px;
+}

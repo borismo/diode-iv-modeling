@@ -1,14 +1,22 @@
 var rangeSupport = true;
 
 window.onload = function () {
+	machineEpsilon();
 	calcIV();
+	
+	//Opera fix: nicely rounds initial Is1 and Is2
+	var id = ['Is1','Is2'];
+	for (var i = 0; i < 2; i++) {
+		var element = document.getElementById(id[i]);
+		var nb = element.value;
+		var oOO = orderOfMagn(nb);
+		element.value = Math.round(100 * nb / oOO) * oOO / 100;
+	}
 	
 	var i = document.createElement("input");
 	i.setAttribute("type", "range");
 	if (i.type == "text") {
 		rangeSupport = false;
-		// var elem = document.getElementById('sliderIph');
-		// elem.parentNode.removeChild(elem);
 		
 		var c = document.getElementById('currentCalculation').getElementsByTagName('input'),array = [];
 			for (var i = 0; i < c.length; i++) {
@@ -254,8 +262,6 @@ function Iseries(V,T,Iph,n1,n2,Is1,Is2,Rp1,Rp2,Rs) {
 //Calculate current for a range of voltage values
 function calcIV() {
 	
-	if (!mchEps) {machineEpsilon();}
-	
 	var	minVolt 	= parseFloat(document.getElementById('minVolt').value),
 		maxVolt 	= parseFloat(document.getElementById('maxVolt').value),
 		stepVolt 	= parseFloat(document.getElementById('stepVolt').value),
@@ -297,7 +303,7 @@ function calcIV() {
 			var model = 'series';
 		}
 		
-	for (var V = minVolt; V < maxVolt; V += stepVolt/1000) {
+	for (var V = minVolt; V <= maxVolt; V += stepVolt/1000) {
 		
 		if (parallel) {
 			Ipar = Iparallel(V,Iph,I,T,n1,n2,Is1,Is2,Rp,Rs);

@@ -42,17 +42,24 @@ function drawGraph(arrayMult,focusedPlot,plotStyle,scaleType,xTitle,yTitle) {
 	//array will be used to build the graph area, max and min, distance between 2 ticks etc.
 	array = arrayMult[focusedPlot];
 	var xArray = [],
-		yArray = [];
+		yArray = [],
+		y, xy;
 
 	for (var i = 0; i <= array.length - 1; i++) {
-		xArray.push(array[i][0]);
-		
-		if (scaleType == 'logScale') {yArray.push(log10(Math.abs(array[i][1])));}
-			else {yArray.push(array[i][1]);}
+		xy = array[i];
+		y = xy[1];
+		if (scaleType == 'logScale') {
+			if (y != 0) { //when scale is Log, don't include the points for which y = 0
+				xArray.push(xy[0]);
+				yArray.push(log10(Math.abs(y)));
+			}
+		}	else {
+				xArray.push(xy[0]);
+				yArray.push(y);
+			}
 	}
 
 	var yMin = min(yArray);
-	//alert(yMin);
 	if (scaleType == 'logScale' && yMin < -15) {
 		var index = yArray.indexOf(yMin);
 		xArray.splice(index,1);
@@ -332,7 +339,7 @@ function legend (context,type,arrayMult,plotStyle,margin,xAxisMin,xUnitPx,yAxisM
 }
 
 function plot (array,context,type,plotStyle,margin,xAxisMin,xAxisMax,canvasWidth,xUnitPx,yAxisMin,yAxisMax,canvasHeight,yUnitPx,yAxisPosition) {
-	var xPx, yPx, y;
+	var xPx, yPx, y, j = 0;
 	context.strokeStyle = plotStyle[1];
 		for (var i = 0; i < array.length; i++) { //one loop for each data point
 			xPx = margin + Math.floor((array[i][0] - xAxisMin) * xUnitPx);
@@ -342,7 +349,7 @@ function plot (array,context,type,plotStyle,margin,xAxisMin,xAxisMax,canvasWidth
 				yPx = canvasHeight - margin - Math.floor((y - yAxisMin) * yUnitPx);
 				switch (plotStyle[0]) {
 					case 'line':
-						if (i == 0) {
+						if (j == 0) { // j==0 <=> 1st plotted point, not necessarily 1st point in the array 
 							context.beginPath();
 							context.moveTo(xPx, yPx);
 						}
@@ -370,6 +377,7 @@ function plot (array,context,type,plotStyle,margin,xAxisMin,xAxisMax,canvasWidth
 						context.stroke();
 						break;
 				}
+				j++;
 			}
 		}
 	if (plotStyle[0] == 'line') {context.stroke();}

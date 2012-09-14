@@ -44,6 +44,7 @@ function calcIrpAndNonLinRevCurr() {
 }	
 
 function removeIrp() {
+	if (Rp == undefined) {estimRp()}
 	var	button = document.getElementById('removeIrp'),
 		array = modifDataArray[0],
 		IV, newArray = [];
