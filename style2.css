@@ -129,9 +129,17 @@ footer {
 	margin-top:-32px;
 }
 
+span.red {
+	color: red;
+}
+
+span.green {
+	color: green;
+}
+
 address {
 	font-style:inherit;	
-	margin:7px 0 0 0;
+	margin:8px 0 0 0;
 }
 
 #clearfooter {

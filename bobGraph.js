@@ -345,7 +345,7 @@ function plot (array,context,type,plotStyle,margin,xAxisMin,xAxisMax,canvasWidth
 			xPx = margin + Math.floor((array[i][0] - xAxisMin) * xUnitPx);
 			y = (array[i][1]);
 			if (type == 'logScale') {y = log10(Math.abs(y))}
-			if (y != "-Infinity") {//y = "-Infinity" when y = 0 and scale is Log
+			if (y != '-Infinity') {//y = '-Infinity' when y = 0 and scale is Log
 				yPx = canvasHeight - margin - Math.floor((y - yAxisMin) * yUnitPx);
 				switch (plotStyle[0]) {
 					case 'line':

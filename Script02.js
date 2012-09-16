@@ -13,9 +13,9 @@ window.onload = function () {
 		element.value = Math.round(100 * nb / oOO) * oOO / 100;
 	}
 	
-	var i = document.createElement("input");
-	i.setAttribute("type", "range");
-	if (i.type == "text") {
+	var i = document.createElement('input');
+	i.setAttribute('type', 'range');
+	if (i.type == 'text') {
 		rangeSupport = false;
 		
 		var c = document.getElementById('currentCalculation').getElementsByTagName('input'),array = [];
@@ -50,33 +50,33 @@ function checkVoltageAndCalc () {
 }
 
 function adjustRange (elementToChange,changedElement) {
-			var formObject = document.forms['parameters'];
-			var slider = formObject.elements[elementToChange], number = formObject.elements[changedElement];
-			if (slider.className == 'linearScaleSlider') {
-				if (parseFloat(number.value) >= parseFloat(slider.max)) {
-					slider.max = remDecimals (number.value, 1.6 * number.value);
-					slider.min = remDecimals (number.value, 0.4 * number.value);
-				} else {
-					if (parseFloat(number.value) <= parseFloat(slider.min)) {
-						slider.min = remDecimals (number.value, 0.4 * number.value);
-						slider.max = remDecimals (number.value, 1.6 * number.value);
-					}
-				}
-				while (2 * slider.step >= (slider.max - slider.min)) {
-					slider.max = 2 * slider.step + slider.max;
-				}
-			} 	else { //when scale is Log
-					if (parseFloat(number.value) >= Math.pow(10,parseFloat(slider.max))) {
-					slider.max = Math.round(log10(number.value) + 3);
-					slider.min = Math.round(log10(number.value) - 3);
-				} else {
+	var formObject = document.forms['parameters'];
+	var slider = formObject.elements[elementToChange], number = formObject.elements[changedElement];
+	if (slider.className == 'linearScaleSlider') {
+		if (parseFloat(number.value) >= parseFloat(slider.max)) {
+			slider.max = remDecimals (number.value, 1.6 * number.value);
+			slider.min = remDecimals (number.value, 0.4 * number.value);
+		} else {
+			if (parseFloat(number.value) <= parseFloat(slider.min)) {
+				slider.min = remDecimals (number.value, 0.4 * number.value);
+				slider.max = remDecimals (number.value, 1.6 * number.value);
+			}
+		}
+		while (2 * slider.step >= (slider.max - slider.min)) {
+			slider.max = 2 * slider.step + slider.max;
+		}
+	} 	else { //when scale is Log
+			if (parseFloat(number.value) >= Math.pow(10,parseFloat(slider.max))) {
+				slider.max = Math.round(log10(number.value) + 3);
+				slider.min = Math.round(log10(number.value) - 3);
+			} 	else {
 					if (parseFloat(number.value) <= Math.pow(10,parseFloat(slider.min))) {
 						slider.min = Math.round(log10(number.value) - 3);
 						slider.max = Math.round(log10(number.value) + 3);
 					}
 				}
-				}
-		};
+		}
+}
 
 function log10(val) {
   return Math.log(val) / Math.log(10);
@@ -98,7 +98,7 @@ return i;
 }
 
 function nbAfterDot (number) {
-	var n = number.toString().indexOf(".");
+	var n = number.toString().indexOf('.');
 	if (n == -1) {return 0} else {
 		return number.toString().slice(n+1,number.length).length;
 		}
@@ -288,8 +288,8 @@ function calcIV() {
 		arrayVId1 = [],
 		arrayVId2 = [],
 		arrayVIrp1 = [],
-		arrayVIrp2 = [],
-		stringArray = 'V (V)\tI (A)\n';
+		arrayVIrp2 = [];
+		//var stringArray = 'V (V)\tI (A)\n';
 		
 		if (document.getElementById('parallel').checked) {
 			var parallel = true,
@@ -326,7 +326,7 @@ function calcIV() {
 			}
 		
 		arrayVI.push([V,I]);
-		stringArray = stringArray.concat('\n'+V+'\t'+I);
+		//stringArray = stringArray.concat('\n'+V+'\t'+I);
 		arrayVId1.push([V,Id1]);
 		arrayVId2.push([V,Id2]);
 	}
@@ -346,6 +346,10 @@ function calcIV() {
 			break;
 	}
 
+	if (!document.getElementById('clear').disabled) {
+		calcSqResSum();
+	}
+	
 	if (document.getElementById('linear').checked) {scale = 'linearScale';}
 		else {scale = 'logScale';}
 		
@@ -361,8 +365,7 @@ function processFiles(files) {
 		stringToArray(e.target.result);
 	}
 	reader.readAsText(file);
-	document.getElementById('clear').disabled = false;
-	document.getElementById('estimRp').disabled = false;
+	
 	document.getElementById('removeIrp').disabled = false;
 	document.getElementById('removeNonLinCurr').disabled = false;
 }
@@ -377,16 +380,17 @@ function clearData() {
 	dataStyle = [];
 	combDataAndCalc(arrayCalc,plotStyle,scale);
 	document.getElementById('clear').disabled = true;
-	document.getElementById('estimRp').disabled = true;
-	document.getElementById('estimatedRp').innerHTML = '';
 	var button = document.getElementById('removeIrp');
-	button.value = 'Remove Irp';
+	button.value = 'Hide Irp';
 	button.disabled = true;
 	button = document.getElementById('removeNonLinCurr');
 	button.value = 'Remove non-linear reverse current';
 	button.disabled = true;
 	window.localFile.reset();
 	Rp = undefined;
+	document.getElementById('squaredResSum').innerHTML = '';
+	document.getElementById('paramEstim').innerHTML = '';
+	document.getElementById('updateParams').style.visibility = 'hidden';
 }
 
 function stringToArray(data) {
@@ -400,9 +404,26 @@ function stringToArray(data) {
 		}
 		dataArray.push(line);
 	}
-	dataArray = [dataArray];
-	modifDataArray = dataArray
+	
 	dataStyle = [['verticalCross','purple','Data']];
+	
+	var T = prompt('Temperature? (K)','298');
+	while (isNaN(T) || T <= 0) {
+		T = prompt('Temperature should be a greater than 0 number','298');
+	}
+	document.getElementById('T').value = T;
+	document.getElementById('sliderT').value = T;
+	
+	document.getElementById('minVolt').value = dataArray[0][0];// - document.getElementById('stepVolt').value / 1000;
+	document.getElementById('maxVolt').value = dataArray[dataArray.length - 1][0] + document.getElementById('stepVolt').value / 1000;
+	calcIV();
+
+	dataArray = [dataArray];
+	modifDataArray = dataArray;
+	
+	estimD1D2Rs();
+	calcSqResSum();
+	document.getElementById('clear').disabled = false;
 	combDataAndCalc(arrayCalc,plotStyle,scale);
 }
 

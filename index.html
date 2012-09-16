@@ -7,8 +7,8 @@
 	<script src='fit.js'></script>
 	<script src='bobGraph.js'></script>
 	<link rel='stylesheet' href='style2.css'>
-	<link rel="shortcut icon" href="file://localhost/D:/Documents/HTML/favicon.ico" />
-	<script type="text/javascript">
+	<link rel='shortcut icon' href='file://localhost/D:/Documents/HTML/favicon.ico' />
+	<script type='text/javascript'>
 		var _gaq = _gaq || [];
 		_gaq.push(['_setAccount', 'UA-34791046-1']);
 		_gaq.push(['_trackPageview']);
@@ -20,8 +20,8 @@
 	</script>
 </head>
 <body>
-	<div id="outer">
-		<div id="left">
+	<div id='outer'>
+		<div id='left'>
 			<form name='parameters' action='#' id='currentCalculation'>
 				<label class='form' for='Volt'>V<sub>i</sub> (V)</label>
 				<input class='linearScaleBox' id='minVolt' type='number' name='minVolt' step='0.01' value=-1.4 onChange=checkVoltageAndCalc()><br>
@@ -87,7 +87,7 @@
 				<input type='radio' name='model' id='series' onChange=enableAndCalc(['Rp2','sliderRp2']) ><label>Series</label>
 			</form>
 		</div>
-		<div id="centrecontent">
+		<div id='centrecontent'>
 			<form name='graph' id='graphParam' action='#'>
 				Scale type: 
 				<input type='radio' name='scale' id='linear' onChange=calcIV()><label>Linear</label>   
@@ -101,18 +101,20 @@
 				</form>
 			</div>
 			<div id='fit'>
-				<input id='estimRp' type='button' value='Estimate Rp' disabled='disabled' onclick='estimRp()'>
 				<output id='estimatedRp' form='localFile'></output><br>
-				<input id='removeIrp' type='button' value='Remove Irp' disabled='disabled' onclick='removeIrp()'><br>
-				<input id='removeNonLinCurr' type='button' value='Remove non-linear reverse current' disabled='disabled' onclick='removeNonLinCurr()'>
+				<input id='removeIrp' type='button' value='Hide Irp' disabled='disabled' onclick='removeIrp()'><br>
+				<input id='removeNonLinCurr' type='button' value='Remove non-linear reverse current' disabled='disabled' onclick='removeNonLinCurr()'><br>
+				<output id='squaredResSum'></output><br><br>
+				<output id='paramEstim'></output><br>
+				<button id='updateParams' type='button' style='visibility:hidden' onclick='updateParams()'>Update Parameters</button>
 			</div>
 		</div>
-		<div id="clearfooter"></div><!-- to clear footer -->
+		<div id='clearfooter'></div><!-- to clear footer -->
 	</div> <!-- end outer div -->
 	<footer>
 		<address>
-			<a href="mailto:boris.morel@outlook.com">Contact</a> | 
-			<a href="http://be.linkedin.com/in/borismorel">linkedin.com/in/borismorel</a>
+			<a href='mailto:boris.morel@outlook.com' rel='author'>Contact</a> | 
+			<a href='http://be.linkedin.com/in/borismorel' hreflang='en' rel='author' target='_blank'>linkedin.com/in/borismorel</a>
 		</address>
 	</footer>
 	<header>
