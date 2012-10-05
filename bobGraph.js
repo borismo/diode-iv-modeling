@@ -37,8 +37,8 @@ function log10(val) {
 	return Math.log(val) / Math.log(10);
 }
 
-function drawGraph(arrayMult,focusedPlot,plotStyle,scaleType,xTitle,yTitle) {
-
+function drawGraph(canvasId,arrayMult,focusedPlot,plotStyle,scaleType,xTitle,yTitle) {
+	
 	//array will be used to build the graph area, max and min, distance between 2 ticks etc.
 	array = arrayMult[focusedPlot];
 	var xArray = [],
@@ -81,7 +81,7 @@ function drawGraph(arrayMult,focusedPlot,plotStyle,scaleType,xTitle,yTitle) {
 		yAxisMin = axesMaxMin[2],
 		yAxisMax = axesMaxMin[3],
 		
-		canvas = document.getElementById('graph'),
+		canvas = document.getElementById(canvasId),
 		context = canvas.getContext('2d'),
 		canvasWidth = canvas.width,
 		canvasHeight = canvas.height,
@@ -326,15 +326,18 @@ function legend (context,type,arrayMult,plotStyle,margin,xAxisMin,xUnitPx,yAxisM
 	var x, y, xPx, yPx = '+Infinity', index, xy, array = [];
 	for (var i = 0; i < arrayMult.length;i++) {
 		array = arrayMult[i];
-		index = array.length - 1;
+		index = array.length - 1;//last point
 		xy = array[index];
 		x = xy[0];
 		y = xy[1];
+		
 		xPx = 10 + margin + Math.floor((x - xAxisMin) * xUnitPx);
 		if (type == 'logScale') {y = log10(Math.abs(y));}
-		yPx = canvasHeight - margin - Math.floor((y - yAxisMin) * yUnitPx);
-		context.fillStyle = plotStyle[i][1]; //color
-		context.fillText(plotStyle[i][2],xPx,yPx);
+		if (isFinite(y)) {
+			yPx = canvasHeight - margin - Math.floor((y - yAxisMin) * yUnitPx);
+			context.fillStyle = plotStyle[i][1]; //color
+			context.fillText(plotStyle[i][2],xPx,yPx);
+		}
 	}
 }
 
