@@ -280,16 +280,17 @@ function findDiodes() {
 		dLn;
 	
 	//l.innerHTML = '';
-		
+	var iMax = i + 1;
 	while (i >= 0 && array[i][0] > 0.04) {// looking for a maxima between 0.04 V and Vmax
 		dLn = array[i][1];
 		if (dLn < prev && prev > max[1] && prev - dLn < 5) {
-			var iMax = i + 1;
+			iMax = i + 1;
 			max = array[iMax];
+			
 			l.innerHTML += 'd2 found at ' + array[iMax][0] + ' V<br>'
 		}
 		prev = array[i][1];
-		i-= 1;
+		i--;
 	}
 	
 	var min = max;
@@ -303,24 +304,23 @@ function findDiodes() {
 			l.innerHTML += 'd1 found at ' + array[iMin][0] + ' V<br>'
 		}
 		prev = array[i][1];
-		i-= 1;
+		i--;
 	}
 	//alert(iMin);
+	
 	iMax = array.length - iMax - 1;
 	iMin = array.length - iMin - 1;
 	//iMax (and iMin) are the indexes of the maxima (and minima), starting from the *end* of the original array, in case points in reverse are missing after removal of Irp and SCLC
-	//alert([max,min,iMax,iMin]);
-	D1D2 = [max,min,iMax,iMin];
+	return [max,min,iMax,iMin];
 }
 
-function estimD1D2Rs() {
+function estimD1D2Rs(maxmin) {
 	if (document.getElementById('series').checked) {return;} //for now, no estimation for series model
 	var	dualDiode = !document.getElementById('singleDiode').checked,
 	
 		array = noIrpNoSCLCarray;
-		
-	var	maxmin = D1D2,
-		d1 = maxmin[1],
+	
+	var	d1 = maxmin[1],
 		d2 = maxmin[0],
 		VIAtd1 = array[array.length - 1 - maxmin[3]],
 		VIAtd2 = array[array.length - 1 - maxmin[2]],

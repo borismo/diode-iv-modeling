@@ -174,7 +174,7 @@ function SyncSlidernBox(changedElement,elementToChange,recalculate) {
 		if (recalculate) {
 			calcIV(true);
 			if (!document.getElementById('clear').disabled && changedElement.indexOf('T') != -1) { // <=> a experimental file has been opened
-				estimD1D2Rs();
+				estimD1D2Rs(findDiodes());
 			}
 		}
 }
@@ -206,7 +206,7 @@ function disableAndCalc(arrayOfId) {
 	}
 	calcIV(true);
 	if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
-		estimD1D2Rs();
+		estimD1D2Rs(findDiodes());
 	}
 }
 
@@ -220,7 +220,7 @@ function enableAndCalc(arrayOfId) {
 	}
 	calcIV(true);
 	if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
-		estimD1D2Rs();
+		estimD1D2Rs(findDiodes());
 	}
 }
 
@@ -474,8 +474,8 @@ function stringToArray(data) {
 	modifDataArray = dataArray;
 	
 	estimRp();
-	findDiodes();
-	estimD1D2Rs();
+	
+	estimD1D2Rs(findDiodes());
 	calcSqResSum();
 	document.getElementById('clear').disabled = false;
 	combDataAndCalc(arrayCalc,plotStyle,scale);
