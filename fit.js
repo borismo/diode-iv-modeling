@@ -101,7 +101,7 @@ function removeNonLinCurr(CalculsqResSum,plot) {
 var prevSqResSum,dS;
 
 function calcSqResSum() {
-	
+	//alert("caller is " + arguments.callee.caller.toString().slice(0,arguments.callee.caller.toString().indexOf('{')));
 	var n1 	= parseFloat(document.getElementById('n1').value),
 		Is1	= parseFloat(document.getElementById('Is1').value),
 		Rp = parseFloat(document.getElementById('Rp').value),
@@ -213,6 +213,7 @@ function toggleresidualPlot() {
 }
 
 function deriv(array) {
+	//alert("caller is " + arguments.callee.caller.toString().slice(0,arguments.callee.caller.toString().indexOf('{')));
 	var der,prev,next,derArray = [], stringArray = 'V\tln(I)\td[ln(I)]/dV';
 	for (var i = 1; i < array.length - 1;i++) {//Derivative not calculated for 1st and last point
 		prev = array[i-1];
@@ -259,17 +260,18 @@ function findDiodesbac(array) {//argument 'array' must be d[ln(I)]/dV
 	return [max,min,iMax,iMin];
 }
 
-function findDiodes() {
+function findDiodesbac() {
 	
 	var	IprShowed = document.getElementById('removeIrp').value == 'Hide Irp',
 		nonLinearShuntCurrRemoved = document.getElementById('removeNonLinCurr').value == 'Add back non-linear reverse current';
 	
-	if (IprShowed) {removeIrp(false);} // diode parameters better evaluated when Rp = infinity
-	if (!nonLinearShuntCurrRemoved) {removeNonLinCurr(false,false);} // sometimes, estimation is often better *with* this non-linear, not part of the model, current. Go figure...
-	noIrpNoSCLCarray = modifDataArray[0];
-	var array = modifDataArray[0];
-	if (IprShowed) {removeIrp(false);}
-	if (!nonLinearShuntCurrRemoved) {removeNonLinCurr(false,false);}
+	
+		if (IprShowed) {removeIrp(false);} // diode parameters better evaluated when Rp = infinity
+		if (!nonLinearShuntCurrRemoved) {removeNonLinCurr(false,false);}
+		noIrpNoSCLCarray = modifDataArray[0];
+		var array = modifDataArray[0];
+		if (IprShowed) {removeIrp(false);}
+		if (!nonLinearShuntCurrRemoved) {removeNonLinCurr(false,false);}
 	
 	var array = deriv(lnOfArray(array));
 	
@@ -283,6 +285,7 @@ function findDiodes() {
 	var iMax = i + 1;
 	while (i >= 0 && array[i][0] > 0.04) {// looking for a maxima between 0.04 V and Vmax
 		dLn = array[i][1];
+		// l.innerHTML += [array[i][0],dLn]+'<br>';
 		if (dLn < prev && prev > max[1] && prev - dLn < 5) {
 			iMax = i + 1;
 			max = array[iMax];
@@ -311,36 +314,225 @@ function findDiodes() {
 	iMax = array.length - iMax - 1;
 	iMin = array.length - iMin - 1;
 	//iMax (and iMin) are the indexes of the maxima (and minima), starting from the *end* of the original array, in case points in reverse are missing after removal of Irp and SCLC
+	// alert([max,min,iMax,iMin]);
 	return [max,min,iMax,iMin];
 }
 
+function findDiodesbac2() {
+	
+	var	IprShowed = document.getElementById('removeIrp').value == 'Hide Irp',
+		nonLinearShuntCurrRemoved = document.getElementById('removeNonLinCurr').value == 'Add back non-linear reverse current';
+	
+		if (IprShowed) {removeIrp(false);} // diode parameters better evaluated when Rp = infinity
+		if (!nonLinearShuntCurrRemoved) {removeNonLinCurr(false,false);}
+		noIrpNoSCLCarray = modifDataArray[0];
+		var array = modifDataArray[0];
+		if (IprShowed) {removeIrp(false);}
+		if (!nonLinearShuntCurrRemoved) {removeNonLinCurr(false,false);}
+	
+	var array1 = deriv(lnOfArray(array)),// 1st order derivative
+		array = deriv(array1),//2nd order derivative
+		i = array.length - 2,
+		min = array[i],
+		prev = 0,
+		l = log,
+		dLn,
+		dLnMin = 0;
+	
+	//l.innerHTML = '';
+	var iMin = i + 1;
+	while (i >= 0 && array[i][0] > 0.04) {// looking for a minima between 0.04 V and Vmax
+		dLn = array[i][1];
+		l.innerHTML += [array[i][0],dLn]+'<br>';
+		if (dLn > prev && prev < dLnMin) {
+			var iMin = i + 1;
+			dLnMin = prev;
+			l.innerHTML += 'minimum found at ' + array[iMin][0] + ' V<br>';
+		}
+		prev = dLn
+		i--;
+	}
+	
+	var dLnMax = dLnMin;
+	prev = -Infinity;
+	i = iMin - 1;
+	var iMax = iMin;
+	while (i >= 0 && array[i][0] > 0.04) {// looking for a maxima between 0.04 V and Vmax
+		dLn = array[i][1];
+		
+		if (dLn < prev && prev > dLnMax) {
+			iMax = i + 1;
+			dLnMax = prev;
+			l.innerHTML += 'max found at ' + array[iMax][0] + ' V<br>';
+		}
+		prev = dLn;
+		i--;
+	}
+	//alert(iMin);
+	i = iMax;
+	do {
+		prev = dLn;
+		i--;
+		dLn = array[i][1];
+	} while (Math.abs(dLn) < Math.abs(prev) || dLn >= 0)
+	l.innerHTML += 'D1 at ' + array[i+1][0] + ' V<br>';
+	var iD1 = i + 1;
+	var D1dLn = array1[iD1 + 1][1];
+	
+	i = iMax;
+	do {
+		prev = dLn;
+		i++;
+		dLn = array[i][1];
+	} while (Math.abs(dLn) < Math.abs(prev) || dLn >= 0)
+	l.innerHTML += 'D2 at ' + array[i-1][0] + ' V<br>';
+	var iD2 = i-1;
+	var D2dLn = array1[iD2+1][1];
+	
+	var length = array.length - 2;
+	
+	iD2 = length - iD2;
+	iD1 = length - iD1;
+	/* iD2 (and iD1) are the indexes of the maxima (and minima), starting from the *end* of the original array,
+	in case points in reverse are missing after removal of Irp and SCLC */
+	
+	return [D2dLn,D1dLn,iD2,iD1];
+}
+
+function findDiodes() {
+	
+	var	IprShowed = document.getElementById('removeIrp').value == 'Hide Irp',
+		nonLinearShuntCurrRemoved = document.getElementById('removeNonLinCurr').value === 'Add back non-linear reverse current';
+	
+		if (IprShowed) {removeIrp(false);} // diode parameters better evaluated when Rp = infinity
+		if (!nonLinearShuntCurrRemoved) {removeNonLinCurr(false,false);}
+		noIrpNoSCLCarray = modifDataArray[0];
+		var array = modifDataArray[0];
+		if (IprShowed) {removeIrp(false);}
+		if (!nonLinearShuntCurrRemoved) {removeNonLinCurr(false,false);}
+	
+	var array1 = deriv(lnOfArray(array)),// 1st order derivative
+		array = deriv(array1),//2nd order derivative
+		i = array.length - 2,
+		prev,
+		l = log,
+		dLn = array[i][1],
+		dLnMin = 0,
+		deltaLnMax = 0,
+		j = 0;
+	
+	var avDelta = function (array) {
+		var sum = 0,
+			length = array.length;
+		for (var i = 1; i < length; i++) {
+			sum += Math.abs(array[i][1] - array[i - 1][1]);
+		}
+		return sum / (length - 1);
+	}
+	var avD = avDelta(array);
+	//l.innerHTML += 'average: '+avD+'<br>';
+	
+	var iMin = i,
+		fluctIn2ndHalf = false;
+	do {i = iMin;
+		dLn = array[i][1];
+		var maxPassed = false;
+		do {// looking for minima between 0.04 V and Vmax
+			i--;
+			prev = dLn;
+			dLn = array[i][1];
+			//l.innerHTML += [array[i][0],dLn]+'<br>';
+			fluctIn2ndHalf += Math.abs(dLn - prev) > avD && i < array.length / 2;
+			maxPassed += prev > dLn && Math.abs(dLn - prev) < avD;
+			var carryOn = !maxPassed || dLn < prev;
+		} while (i >= 0 && array[i][0] > 0.04 && carryOn && !fluctIn2ndHalf)
+		// alert(fluctIn2ndHalf);
+		iMin = i + 1;
+		dLnMin = prev;
+
+		// l.innerHTML += 'min: '+iMin+' '+dLnMin+'<br>';
+		
+		var dLnMax = dLnMin;
+		prev = -Infinity;
+		i = iMin - 1;
+		var iMax = iMin;
+		while (i >= 0 && array[i][0] > 0.04) {// looking for a maxima between 0.04 V and Vmax
+			dLn = array[i][1];
+			
+			if (dLn < prev && prev > dLnMax && Math.abs(dLn - prev) < avD) {
+				iMax = i;
+				dLnMax = prev;
+				// l.innerHTML += 'max found at ' + array[iMax + 1][0] + ' V<br>';
+			}
+			prev = dLn;
+			i--;
+		}
+		
+		// l.innerHTML += 'iMax: ' + iMax + '<br>';
+		// l.innerHTML += 'iMin: ' + iMin + '<br>';
+		if (dLnMax - dLnMin > deltaLnMax) {
+			deltaLnMax = dLnMax - dLnMin;
+			var iMaxMax = iMax;
+			// l.innerHTML += 'Keep<br>';
+		}
+		j++;
+	} while (iMax != iMin && j < 10 && !fluctIn2ndHalf)
+	
+	i = iMax = iMaxMax;
+	dLn = array[i][1];
+	do {
+		prev = dLn;
+		i--;
+		dLn = array[i][1];
+	} while (Math.abs(dLn) < Math.abs(prev) || dLn >= 0)
+	var iD1 = i + 2;
+	l.innerHTML += 'D1 at ' + array[iD1][0] + ' V<br>';
+	var D1dLn = array1[iD1 + 1][1];
+	
+	i = iMax;
+	do {
+		prev = dLn;
+		i++;
+		dLn = array[i][1];
+	} while (Math.abs(dLn) < Math.abs(prev) || dLn >= 0)
+	var iD2 = i - 1;
+	l.innerHTML += 'D2 at ' + array[iD2][0] + ' V<br>';
+	var D2dLn = array1[iD2+1][1];
+	
+	var length = array.length - 2;
+	
+	iD2 = length - iD2;
+	iD1 = length - iD1;
+	/* iD2 (and iD1) are the indexes of the maxima (and minima), starting from the *end* of the original array,
+	in case points in reverse are missing after removal of Irp and SCLC */
+	
+	return [D2dLn,D1dLn,iD2,iD1];
+}
+
 function estimD1D2Rs(maxmin) {
+	
 	if (document.getElementById('series').checked) {return;} //for now, no estimation for series model
 	var	dualDiode = !document.getElementById('singleDiode').checked,
 	
 		array = noIrpNoSCLCarray;
 	
-	var	d1 = maxmin[1],
-		d2 = maxmin[0],
-		VIAtd1 = array[array.length - 1 - maxmin[3]],
-		VIAtd2 = array[array.length - 1 - maxmin[2]],
+	var	D1dLn = maxmin[1],
+		D2dLn = maxmin[0],
+		VIAtd1 = array[array.length - 4 - maxmin[3]],
+		VIAtd2 = array[array.length - 4 - maxmin[2]],
 		T = document.getElementById('T').value,
 		A = q / (k * T),
-		n2 = A / d2[1];
+		n2 = A / D2dLn;
 		
 		if (dualDiode) {
-			var n1 = A / d1[1],
+			var n1 = A / D1dLn,
 				n = n2 = 1,
 				Is1 = VIAtd1[1] / (Math.exp((VIAtd1[0] * A / n1) - 1));
 		} 	else {
 				var n = n2;
 			}
 	var	Rs = estimRs(array,T,n);
-		//i = array.length - 2,
-		//I = array[i][1], V = array[i][0];
-		// alert(VIAtd1);
-		// alert((array.length - 1 - maxmin[3])+' = '+array.length+' - 1 - '+maxmin[3]);
-	//if (dualDiode) {n2 = 1;}
+		
 	var	Is2 = VIAtd2[1] / (Math.exp((VIAtd2[0] - VIAtd2[1] * Rs) * A / n2) - 1);
 	if (dualDiode) {
 		document.getElementById('paramEstim').innerHTML = 	'<b>Estimated parameters<br>(parallel dual-diode model):</b>'
@@ -386,22 +578,49 @@ function estimRs(array,T,n) {
 }
 
 function useEstimParam() {
-	updateParams(estimParams,true);
+	if (rangeSupport) {
+		var id = ['Iph','T','n1','n2','Is1','Is2','Rp','Rp2','Rs','sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
+		for (var i = 0; i < id.length; i++) {
+			var el = document.getElementById(id[i]);
+			el.removeEventListener('change',syncSlidernboxReCalc, false);
+			el.addEventListener('change',syncSlidernboxNoCalc, false);
+		}
+	}
+	
+	updateParams(estimParams,true,true);
+	
+	if (rangeSupport) {
+		var id = ['Iph','T','n1','n2','Is1','Is2','Rp','Rp2','Rs','sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
+		for (var i = 0; i < id.length; i++) {
+			var el = document.getElementById(id[i]);
+			el.addEventListener('change',syncSlidernboxReCalc, false);
+			el.addEventListener('change',syncSlidernboxNoCalc, false);
+		}
+	}
 }
 
-function updateParams(params,plot) {
-	var par, id;
+function updateParams(params,plot,updateRangeInput) {
+	var par,
+		id;
+	if (updateRangeInput) {
+		var evt = document.createEvent('HTMLEvents');
+		evt.initEvent('change', false, false);
+	}
 	for (var i = 0; i < params.length; i++) {
 		par = params[i];
-		id = par[0];//alert(id);
-		document.getElementById(id).value = par[1];
-		SyncSlidernBox(id,'slider'+id,false);
+		id = par[0];
+		var el = document.getElementById(id);
+		el.value = par[1];
+		//SyncSlidernBox(el,false);
+		if (updateRangeInput) {
+			el.dispatchEvent(evt);
+		}
 	}
 	calcIV(plot);
 }
 
 function vary() {
-
+	
 	var param, oOO,id,string = '', l=log, eps = mchEps;
 	
 	var n1 	= parseFloat(document.getElementById('n1').value),
@@ -427,11 +646,23 @@ function vary() {
 		j = 0,
 		ii = 0,
 		sign,
-		string = 'Iteration S |dS|';
+		string = 'Iteration S |dS|',
+		stop = false;
 		
 	for (var i = 0; i < params.length; i++) {
 		string += ' '+params[i][0];
 	}
+	
+	/* window.performance = window.performance || {};
+	performance.now = (function() 	{
+				  return performance.now()       ||
+						 performance.mozNow()    ||
+						 performance.msNow()     ||
+						 performance.oNow()      ||
+						 performance.webkitNow() ||
+						 false;
+							})();
+	alert(performance.now); */
 	
 	v = setInterval(
 		function(){
@@ -445,46 +676,54 @@ function vary() {
 				
 				newPar = params[i][1] * Math.pow((1 + params[i][2]),-sign); //update parameter
 				
-				updateParams([[params[i][0],newPar]],false);
+				updateParams([[params[i][0],newPar]],false,false);
 				
 				j = 0;
-				while (del / Math.abs(del) != delS[i] / Math.abs(delS[i]) && j < 100) {
+				while (del / Math.abs(del) != delS[i] / Math.abs(delS[i]) && j < 100 && newPar !== 0) {
 					params[i][2] /= 2;
 					newPar = params[i][1] * Math.pow((1 + params[i][2]),-sign); //update parameter
-					updateParams([[params[i][0],newPar]],false);
+					updateParams([[params[i][0],newPar]],false,false);
 					//l.innerHTML = l.innerHTML+params[i][0]+' ### '+j+' '+params[i][2]+' '+del+'<br>';
 					j++;
 				}
 				//l.innerHTML = l.innerHTML+params[i][0]+' '+j+' '+del+'<br>';
 				
 				var jj = 0;
-				while (del / Math.abs(del) == delS[i] / Math.abs(delS[i]) && jj < 100) {
+				while (del / Math.abs(del) == delS[i] / Math.abs(delS[i]) && jj < 100 && newPar !== 0) {
 					params[i][2] *= 2;
 					newPar = params[i][1] * Math.pow((1 + params[i][2]),-sign); //update parameter
-					updateParams([[params[i][0],newPar]],false);
+					updateParams([[params[i][0],newPar]],false,false);
 					
-					//l.innerHTML = l.innerHTML+params[i][0]+' *** '+jj+' '+newPar+' '+params[i][2]+' <br>';
+					//l.innerHTML = l.innerHTML+params[i][0]+' *** '+jj+' '+newPar+' '+params[i][2]+sign+' '+' <br>';
 					jj++;
 				}
-				
 				params[i][1] = newPar;
 				newPars.push(newPar);
+				
+				if (isNaN(newPar)) {
+					stop += true;
+					log.innerHTML += 'Sorry, '+params[i][0]+' is NaN ('+newPar+').<br>';
+					l.scrollTop = l.scrollHeight;
+				}
 			}
 			
 			string += '<br>'+ii+' '+SqResSum+' '+Math.abs(dS)+' '+newPars.join(' ');
-			
 			
 			// l.innerHTML = l.innerHTML+ii+' '+SqResSum+' '+newPars.join('\t')+'<br>';
 			// l.scrollTop = l.scrollHeight;
 			ii++;
 			
 			var threshold = document.getElementById('threshold').value;
-			if (Math.abs(SqResSum - S) < threshold || ii > 1000) {
+			if (Math.abs(SqResSum - S) < threshold || ii > 1000 || stop) {
 				startPauseVary();
-				log.innerHTML += '<br>'+string;
+				log.innerHTML += '<br>'+string+'<br>';
 				l.scrollTop = l.scrollHeight;
+				
+				var id = ['Iph','T','n1','n2','Is1','Is2','Rp','Rp2','Rs']
+				for (var i = 0; i < id.length; i++) {
+					SyncSlidernBox(document.getElementById(id[i]),false);
+				}
 			}
-			
 			if (document.webkitHidden) {
 				// no use to plot: the page is not visible (Webkit only)
 			} 	else {combDataAndCalc(arrayCalc,plotStyle,scale);}

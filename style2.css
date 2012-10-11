@@ -22,17 +22,21 @@ sub {
 }
 
 a:link {
-	text-decoration:none;
-	color:#FFFFFF;}
+	text-decoration:none;}
 a:visited {
-	text-decoration:none;
-	color:#FFFFFF;}
+	text-decoration:none;}
 a:hover {
-	text-decoration:underline;
-	color:#FFFFFF;}
+	text-decoration:underline;}
 a:active {
-	text-decoration:underline;
-	color:#FFFFFF;}
+	text-decoration:underline;}
+
+a.white {
+	color:white
+}
+
+.orange {
+	color:orange
+}
 
 label.form{
 	width:70px;
@@ -149,11 +153,23 @@ address {
 
 canvas {
 	float:left;
-	margin-left:10px;
+	margin:6px;
 }
 
+.hover{
+	margin: 0px;
+	border: 6px dashed orange;
+}
+
+div#clearLog{
+	background: grey;
+	color: white;
+}
 div#logDiv{
-	
+	font-family:'Courier New';
+	border-radius:5px;
+	background: grey;
+	color: white;
 	height:300px;
 	margin-left:550px;
 	margin-top:10px;

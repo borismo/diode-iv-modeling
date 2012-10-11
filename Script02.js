@@ -1,5 +1,4 @@
 var rangeSupport = true;
-//var log;
 
 function machineEpsilon() {
 	var temp1, temp2;
@@ -11,24 +10,30 @@ function machineEpsilon() {
 		} while (temp2 > 1.0);
 	};
  
+function syncSlidernboxReCalc(e) {
+	var element = e.target;
+	SyncSlidernBox(element,true);
+}
+
+function syncSlidernboxNoCalc(e) {
+	var element = e.target;
+	SyncSlidernBox(element,false);
+}
+ 
 window.onload = function () {
 	log = document.getElementById('logDiv');
 	log.innerHTML = '';
 	machineEpsilon();
 	calcIV(true);
 	
-	//Opera fix: nicely rounds initial Is1 and Is2
-	var	id = ['Is1', 'Is2','threshold'];
-	for (var i = 0; i < 3; i++) {
-		var element = document.getElementById(id[i]),
-			nb = element.value,
-			oOO = orderOfMagn(nb);
-		element.value = Math.round(100 * nb / oOO) * oOO / 100;
-	}
+	var unsupported = [];
+	
+	//Check if HTML5 range type input is supported
 	var i = document.createElement('input');
 	i.setAttribute('type', 'range');
 	if (i.type == 'text') {
 		rangeSupport = false;
+		unsupported.push('Range input type');
 		
 		var c = document.getElementById('currentCalculation').getElementsByTagName('input'),array = [];
 			for (var i = 0; i < c.length; i++) {
@@ -37,10 +42,118 @@ window.onload = function () {
 				}
 			}
 	}
+	
+	//Check if HTML5 number type input is supported
+	i = document.createElement('input');
+	i.setAttribute('type', 'number');
+	if (i.type == 'text') {
+		numberSupport = false;
+		unsupported.push('Number input type');
+	} else {numberSupport = true;}
+	
+	//Check if File API supported
 	if (typeof FileReader == 'undefined') {
+		unsupported.push('File API');
 		document.getElementById('fileInput').disabled = true;
+		var string = 'import your own data and ';
+	} 	else {
+			string = '';
+			log.innerHTML += 'You can import your own IV data (text file with 2 tab-separated columns) with the button above or simply by dragging and dropping the file onto the graph.<br>'
+		}
+	
+	if (unsupported.length) {
+		var str = unsupported.join(', ');
+		string = '';
+		log.innerHTML += "Your browser doesn't seem to support some of the HTML5 standards ("+str+"). Upgrade to <a class='orange' href='http://www.opera.com/browser/' target='_blank'>Opera</a> or <a class='orange' href='https://www.google.com/intl/en/chrome/browser/' target='_blank'>Chrome</a> to be able to "+string+"play with the parameters more easily. But you're still welcome to have a look around.<br>If your administrator doesn't allow you to change your browser, you can head to the portable versions (<a class='orange' href='http://www.opera-usb.com/operausben.htm' target='_blank'>Opera@USB</a> and <a class='orange' href='http://portableapps.com/apps/internet/google_chrome_portable' target='_blank'>Chrome Portable</a>).<br>";
 	}
-	document.getElementById('clear').disabled = true;
+	
+	//Opera fix: nicely rounds initial Is1 and Is2
+	if (numberSupport) {
+		var	id = ['Is1', 'n1', 'n2', 'Is2', 'threshold', 'Rs', 'Rp', 'Rp2'];
+		for (var i = 0; i < 8; i++) {
+			var element = document.getElementById(id[i]),
+				nb = parseFloat(element.value),
+				oOO = orderOfMagn(nb);
+			element.value = nb.toPrecision(Math.round(-log10(element.step / oOO) + 1));
+		}
+	}
+	if (rangeSupport) {
+		id = ['Iph','T','n1','n2','Is1','Is2','Rp','Rp2','Rs','sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
+		for (var i = 0; i < id.length; i++) {
+			var el = document.getElementById(id[i]);
+			el.addEventListener('change',syncSlidernboxReCalc, false);
+		}
+		id = ['sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
+		for (var i = 0; i < id.length; i++) {
+			var el = document.getElementById(id[i]);
+			el.addEventListener('mouseup',function(e){
+											var element = e.target;
+											adjustRange(element,true);
+										}, false);
+		}
+	} else {
+		id = ['Iph','T','n1','n2','Is1','Is2','Rp','Rp2','Rs'];
+		for (var i = 0; i < id.length; i++) {
+			var el = document.getElementById(id[i]);
+			el.addEventListener('change',function(e){
+											calcIV(true);
+											if (!document.getElementById('clear').disabled && changedElement.indexOf('T') != -1) { // <=> a experimental file has been opened
+												estimD1D2Rs(findDiodes());
+										}
+										}, false);
+		}
+	}
+	if (numberSupport) {
+		id = ['Iph','T','n1','n2','Rs'];
+		for (var i = 0; i < id.length; i++) {
+			var el = document.getElementById(id[i]);
+			el.addEventListener('blur',function(e){
+											var element = e.target;
+											changeStep(element);
+										}, false);
+		}
+	}
+	id = ['minVolt','maxVolt','stepVolt'];
+	for (var i = 0; i < id.length; i++) {
+		var el = document.getElementById(id[i]);
+		el.addEventListener('change',function(e){
+										checkVoltageAndCalc();
+									}, false);
+	}
+	id = ['singleDiode','doubleDiode','parallel','series'];
+	for (var i = 0; i < id.length; i++) {
+		var el = document.getElementById(id[i]);
+		el.addEventListener('change',function(e){
+										changeModel();
+									}, false);
+	}
+	id = ['linear','log'];
+	for (var i = 0; i < id.length; i++) {
+		var el = document.getElementById(id[i]);
+		el.addEventListener('change',function(e){
+										calcIV(true);
+									}, false);
+	}
+
+	var holder = document.getElementById('graph');
+
+	holder.ondragenter = holder.ondragover = function (event) {
+		event.preventDefault();
+		holder.className = 'hover';
+	}
+	
+	holder.ondragleave = function (event) {
+		event.preventDefault();
+		holder.className = '';
+	}
+	
+	holder.ondrop =	function (e) {
+									e.preventDefault();
+									processFiles(e.dataTransfer.files);
+									holder.className = '';
+								}
+								// alert(1E400);
+								// alert(0 * Math.pow((1 + 80* 8.98846567431158e+307),-1));
 }
 
 function checkVoltageAndCalc () {
@@ -61,7 +174,60 @@ function checkVoltageAndCalc () {
 	calcIV(true);
 }
 
-function adjustRange(elementToChange,changedElement) {
+function log10(val) {
+  return Math.log(val) / Math.log(10);
+}
+
+function remDecimals(model,number) {
+	var nbDecimals = nbAfterDot (model);
+	return Math.round(number * Math.pow(10,nbDecimals)) * Math.pow(10,-nbDecimals);
+}
+
+function nbDecimals(number) {
+	var i = -1;
+	while (number != 0) {
+		i++;
+		number = Math.round(1e8*(number - Math.floor(number)))*1e-7;
+	}
+	
+return i;
+}
+
+function nbAfterDot(number) {
+	var n = number.toString().indexOf('.');
+	if (n == -1) {return 0}
+		else {
+			var i = 0;
+			while (number.charAt(n + 1 + i) != '' && isFinite(number.charAt(n + 1 + i))) {
+				i++;
+			}
+		}
+	return i;
+}
+
+// returns the min value of an array
+function min(array) {
+	var min;
+	for (var i = 0; i < array.length; i++) {
+		if (!min || array[i] < min) {
+		min = array[i];
+		};
+	};
+	return min;
+}
+
+// returns the max value of an array
+function max(array) {
+	var max;
+	for (var i = 0; i < array.length; i++) {
+		if (!max || array[i] > max) {
+		max = array[i];
+		};
+	};
+	return max;
+};
+
+function adjustRangebac(elementToChange,changedElement) {
 	var formObject = document.forms['parameters'];
 	var slider = formObject.elements[elementToChange], number = formObject.elements[changedElement];
 	if (slider.className == 'linearScaleSlider') {
@@ -90,93 +256,131 @@ function adjustRange(elementToChange,changedElement) {
 		}
 }
 
-function log10(val) {
-  return Math.log(val) / Math.log(10);
+function adjustRange(element,isSlider) {
+	
+	if (isSlider) {
+		var slider = element,
+			number = document.getElementById(element.id.replace('slider',''));
+	}	else {
+			var slider = document.getElementById('slider'+element.id),
+				number = element;
+		}
+	var rangeChanged = false;
+	
+	if (slider.className == 'linearScaleSlider') {
+		if (parseFloat(number.value) >= parseFloat(slider.max)) {
+			slider.max = remDecimals (number.value, 1.6 * number.value);
+			slider.min = remDecimals (number.value, 0.4 * number.value);
+			rangeChanged = true;
+		} else {
+			if (parseFloat(number.value) <= parseFloat(slider.min)) {
+				slider.min = remDecimals (number.value, 0.4 * number.value);
+				slider.max = remDecimals (number.value, 1.6 * number.value);
+				rangeChanged = true;
+			}
+		}
+		while (2 * slider.step >= (slider.max - slider.min)) {
+			slider.max = 2 * slider.step + slider.max;
+		}
+	} 	else { //when scale is Log
+			if (parseFloat(number.value) >= Math.pow(10,parseFloat(slider.max))) {
+				slider.max = Math.round(log10(number.value) + 3);
+				slider.min = Math.round(log10(number.value) - 3);
+				rangeChanged = true;
+			} 	else {
+					if (parseFloat(number.value) <= Math.pow(10,parseFloat(slider.min))) {
+						slider.min = Math.round(log10(number.value) - 3);
+						slider.max = Math.round(log10(number.value) + 3);
+						rangeChanged = true;
+					}
+				}
+		}
+		return rangeChanged;
 }
 
-function remDecimals(model,number) {
-	var nbDecimals = nbAfterDot (model);
-	return Math.round(number * Math.pow(10,nbDecimals)) * Math.pow(10,-nbDecimals);
-}
-
-function nbDecimals(number) {
-	var i = -1;
-	while (number != 0) {
-		i++;
-		number = Math.round(1e8*(number - Math.floor(number)))*1e-7;
+function changeStep(element) {
+	var slider = document.getElementById('slider'+element.id),
+		val = element.value;
+	
+	if (element.className.indexOf('LogScale') == -1){ //Linear Scale
+		element.value = parseFloat(val);//for Chrome
+		var newStep = Math.pow(10,-1 * nbAfterDot(val));
+		//alert(newStep);
+		element.step = newStep;
 	}
 	
-return i;
+	slider.step = newStep;
 }
 
-function nbAfterDot(number) {
-	var n = number.toString().indexOf('.');
-	if (n == -1) {return 0} else {
-		return number.toString().slice(n+1,number.length).length;
-		}
-}
-
-// returns the min value of an array
-function min(array) {
-	var min;
-	for (var i = 0; i < array.length; i++) {
-		if (!min || array[i] < min) {
-		min = array[i];
-		};
-	};
-	return min;
-}
-
-// returns the max value of an array
-function max(array) {
-	var max;
-	for (var i = 0; i < array.length; i++) {
-		if (!max || array[i] > max) {
-		max = array[i];
-		};
-	};
-	return max;
-};
-
-function changeStep(event,number) {
-	var targetID = event.currentTarget.id;
-	var sliderID = 'slider'+targetID;
-	var lastChar = number.length-1;
-	if (number.charAt(lastChar) == '.') {
-		document.getElementById(targetID).value = number.slice(0,lastChar);
-	};
-	var newStep = Math.pow(10,-1 * nbAfterDot (number));
-	if (rangeSupport) {
-		document.getElementById(sliderID).step = document.getElementById(targetID).step = newStep;
-	}
-}
-
-function SyncSlidernBox(changedElement,elementToChange,recalculate) {
-	if (rangeSupport) {
-		var sliderChanged = true;
-		var formObject = document.forms['currentCalculation'];
-		var element1 = formObject.elements[elementToChange], element2 = formObject.elements[changedElement];
-		if (changedElement.indexOf('slider') == -1) {
-			sliderChanged = false;
-			adjustRange (elementToChange, changedElement);
-			}
-			
-		if (element2.className == 'LogScale' || element1.className == 'LogScale'){
-			if (sliderChanged) {
-				element1.value = Math.pow(10, element2.value).toExponential(2);
+function SyncSlidernBox(element,recalculate) {
+	//alert("caller is " + arguments.callee.caller.toString().slice(0,arguments.callee.caller.toString().indexOf('{')));
+	//log.innerHTML += [element.id,recalculate]+'<br>';
+	
+	if (element.id.indexOf('slider') == -1) {//box changed
+		var sliderChanged = false;
+		
+		var elToSync = document.getElementById('slider'+element.id);
+		//round
+		// var val = parseFloat(element.value),
+			// oOO = orderOfMagn(val);
+		// if (element.className.indexOf('LogScale') != -1){element.step = oOO / 100;}
+		// var	precision = Math.round(-log10(element.step / oOO) + 1);
+		// if (!isFinite(precision)) {precision = 3};
+		// val = parseFloat(val.toPrecision(precision));
+		
+		if (adjustRange(element,false)) {var time = 100} else {var time = 0}
+		setTimeout(function(){// setTimeOut needed for Opera, otherwise value is not updated when range input's max and min modified
+			if (element.className.indexOf('LogScale') != -1){//Are we dealing with a Log Scale?
+				elToSync.value = log10(element.value);
+				//element.value = val.toExponential(precision - 1);
 			} 	else {
-					element1.value = log10(element2.value);
+				elToSync.value = element.value;
 				}
-		} 	else {
-				element1.value = element2.value;
-			}
-	}
-		if (recalculate) {
-			calcIV(true);
-			if (!document.getElementById('clear').disabled && changedElement.indexOf('T') != -1) { // <=> a experimental file has been opened
-				estimD1D2Rs(findDiodes());
-			}
+		},time);
+	} 	else {//slider changed
+			var sliderChanged = true,
+				elToSync = document.getElementById(element.id.replace('slider',''));
+			if (element.className.indexOf('LogScale') == -1){//Linear Scale?
+				elToSync.value = element.value;
+			}	else {
+					elToSync.value = Math.pow(10, element.value).toExponential(2);
+				}
+		}		
+	// alert(recalculate);
+	if (recalculate) {
+		calcIV(true);
+		if (!document.getElementById('clear').disabled && element.id.indexOf('T') != -1) { // <=> T has been changed and a experimental file is opened
+			estimD1D2Rs(findDiodes());
 		}
+	}
+}
+
+function SyncSlidernBoxbac(changedElement,elementToChange,recalculate) {
+	var sliderChanged = true,
+		formObject = document.forms['currentCalculation'],
+		element1 = formObject.elements[elementToChange],
+		element2 = formObject.elements[changedElement];
+	if (changedElement.indexOf('slider') == -1) {
+		sliderChanged = false;
+		adjustRange (elementToChange, changedElement);
+		}
+		
+	if (element2.className == 'LogScale' || element1.className == 'LogScale'){
+		if (sliderChanged) {
+			element1.value = Math.pow(10, element2.value).toExponential(2);
+		} 	else {
+				element1.value = log10(element2.value);
+			}
+	} 	else {
+			element1.value = element2.value;
+		}
+
+	if (recalculate) {
+		calcIV(true);
+		if (!document.getElementById('clear').disabled && changedElement.indexOf('T') != -1) { // <=> a experimental file has been opened
+			estimD1D2Rs(findDiodes());
+		}
+	}
 }
 
 //Calculate Machine Epsilon
@@ -185,16 +389,32 @@ var mchEps;
 function changeModel() {
 	if (document.getElementById('parallel').checked) {
 		disableAndCalc(['Rp2','sliderRp2']);
+		document.getElementById('Rp2label').style = 'color:grey';
 		enableAndCalc(['n2','slidern2','Is2','sliderIs2','series','parallel'])
+		document.getElementById('n2label').style = 'color:black';
+		document.getElementById('Is2label').style = 'color:black';
+		document.getElementById('seriesLabel').style = 'color:black';
+		document.getElementById('parallelLabel').style = 'color:black';
 	}
 	if (document.getElementById('singleDiode').checked) {
 		document.getElementById('series').checked = false;
 		document.getElementById('parallel').checked = true;
 		disableAndCalc(['n2','slidern2','Is2','sliderIs2','Rp2','sliderRp2','series','parallel']);
+		document.getElementById('Rp2label').style = 'color:grey';
+		document.getElementById('n2label').style = 'color:grey';
+		document.getElementById('Is2label').style = 'color:grey';
+		document.getElementById('seriesLabel').style = 'color:grey';
+		document.getElementById('parallelLabel').style = 'color:grey';
 	}
 	if (document.getElementById('series').checked) {
 		enableAndCalc(['n2','slidern2','Is2','sliderIs2','Rp2','sliderRp2','series','parallel'])
-	}	
+		document.getElementById('Rp2label').style = 'color:black';
+	}
+	
+	calcIV(true);
+	if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
+		estimD1D2Rs(findDiodes());
+	}
 }
 
 function disableAndCalc(arrayOfId) {
@@ -203,11 +423,7 @@ function disableAndCalc(arrayOfId) {
 		if (e) { //this is in case slider was removed because not supported by browser
 			e.disabled = true;
 		}
-	}
-	calcIV(true);
-	if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
-		estimD1D2Rs(findDiodes());
-	}
+	}	
 }
 
 function enableAndCalc(arrayOfId) {
@@ -218,14 +434,11 @@ function enableAndCalc(arrayOfId) {
 			e.disabled = false;
 		}
 	}
-	calcIV(true);
-	if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
-		estimD1D2Rs(findDiodes());
-	}
 }
 
 // elementary charge and Boltzmann constant
-var q = 1.60217653E-19, k = 1.3806488E-23;
+var q = 1.60217653E-19,
+	k = 1.3806488E-23;
 
 //Functions that calculate the current at a given voltage
 //double diode (in parallel) model
@@ -299,7 +512,7 @@ function calcIV(plot) {
 		T			= parseFloat(document.getElementById('T').value),
 		n1 			= parseFloat(document.getElementById('n1').value),
 		Is1 		= parseFloat(document.getElementById('Is1').value);
-		
+		//log.innerHTML += T+' K calc<br>';
 	if (document.getElementById('singleDiode').checked) {var n2 = 1,Is2 = 0, Rp2;}
 		else {
 			var n2 	= parseFloat(document.getElementById('n2').value),
@@ -388,11 +601,11 @@ function calcIV(plot) {
 }
 
 function processFiles(files) {
+	
 	var file = files[0],
 		fileName, defaultT,
 		reader = new FileReader();
-		
-	reader.onload = function (e) {
+		reader.onload = function (e) {
 		// When this event fires, the data is ready.
 		
 		//Guess T from file name
@@ -402,10 +615,11 @@ function processFiles(files) {
 		if (isNaN(fileName)) {defaultT = 298} else {defaultT = fileName;}
 		
 		var T = prompt('Temperature? (K)',defaultT);
-		if (!isNaN(T) && T > 0) {
+		if (isFinite(T) && T > 0) {
 			document.getElementById('T').value = T;
-			document.getElementById('sliderT').value = T;
-			
+			if (rangeSupport) {
+				document.getElementById('sliderT').value = T;
+			}
 			dataArray = [];
 			modifDataArray = [];
 	
@@ -439,6 +653,7 @@ function clearData() {
 	document.getElementById('varParams').style.visibility = 'hidden';
 	document.getElementById('threshold').style.visibility = 'hidden';
 	document.getElementById('thresholdLabel').style.visibility = 'hidden';
+	log.innerHTML = '';
 }
 
 function stringToArray(data) {

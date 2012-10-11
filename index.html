@@ -23,81 +23,81 @@
 	<div id='outer'>
 		<div id='left'>
 			<form name='parameters' action='#' id='currentCalculation'>
-				<label class='form' for='Volt'>V<sub>i</sub> (V)</label>
-				<input class='linearScaleBox' id='minVolt' type='number' name='minVolt' step='0.01' value=-1.4 onChange=checkVoltageAndCalc()><br>
-				<label class='form' for='Volt'>V<sub>f</sub> (V)</label>
-				<input class='linearScaleBox' id='maxVolt' type='number' name='maxVolt' step='0.01' value=1.4 onChange=checkVoltageAndCalc()><br>
-				<label class='form' for='Volt'>&Delta;V (mV)</label>
-				<input class='linearScaleBox' id='stepVolt' type='number' name='stepVolt' min='0.01' step='5' value=25 onChange=checkVoltageAndCalc()><br>
+				<label class='form' for='minVolt'>V<sub>i</sub> (V)</label>
+				<input class='linearScaleBox' id='minVolt' type='number' name='minVolt' step=0.01 value=-1.4><br>
+				<label class='form' for='maxVolt'>V<sub>f</sub> (V)</label>
+				<input class='linearScaleBox' id='maxVolt' type='number' name='maxVolt' step=0.01 value=1.4><br>
+				<label class='form' for='stepVolt'>&Delta;V (mV)</label>
+				<input class='linearScaleBox' id='stepVolt' type='number' name='stepVolt' min=0.01 step=5 value=25><br>
 				<br>
-				<label class='form' for='Ampere'>I<sub>ph</sub> (mA)</label>
+				<label class='form' for='Iph'>I<sub>ph</sub> (mA)</label>
 				<!-- Slider for Iph -->
-				<input id='sliderIph' name='IphSlider' class='linearScaleSlider' type='range' min=0 max=1 step='0.01' value=0 onMouseUp=adjustRange('IphSlider','Iph') onChange=SyncSlidernBox('IphSlider','Iph',true)>
+				<input id='sliderIph' name='IphSlider' class='linearScaleSlider' type='range' min=0 max=1 step=0.01 value=0>
 				<!-- Text box for Iph -->
-				<input id='Iph' name='Iph' class='linearScaleBox' type='number' min='0' step='0.001' value=0 onBlur='changeStep(event,this.value)' onChange=SyncSlidernBox('Iph','IphSlider',true)><br>
-				<label class='form' for='Kelvin'>T (K)</label>
+				<input id='Iph' name='Iph' class='linearScaleBox' type='number' min=0 step=0.001 value=0><br>
+				<label class='form' for='T'>T (K)</label>
 				<!-- Slider for T -->
-				<input id='sliderT' name='TSlider' class='linearScaleSlider' type='range' min=200 max=400 value=298 onMouseUp=adjustRange('TSlider','T') onChange=SyncSlidernBox('TSlider','T',true)>
+				<input id='sliderT' name='TSlider' class='linearScaleSlider' type='range' min=200 max=400 step=1 value=298>
 				<!-- Text box for T -->
-				<input id='T' class='linearScaleBox' type='number' name='T' min=1 value=298 onBlur='changeStep(event,this.value)' onChange=SyncSlidernBox('T','TSlider',true)><br>
+				<input id='T' class='linearScaleBox' type='number' name='T' min=1 value=298 step=1><br>
 				<br>
-				<label class='form' >n<sub>1</sub></label>
+				<label class='form' for='n1'>n<sub>1</sub></label>
 				<!-- Slider for n1 -->
-				<input id='slidern1' name='n1Slider' class='linearScaleSlider' type='range' min=0 max=10 step=0.01 value=3 onMouseUp=adjustRange('n1Slider','n1') onChange=SyncSlidernBox('n1Slider','n1',true)>
+				<input id='slidern1' name='n1Slider' class='linearScaleSlider' type='range' min=0 max=10 step=0.01 value=3>
 				<!-- Text box for n1 -->
-				<input id='n1' class='linearScaleBox' type='number' min='0' step='0.01' name='n1' value=3 onBlur='changeStep(event,this.value)' onChange=SyncSlidernBox('n1','n1Slider',true)><br>
-				<label class='form' >n<sub>2</sub></label>
+				<input id='n1' class='linearScaleBox' type='number' min=0 step=0.01 name='n1' value=3><br>
+				<label class='form' for='n2' id='n2label'>n<sub>2</sub></label>
 				<!-- Slider for n2 -->
-				<input id='slidern2' name='n2Slider' class='linearScaleSlider' type='range' min=0 max=10 step=0.01 value=1 onMouseUp=adjustRange('n2Slider','n2') onChange=SyncSlidernBox('n2Slider','n2',true)>
+				<input id='slidern2' name='n2Slider' class='linearScaleSlider' type='range' min=0 max=10 step=0.01 value=1>
 				<!-- Text box for n2 -->
-				<input id='n2' class='linearScaleBox' type='number' min='0' step='0.01' name='n2' value=1 onBlur='changeStep(event,this.value)' onChange=SyncSlidernBox('n2','n2Slider',true)><br>
+				<input id='n2' class='linearScaleBox' type='number' min=0 step=0.01 name='n2' value=1><br>
 				<br>
-				<label class='form'  for='Ampere'>Is<sub>1</sub> (A)</label>
+				<label class='form' for='Is1'>Is<sub>1</sub> (A)</label>
 				<!-- Slider for Is1 -->
-				<input name='Is1slider' id='sliderIs1' class='LogScale' type='range' min=-10 max=1 step=0.1 value=-8 onMouseUp=adjustRange('Is1slider','Is1') onChange=SyncSlidernBox('Is1slider','Is1',true)>
+				<input name='Is1slider' id='sliderIs1' class='LogScale' type='range' min=-10 max=0 step=0.1 value=-8>
 				<!-- Text box for Is1 -->
-				<input type='number' class='LogScaleBox' id='Is1' name='Is1' min=0 value=1e-8 step=1e-10 onChange=SyncSlidernBox('Is1','Is1slider',true)><br>
-				<label class='form' for='Ampere'>Is<sub>2</sub> (A)</label>
+				<input type='number' class='LogScaleBox' id='Is1' name='Is1' min=0 value=1e-8 step=1e-10><br>
+				<label class='form' for='Is2' id='Is2label'>Is<sub>2</sub> (A)</label>
 				<!-- Slider for Is2 -->
-				<input name='Is2slider' id='sliderIs2' class='LogScale' type='range' min=-19 max=10 step=0.1 value=-16 onMouseUp=adjustRange('Is2slider','Is2') onChange=SyncSlidernBox('Is2slider','Is2',true)>
+				<input name='Is2slider' id='sliderIs2' class='LogScale' type='range' min=-19 max=0 step=0.1 value=-16>
 				<!-- Text box for Is2 -->
-				<input type='number' class='LogScaleBox' id='Is2' name='Is2' min=0 value=1e-16 step=1e-18 onChange=SyncSlidernBox('Is2','Is2slider',true)><br>
+				<input type='number' class='LogScaleBox' id='Is2' name='Is2' min=0 value=1e-16 step=1e-18><br>
 				<br>
-				<label class='form' for='Ohm'>R<sub>p1</sub> (&Omega;)</label>
+				<label class='form' for='Rp'>R<sub>p1</sub> (&Omega;)</label>
 				<!-- Slider for Rp -->
-				<input name='Rpslider' id='sliderRp' class='LogScale' type='range' min=3 max=9 step=0.1 value=5 onMouseUp=adjustRange('Rpslider','Rp') onChange=SyncSlidernBox('Rpslider','Rp',true)>
+				<input name='Rpslider' id='sliderRp' class='LogScale' type='range' min=3 max=9 step=0.1 value=5>
 				<!-- Text box for Rp -->
-				<input type='number' class='LogScaleBox' id='Rp' name='Rp' min=1 value=1e5 step=1e3 onChange=SyncSlidernBox('Rp','Rpslider',true)><br>
-				<label class='form' for='Ohm'>R<sub>p2</sub> (&Omega;)</label>
+				<input type='number' class='LogScaleBox' id='Rp' name='Rp' min=1 value=1e5 step=1e3><br>
+				<label class='form' for='Rp2' id='Rp2label' style='color:grey'>R<sub>p2</sub> (&Omega;)</label>
 				<!-- Slider for Rp2 -->
-				<input name='Rp2slider' id='sliderRp2' class='LogScale' type='range' min=3 max=9 step=0.1 value=4 disabled='disabled' onMouseUp=adjustRange('Rp2slider','Rp2') onChange=SyncSlidernBox('Rp2slider','Rp2',true)>
+				<input name='Rp2slider' id='sliderRp2' class='LogScale' type='range' min=3 max=9 step=0.1 value=4 disabled='disabled'>
 				<!-- Text box for Rp2 -->
-				<input type='number' class='LogScaleBox' id='Rp2' name='Rp2' min=1 value=1e4 disabled='disabled' onChange=SyncSlidernBox('Rp2','Rp2slider',true)><br>
+				<input type='number' class='LogScaleBox' id='Rp2' name='Rp2' min=1 value=1e4 step=1e2 disabled='disabled'><br>
 				<br>
-				<label class='form' for='Ohm'>R<sub>s</sub> (&Omega;)</label>
+				<label class='form' for='Rs'>R<sub>s</sub> (&Omega;)</label>
 				<!-- Slider for Rs -->
-				<input id='sliderRs' name='RsSlider' class='linearScaleSlider' type='range' min=0 max=10 step=0.01 value=1.5 onMouseUp=adjustRange('RsSlider','Rs') onChange=SyncSlidernBox('RsSlider','Rs',true)>
+				<input id='sliderRs' name='RsSlider' class='linearScaleSlider' type='range' min=0 max=10 step=0.01 value=1.5>
 				<!-- Text box for Rs -->
-				<input id='Rs' class='linearScaleBox' type='number' min=0 step=0.01 name='Rs' value=1.5 onBlur='changeStep(event,this.value)' onChange=SyncSlidernBox('Rs','RsSlider',true)><br>
+				<input id='Rs' class='linearScaleBox' type='number' min=0 step=0.01 name='Rs' value=1.5><br>
 				<br>
-				<input type='radio' name='nbDiodes' id='singleDiode' onChange=changeModel()><label for='singleDiode'>Single Diode</label><br>
-				<input type='radio' name='nbDiodes' id='doubleDiode' checked='checked' onChange=changeModel()><label for='doubleDiode'>Double Diode</label>
+				<input type='radio' name='nbDiodes' id='singleDiode'><label for='singleDiode'>Single Diode</label><br>
+				<input type='radio' name='nbDiodes' id='doubleDiode' checked='checked'><label for='doubleDiode'>Double Diode</label>
 				<br><br>
-				<input type='radio' name='model' id='parallel' checked='checked' onChange=onChange=changeModel()><label for='parallel'>Parallel</label><br>
-				<input type='radio' name='model' id='series' onChange=onChange=changeModel()><label for='series'>Series</label>
+				<input type='radio' name='model' id='parallel' checked='checked'><label for='parallel' id='parallelLabel'>Parallel</label><br>
+				<input type='radio' name='model' id='series'><label for='series' id='seriesLabel'>Series</label>
 			</form>
 		</div>
 		<div id='centrecontent'>
 			<form name='graph' id='graphParam' action='#'>
 				Scale type: 
-				<input type='radio' name='scale' id='linear' onChange=calcIV(true)><label for='linear'>Linear</label>
-				<input type='radio' name='scale' id='log' checked='checked' onChange=calcIV(true)><label for='log'>Logarithmic</label>
+				<input type='radio' name='scale' id='linear'><label for='linear'>Linear</label>
+				<input type='radio' name='scale' id='log' checked='checked'><label for='log'>Logarithmic</label>
 			</form>
-			<canvas id='graph' width='550' height='400'>[No canvas support. Consider upgrade your browser to Opera or Chrome. Or at least Firefox or Internet Explorer 9]</canvas>
+			<canvas id='graph' width='550' height='400' dropzone="link string:text/html file:image/png">[No canvas support. Consider upgrade your browser to Opera or Chrome. Or at least Firefox or Internet Explorer 9]</canvas>
 			<canvas id='fitProgress' width='550' height='400' style='display:none;'></canvas>
 			<div id='rightCol'>
 				<form id='localFile'>
-					<input id='fileInput' type='file' value='Clear' onchange='processFiles(this.files)'><br>
+					<input id='fileInput' type='file' onchange='processFiles(this.files)'><br>
 					<input id='clear' type='button' value='Clear' disabled='disabled' onclick='clearData()'>
 				</form>
 			</div>
@@ -111,17 +111,17 @@
 				<button id='updateParams' type='button' style='visibility:hidden' onclick='useEstimParam()'>Use these parameters</button><br>
 				<button id='varParams' type='button' style='visibility:hidden' onclick='startPauseVary()'>Minimize S</button>
 				<label id='thresholdLabel' for='threshold' style='visibility:hidden'> Threshold: |dS| < </label>
-				<input id='threshold' class='LogScaleBox' type='number' value=1e-9 step=9 min=0 style='visibility:hidden'>
+				<input id='threshold' class='LogScaleBox' type='number' value=1e-9 step=1e-9 min=0 style='visibility:hidden'>
+				
 				<div id='logDiv'></div>
 			</div>
-			
 		</div>
 		<div id='clearfooter'></div><!-- to clear footer -->
 	</div> <!-- end outer div -->
 	<footer>
 		<address>
-			<a href='mailto:boris.morel@outlook.com' rel='author'>Contact</a> | 
-			<a href='http://be.linkedin.com/in/borismorel' hreflang='en' rel='author' target='_blank'>linkedin.com/in/borismorel</a>
+			<a class='white' href='mailto:boris.morel@outlook.com' rel='author'>Contact</a> | 
+			<a class='white' href='http://be.linkedin.com/in/borismorel' hreflang='en' rel='author' target='_blank'>linkedin.com/in/borismorel</a>
 		</address>
 	</footer>
 	<header>
