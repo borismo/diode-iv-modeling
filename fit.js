@@ -51,7 +51,7 @@ function removeIrp(plot) {
 		array = modifDataArray[0],
 		IV, newArray = [];
 
-	if (button.value == 'Hide Irp') {
+	if (button.value === 'Hide Irp') {
 		var sign = -1;
 		button.value = 'Show Irp';
 	}	else {
@@ -76,7 +76,7 @@ function removeNonLinCurr(CalculsqResSum,plot) {
 		newArray1 = [],
 		newArray2 = [],
 		button = document.getElementById('removeNonLinCurr');
-	if (button.value == 'Remove non-linear reverse current') {
+	if (button.value === 'Remove non-linear reverse current') {
 		var sign = -1;
 		button.value = 'Add back non-linear reverse current';
 	}
@@ -165,11 +165,11 @@ function calcSqResSum() {
 			dIdn2 = q * (Rs * calcI - x) / (Math.pow(n2,2) * k * T * (1 + Rs / Rp + q * Is1 * Rs * exp1 / (n1 * k * T)) / (Is2 * exp2) + n2 * Rs * q);
 			dSdn2 += 2 * r * dIdn2 / Math.abs(data);
 			
-			dIdIs1 = (exp1 - 1) / (1 + q * Is1 * Rs * exp1 / (n1 * k * T)+ q * Is2 * Rs * exp2 / (n2 * k * T) + Rs / Rp);
+			dIdIs1 = (exp1 - 1) / (1 + q * Is1 * Rs * exp1 / (n1 * k * T) + q * Is2 * Rs * exp2 / (n2 * k * T) + Rs / Rp);
 			//dIdIs1 = (exp1 - 1) / (1 + q * Is1 * Rs * exp1 / (n1 * k * T) + Rs / Rp);
 			dSdIs1 += 2 * r * dIdIs1 / Math.abs(data);
 			
-			dIdIs2 = (exp2 - 1) / (1 + q * Is1 * Rs * exp1 / (n1 * k * T)+ q * Is2 * Rs * exp2 / (n2 * k * T) + Rs / Rp);
+			dIdIs2 = (exp2 - 1) / (1 + q * Is1 * Rs * exp1 / (n1 * k * T) + q * Is2 * Rs * exp2 / (n2 * k * T) + Rs / Rp);
 			dSdIs2 += 2 * r * dIdIs2 / Math.abs(data);
 			
 			dIdRp = (calcI * Rs - x) / (Math.pow(Rp,2) * (1 + q * Is1 * Rs * exp1 / (n1 * k * T) + q * Is2 * Rs * exp2 / (n2 * k * T) + Rs / Rp));
@@ -262,7 +262,7 @@ function findDiodesbac(array) {//argument 'array' must be d[ln(I)]/dV
 
 function findDiodesbac() {
 	
-	var	IprShowed = document.getElementById('removeIrp').value == 'Hide Irp',
+	var	IprShowed = document.getElementById('removeIrp').value === 'Hide Irp',
 		nonLinearShuntCurrRemoved = document.getElementById('removeNonLinCurr').value == 'Add back non-linear reverse current';
 	
 	
@@ -321,7 +321,7 @@ function findDiodesbac() {
 function findDiodesbac2() {
 	
 	var	IprShowed = document.getElementById('removeIrp').value == 'Hide Irp',
-		nonLinearShuntCurrRemoved = document.getElementById('removeNonLinCurr').value == 'Add back non-linear reverse current';
+		nonLinearShuntCurrRemoved = document.getElementById('removeNonLinCurr').value === 'Add back non-linear reverse current';
 	
 		if (IprShowed) {removeIrp(false);} // diode parameters better evaluated when Rp = infinity
 		if (!nonLinearShuntCurrRemoved) {removeNonLinCurr(false,false);}
@@ -401,7 +401,7 @@ function findDiodesbac2() {
 
 function findDiodes() {
 	
-	var	IprShowed = document.getElementById('removeIrp').value == 'Hide Irp',
+	var	IprShowed = document.getElementById('removeIrp').value === 'Hide Irp',
 		nonLinearShuntCurrRemoved = document.getElementById('removeNonLinCurr').value === 'Add back non-linear reverse current';
 	
 		if (IprShowed) {removeIrp(false);} // diode parameters better evaluated when Rp = infinity
@@ -478,6 +478,8 @@ function findDiodes() {
 		j++;
 	} while (iMax != iMin && j < 10 && !fluctIn2ndHalf)
 	
+	if(!iMaxMax) {return 'noDiode';}
+	
 	i = iMax = iMaxMax;
 	dLn = array[i][1];
 	do {
@@ -515,6 +517,11 @@ function estimD1D2Rs(maxmin) {
 	var	dualDiode = !document.getElementById('singleDiode').checked,
 	
 		array = noIrpNoSCLCarray;
+	
+	if (maxmin === 'noDiode') {
+		document.getElementById('paramEstim').innerHTML = 'Sorry, the diodes could not be found';
+		return ;
+	}
 	
 	var	D1dLn = maxmin[1],
 		D2dLn = maxmin[0],

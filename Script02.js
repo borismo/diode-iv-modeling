@@ -34,7 +34,7 @@ window.onload = function () {
 	//Check if HTML5 range type input is supported
 	var i = document.createElement('input');
 	i.setAttribute('type', 'range');
-	if (i.type == 'text') {
+	if (i.type === 'text') {
 		rangeSupport = false;
 		unsupported.push('Range input type');
 		
@@ -49,24 +49,26 @@ window.onload = function () {
 	//Check if HTML5 number type input is supported
 	i = document.createElement('input');
 	i.setAttribute('type', 'number');
-	if (i.type == 'text') {
+	if (i.type === 'text') {
 		numberSupport = false;
 		unsupported.push('Number input type');
 	} else {numberSupport = true;}
 	
 	//Check if File API supported
-	if (typeof FileReader == 'undefined') {
+	if (typeof FileReader === 'undefined') {
 		unsupported.push('File API');
 		document.getElementById('fileInput').disabled = true;
-		var string = 'import your own data and ';
+		var string = 'import your own data and ',
+			fileAPI = false;
 	} 	else {
-			string = '';
+			var string = '',
+				fileAPI = true;
 			log.innerHTML += 'You can import your own IV data (text file with 2 tab-separated columns) with the button above or simply by dragging and dropping the file onto the graph.<br>'
 		}
 	
 	if (unsupported.length) {
-		var str = unsupported.join(', ');
-		string = '';
+		var str = unsupported.join(', '),
+			string = '';
 		log.innerHTML += "Your browser doesn't seem to support some of the HTML5 standards ("+str+"). Upgrade to <a class='orange' href='http://www.opera.com/browser/' target='_blank'>Opera</a> or <a class='orange' href='https://www.google.com/intl/en/chrome/browser/' target='_blank'>Chrome</a> to be able to "+string+"play with the parameters more easily. But you're still welcome to have a look around.<br>If your administrator doesn't allow you to change your browser, you can head to the portable versions (<a class='orange' href='http://www.opera-usb.com/operausben.htm' target='_blank'>Opera@USB</a> and <a class='orange' href='http://portableapps.com/apps/internet/google_chrome_portable' target='_blank'>Chrome Portable</a>).<br>";
 	}
 	
@@ -150,23 +152,33 @@ window.onload = function () {
 									}, false);
 	}
 	
-	var holder = document.getElementById('graph');
+	if (fileAPI) {
+	
+		var el = document.getElementById('fileInput');
+		el.addEventListener('change',	function(e){
+											var files = e.target.files;
+											if (files.length > 1) {processMultFiles(files);}
+												else {processFiles(files);}
+										}, false);
 
-	holder.ondragenter = holder.ondragover = function (event) {
-		event.preventDefault();
-		holder.className = 'hover';
+		var holder = document.getElementById('graph');
+
+		holder.ondragenter = holder.ondragover = function (event) {
+			event.preventDefault();
+			holder.className = 'hover';
+		}
+		
+		holder.ondragleave = function (event) {
+			event.preventDefault();
+			holder.className = '';
+		}
+		
+		holder.ondrop =	function (e) {
+										e.preventDefault();
+										processFiles(e.dataTransfer.files);
+										holder.className = '';
+									}
 	}
-	
-	holder.ondragleave = function (event) {
-		event.preventDefault();
-		holder.className = '';
-	}
-	
-	holder.ondrop =	function (e) {
-									e.preventDefault();
-									processFiles(e.dataTransfer.files);
-									holder.className = '';
-								}
 }
 
 function checkVoltageAndCalc () {
@@ -624,8 +636,11 @@ function calcIV(plot) {
 	}
 }
 
-function processFiles(files) {
+function processMultFiles(files) {
 	
+}
+
+function processFiles(files) {
 	var file = files[0],
 		fileName, defaultT,
 		reader = new FileReader();
@@ -633,7 +648,9 @@ function processFiles(files) {
 		// When this event fires, the data is ready.
 		
 		//Guess T from file name
-		fileName = escape(file.name);
+		// fileName = escape(file.name);
+		fileName = file.name;
+		//alert(fileName);
 		while (isNaN(parseFloat(fileName)) && fileName.length > 0) {fileName = fileName.substring(1);}
 		fileName = parseFloat(fileName);
 		if (isNaN(fileName)) {defaultT = 298} else {defaultT = fileName;}
@@ -669,7 +686,9 @@ function clearData() {
 	button = document.getElementById('removeNonLinCurr');
 	button.value = 'Remove non-linear reverse current';
 	button.disabled = true;
-	window.localFile.reset();
+	if (window.localFile /* FF is picky about that: not importing the file through classic 'browse' button result in an error here */) {
+		window.localFile.reset();
+	}
 	Rp = undefined;
 	document.getElementById('squaredResSum').innerHTML = '';
 	document.getElementById('paramEstim').innerHTML = '';
