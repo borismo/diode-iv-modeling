@@ -11,8 +11,11 @@ function machineEpsilon() {
 	};
  
 function syncSlidernboxReCalc(e) {
-	var element = e.target;
+	var element = e.target,
+		id = element.id;
 	SyncSlidernBox(element,true);
+	id = id.replace('slider','');
+	if (!document.getElementById(id+'CheckBox').checked && !document.getElementById('clear').disabled) {estimD1D2Rs(findDiodes());}
 }
 
 function syncSlidernboxNoCalc(e) {
@@ -67,6 +70,8 @@ window.onload = function () {
 		log.innerHTML += "Your browser doesn't seem to support some of the HTML5 standards ("+str+"). Upgrade to <a class='orange' href='http://www.opera.com/browser/' target='_blank'>Opera</a> or <a class='orange' href='https://www.google.com/intl/en/chrome/browser/' target='_blank'>Chrome</a> to be able to "+string+"play with the parameters more easily. But you're still welcome to have a look around.<br>If your administrator doesn't allow you to change your browser, you can head to the portable versions (<a class='orange' href='http://www.opera-usb.com/operausben.htm' target='_blank'>Opera@USB</a> and <a class='orange' href='http://portableapps.com/apps/internet/google_chrome_portable' target='_blank'>Chrome Portable</a>).<br>";
 	}
 	
+	log.innerHTML += "<br><span style='color:cyan'>Tip: </span>Check the box next to a parameter's value to let it vary during optimization. <br>";
+	
 	//Opera fix: nicely rounds initial Is1 and Is2
 	if (numberSupport) {
 		var	id = ['Is1', 'n1', 'n2', 'Is2', 'threshold', 'Rs', 'Rp', 'Rp2'];
@@ -97,9 +102,9 @@ window.onload = function () {
 			var el = document.getElementById(id[i]);
 			el.addEventListener('change',function(e){
 											calcIV(true);
-											if (!document.getElementById('clear').disabled && changedElement.indexOf('T') != -1) { // <=> a experimental file has been opened
+											if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
 												estimD1D2Rs(findDiodes());
-										}
+											}
 										}, false);
 		}
 	}
@@ -134,7 +139,17 @@ window.onload = function () {
 										calcIV(true);
 									}, false);
 	}
-
+	
+	id = ['TCheckBox','IphCheckBox','n1CheckBox','n2CheckBox','Is1CheckBox','Is2CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox'];
+	for (var i = 0; i < id.length; i++) {
+		var el = document.getElementById(id[i]);
+		el.addEventListener('change',function(e){
+										if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
+											estimD1D2Rs(findDiodes());
+										}
+									}, false);
+	}
+	
 	var holder = document.getElementById('graph');
 
 	holder.ondragenter = holder.ondragover = function (event) {
@@ -152,8 +167,6 @@ window.onload = function () {
 									processFiles(e.dataTransfer.files);
 									holder.className = '';
 								}
-								// alert(1E400);
-								// alert(0 * Math.pow((1 + 80* 8.98846567431158e+307),-1));
 }
 
 function checkVoltageAndCalc () {
@@ -390,25 +403,36 @@ function changeModel() {
 	if (document.getElementById('parallel').checked) {
 		disableAndCalc(['Rp2','sliderRp2']);
 		document.getElementById('Rp2label').style = 'color:grey';
-		enableAndCalc(['n2','slidern2','Is2','sliderIs2','series','parallel'])
+		var array = ['n2','slidern2','Is2','sliderIs2','series','parallel'];
+		if (!document.getElementById('clear').disabled) {
+			array = array.concat(['n1CheckBox','Is1CheckBox','Rp1CheckBox','RsCheckBox','n2CheckBox','Is2CheckBox']);
+		}
+		enableAndCalc(array)
 		document.getElementById('n2label').style = 'color:black';
 		document.getElementById('Is2label').style = 'color:black';
 		document.getElementById('seriesLabel').style = 'color:black';
 		document.getElementById('parallelLabel').style = 'color:black';
+		document.getElementById('varParams').disabled = false;
 	}
 	if (document.getElementById('singleDiode').checked) {
 		document.getElementById('series').checked = false;
 		document.getElementById('parallel').checked = true;
-		disableAndCalc(['n2','slidern2','Is2','sliderIs2','Rp2','sliderRp2','series','parallel']);
+		disableAndCalc(['n2','slidern2','Is2','sliderIs2','Rp2','sliderRp2','series','parallel','n2CheckBox','Is2CheckBox']);
+		if (!document.getElementById('clear').disabled) {
+			enableAndCalc(['n1CheckBox','Is1CheckBox','Rp1CheckBox','RsCheckBox']);
+		}
 		document.getElementById('Rp2label').style = 'color:grey';
 		document.getElementById('n2label').style = 'color:grey';
 		document.getElementById('Is2label').style = 'color:grey';
 		document.getElementById('seriesLabel').style = 'color:grey';
 		document.getElementById('parallelLabel').style = 'color:grey';
+		document.getElementById('varParams').disabled = false;
 	}
 	if (document.getElementById('series').checked) {
 		enableAndCalc(['n2','slidern2','Is2','sliderIs2','Rp2','sliderRp2','series','parallel'])
+		disableAndCalc(['IphCheckBox','TCheckBox','n1CheckBox','Is1CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox','n2CheckBox','Is2CheckBox']);
 		document.getElementById('Rp2label').style = 'color:black';
+		document.getElementById('varParams').disabled = true;
 	}
 	
 	calcIV(true);
@@ -427,7 +451,7 @@ function disableAndCalc(arrayOfId) {
 }
 
 function enableAndCalc(arrayOfId) {
-	if (document.getElementById('series').checked) {arrayOfId.concat(['Rp2','sliderRp2']);}
+	//if (document.getElementById('series').checked) {arrayOfId.concat(['Rp2','sliderRp2']);}
 	for (var i = 0; i < arrayOfId.length; i++) {
 		var e = document.getElementById(arrayOfId[i]);
 		if (e) { //this is in case slider was removed because not supported by browser
@@ -654,6 +678,8 @@ function clearData() {
 	document.getElementById('threshold').style.visibility = 'hidden';
 	document.getElementById('thresholdLabel').style.visibility = 'hidden';
 	log.innerHTML = '';
+	
+	disableAndCalc(['IphCheckBox','TCheckBox','n1CheckBox','Is1CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox','n2CheckBox','Is2CheckBox']);
 }
 
 function stringToArray(data) {
@@ -679,9 +705,17 @@ function stringToArray(data) {
 	document.getElementById('threshold').style.visibility = 'visible';
 	document.getElementById('thresholdLabel').style.visibility = 'visible';
 	
+	if (!document.getElementById('series').checked) {
+		array = ['n1CheckBox','Is1CheckBox','Rp1CheckBox','RsCheckBox'];
+		if (!document.getElementById('singleDiode').checked) {
+			array = array.concat(['n2CheckBox','Is2CheckBox']);
+		}
+		enableAndCalc(array);		
+	}
+	
 	dataStyle = [['verticalCross','purple','Data']];
 	
-	document.getElementById('minVolt').value = dataArray[0][0];// - document.getElementById('stepVolt').value / 1000;
+	document.getElementById('minVolt').value = dataArray[0][0];
 	document.getElementById('maxVolt').value = dataArray[dataArray.length - 1][0] + document.getElementById('stepVolt').value / 1000;
 	calcIV(false);
 

@@ -39,7 +39,7 @@ a.white {
 }
 
 label.form{
-	width:70px;
+	width:60px;
     float:left;
  }
  
@@ -69,16 +69,18 @@ label.form{
 
 #outer {
 	min-height:100%;/*for mozilla as IE treats height as min-height anyway*/
-	margin-left:340px;
+	margin-left:350px;
 
 	border-left:3px solid orange;
 	border-right:3px solid orange;
 	margin-bottom:-32px;
 	color: #000000;
 }
+
 * html #outer {
 	height:100%;
 }
+
 header {
 	position:absolute;
 	top:0;
@@ -97,7 +99,7 @@ header {
 	position:relative;/*ie needs this to show float */
 	width:330px;
 	float:left;
-	margin-left:-339px;/*must be 1px less than width otherwise won't push footer down */
+	margin-left:-349px;/*must be 1px less than width otherwise won't push footer down */
 	left:-1px;/* line things up exactly*/
 	padding:62px 0 0 10px;	
 }

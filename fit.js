@@ -183,8 +183,8 @@ function calcSqResSum() {
 		}
 		delS = [dSdn1,dSdIs1,dSdRp,dSdRs];
 		if (!single) {
-			//delS.splice(1,0,dSdn2);
-			delS.splice(2,0,dSdIs2);
+			delS.splice(1,0,dSdn2);
+			delS.splice(3,0,dSdIs2);
 		}
 		//alert(delS);
 		//log.innerHTML = log.innerHTML+x+' '+calcI+' '+data+' '+r+'<br>';
@@ -525,25 +525,61 @@ function estimD1D2Rs(maxmin) {
 		n2 = A / D2dLn;
 		
 		if (dualDiode) {
-			var n1 = A / D1dLn,
-				n = n2 = 1,
-				Is1 = VIAtd1[1] / (Math.exp((VIAtd1[0] * A / n1) - 1));
-		} 	else {
+			if (document.getElementById('n2CheckBox').checked) {
+				var n = n2,
+					n2Fixed = '';				
+			}	else {
+				var	n = n2 = parseFloat(document.getElementById('n2').value),
+					n2Fixed = ' <span style="color:grey">(fixed)</span>';
+					}
+			if (document.getElementById('n1CheckBox').checked) {
+				var n1 = A / D1dLn,
+					n1Fixed = '';
+			}	else {
+					var n1 = parseFloat(document.getElementById('n1').value),
+						n1Fixed = ' <span style="color:grey">(fixed)</span>';
+				}
+			if (document.getElementById('Is1CheckBox').checked) {
+				var	Is1 = VIAtd1[1] / (Math.exp((VIAtd1[0] * A / n1) - 1)),
+					Is1Fixed = '';
+			} 	else {
+					var Is1 = parseFloat(document.getElementById('Is1').value),
+						Is1Fixed = ' <span style="color:grey">(fixed)</span>';
+				}
+		} 	else {//single diode
 				var n = n2;
 			}
-	var	Rs = estimRs(array,T,n);
-		
-	var	Is2 = VIAtd2[1] / (Math.exp((VIAtd2[0] - VIAtd2[1] * Rs) * A / n2) - 1);
+	if (document.getElementById('RsCheckBox').checked) {
+		var	Rs = estimRs(array,T,n),
+			RsFixed = '';
+	} 	else {
+		var	Rs = parseFloat(document.getElementById('Rs').value),
+			RsFixed = ' <span style="color:grey">(fixed)</span>';
+		}
+	if (document.getElementById('Is2CheckBox').checked) {
+		var	Is2 = VIAtd2[1] / (Math.exp((VIAtd2[0] - VIAtd2[1] * Rs) * A / n2) - 1),
+			Is2Fixed = '';
+	} 	else {
+		var	Is2 = parseFloat(document.getElementById('Is2').value),
+			Is2Fixed = ' <span style="color:grey">(fixed)</span>';
+		}	
+	if (document.getElementById('Rp1CheckBox').checked) {
+		var	newRp = Rp,
+			RpFixed = '';
+	} 	else {
+		var	newRp = parseFloat(document.getElementById('Rp').value),
+			RpFixed = ' <span style="color:grey">(fixed)</span>';
+		}
 	if (dualDiode) {
 		document.getElementById('paramEstim').innerHTML = 	'<b>Estimated parameters<br>(parallel dual-diode model):</b>'
-															+'<br>n<sub>1</sub> = '+n1.toPrecision(2)
-															+'<br>n<sub>2</sub> = '+n2.toPrecision(2)+' <span style="color:grey">(fixed)</span>'
-															+'<br>Is<sub>1</sub> = '+Is1.toExponential(2)
-															+'<br>Is<sub>2</sub> = '+Is2.toExponential(2)
-															+'<br>R<sub>p</sub> = '+Rp.toPrecision(3)
-															+'<br>R<sub>s</sub> = '+Rs.toPrecision(2);
+															+'<br>n<sub>1</sub> = '+n1.toPrecision(2)+n1Fixed
+															+'<br>n<sub>2</sub> = '+n2.toPrecision(2)+n2Fixed
+															+'<br>Is<sub>1</sub> = '+Is1.toExponential(2)+Is1Fixed
+															+'<br>Is<sub>2</sub> = '+Is2.toExponential(2)+Is2Fixed
+															+'<br>R<sub>p</sub> = '+newRp.toPrecision(3)+RpFixed
+															+'<br>R<sub>s</sub> = '+Rs.toPrecision(2)+RsFixed;
 		document.getElementById('updateParams').style.visibility = 'visible';
-		estimParams = [['n1',n1],['Is1',Is1],['Is2',Is2],['Rp',Rp],['Rs',Rs]];
+		estimParams = [['n1',n1],['n2',n2],['Is1',Is1],['Is2',Is2],['Rp',newRp],['Rs',Rs]];
 	} 	else {
 			document.getElementById('paramEstim').innerHTML = 	'<b>Estimated parameters<br>(Single-diode model):</b>'
 																+'<br>n = '+n2.toPrecision(2)
@@ -551,7 +587,7 @@ function estimD1D2Rs(maxmin) {
 																+'<br>R<sub>p</sub> = '+Rp.toPrecision(3)
 																+'<br>R<sub>s</sub> = '+Rs.toPrecision(2)
 			document.getElementById('updateParams').style.visibility = 'visible';
-			estimParams = [['n1',n2],['Is1',Is2],['Rp',Rp],['Rs',Rs]];
+			estimParams = [['n1',n2],['Is1',Is2],['Rp',newRp],['Rs',Rs]];
 		}
 }
 
@@ -624,15 +660,22 @@ function vary() {
 	var param, oOO,id,string = '', l=log, eps = mchEps;
 	
 	var n1 	= parseFloat(document.getElementById('n1').value),
+		n1vary = document.getElementById('n1CheckBox').checked,
 		Is1	= parseFloat(document.getElementById('Is1').value),
+		Is1vary = document.getElementById('Is1CheckBox').checked,
 		Rp = parseFloat(document.getElementById('Rp').value),
-		Rs = parseFloat(document.getElementById('Rs').value);
+		Rpvary = document.getElementById('Rp1CheckBox').checked,
+		Rs = parseFloat(document.getElementById('Rs').value),
+		Rsvary = document.getElementById('RsCheckBox').checked;
 		
-		params = [['n1',n1,eps,0,100],['Is1',Is1,eps,0,1],['Rp',Rp,eps,0,'Infinity'],['Rs',Rs,eps,0,'+Infinity']]; // single diode model
+		params = [['n1',n1,eps,n1vary],['Is1',Is1,eps,Is1vary],['Rp',Rp,eps,Rpvary],['Rs',Rs,eps,Rsvary]]; // single diode model
 		
 	if (!document.getElementById('singleDiode').checked) { //dual diode model
-		var Is2 = parseFloat(document.getElementById('Is2').value);
-		params = [['n1',n1,eps,0,100],['Is1',Is1,eps,0,1],['Is2',Is2,eps,0,1],['Rp',Rp,eps,0,'+Infinity'],['Rs',Rs,eps,0,'+Infinity']];
+		var Is2 = parseFloat(document.getElementById('Is2').value),
+			Is2vary = document.getElementById('Is2CheckBox').checked,
+			n2 = parseFloat(document.getElementById('n2').value),
+			n2vary = document.getElementById('n2CheckBox').checked;
+		params = [['n1',n1,eps,n1vary],['n2',n2,eps,n2vary],['Is1',Is1,eps,Is1vary],['Is2',Is2,eps,Is2vary],['Rp',Rp,eps,Rpvary],['Rs',Rs,eps,Rsvary]];
 	}
 	if (document.getElementById('series').checked) {//dual, series diode model
 		var Rp2 = parseFloat(document.getElementById('Is2').value),
@@ -670,40 +713,41 @@ function vary() {
 			var newPars = [];
 			//del = delS;
 			for (var i = 0; i < params.length; i++) {//for each parameter
-				
-				del = delS[i];
-				sign = del / Math.abs(del);
-				
-				newPar = params[i][1] * Math.pow((1 + params[i][2]),-sign); //update parameter
-				
-				updateParams([[params[i][0],newPar]],false,false);
-				
-				j = 0;
-				while (del / Math.abs(del) != delS[i] / Math.abs(delS[i]) && j < 100 && newPar !== 0) {
-					params[i][2] /= 2;
+				if (params[i][3]){// is this parameter allowed to vary?
+					del = delS[i];
+					sign = del / Math.abs(del);
+					
 					newPar = params[i][1] * Math.pow((1 + params[i][2]),-sign); //update parameter
-					updateParams([[params[i][0],newPar]],false,false);
-					//l.innerHTML = l.innerHTML+params[i][0]+' ### '+j+' '+params[i][2]+' '+del+'<br>';
-					j++;
-				}
-				//l.innerHTML = l.innerHTML+params[i][0]+' '+j+' '+del+'<br>';
-				
-				var jj = 0;
-				while (del / Math.abs(del) == delS[i] / Math.abs(delS[i]) && jj < 100 && newPar !== 0) {
-					params[i][2] *= 2;
-					newPar = params[i][1] * Math.pow((1 + params[i][2]),-sign); //update parameter
+					
 					updateParams([[params[i][0],newPar]],false,false);
 					
-					//l.innerHTML = l.innerHTML+params[i][0]+' *** '+jj+' '+newPar+' '+params[i][2]+sign+' '+' <br>';
-					jj++;
-				}
-				params[i][1] = newPar;
-				newPars.push(newPar);
-				
-				if (isNaN(newPar)) {
-					stop += true;
-					log.innerHTML += 'Sorry, '+params[i][0]+' is NaN ('+newPar+').<br>';
-					l.scrollTop = l.scrollHeight;
+					j = 0;
+					while (del / Math.abs(del) != delS[i] / Math.abs(delS[i]) && j < 100 && newPar !== 0) {
+						params[i][2] /= 2;
+						newPar = params[i][1] * Math.pow((1 + params[i][2]),-sign); //update parameter
+						updateParams([[params[i][0],newPar]],false,false);
+						//l.innerHTML = l.innerHTML+params[i][0]+' ### '+j+' '+params[i][2]+' '+del+'<br>';
+						j++;
+					}
+					//l.innerHTML = l.innerHTML+params[i][0]+' '+j+' '+del+'<br>';
+					
+					var jj = 0;
+					while (del / Math.abs(del) == delS[i] / Math.abs(delS[i]) && jj < 100 && newPar !== 0) {
+						params[i][2] *= 2;
+						newPar = params[i][1] * Math.pow((1 + params[i][2]),-sign); //update parameter
+						updateParams([[params[i][0],newPar]],false,false);
+						
+						//l.innerHTML = l.innerHTML+params[i][0]+' *** '+jj+' '+newPar+' '+params[i][2]+sign+' '+' <br>';
+						jj++;
+					}
+					params[i][1] = newPar;
+					newPars.push(newPar);
+					
+					if (isNaN(newPar)) {
+						stop += true;
+						log.innerHTML += 'Sorry, '+params[i][0]+' is NaN ('+newPar+').<br>';
+						l.scrollTop = l.scrollHeight;
+					}
 				}
 			}
 			
