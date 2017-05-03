@@ -3,18 +3,18 @@ var main = function () {
 
   let log;
 
-  //Calculate Machine Epsilon
-  let mchEps;
+  let mchEps = machineEpsilon();
 
   function machineEpsilon() {
-    var temp1, temp2;
+    // Calculate Machine Epsilon
+    let temp1, temp2;
     temp1 = 1.0;
     do {
-      mchEps = temp1;
       temp1 /= 2;
       temp2 = 1.0 + temp1;
-      } while (temp2 > 1.0);
-    }
+    } while (temp2 > 1.0);
+    return temp1;
+  }
   
   function syncSlidernboxReCalc(e) {
     var element = e.target,
@@ -32,7 +32,7 @@ var main = function () {
   $(function () {
     log = document.getElementById('logDiv');
     log.innerHTML = '';
-    machineEpsilon();
+  
     calcIV(true);
     
     var unsupported = [];
@@ -635,7 +635,7 @@ var main = function () {
       var T = prompt('Temperature? (K)',defaultT);
       if (isFinite(T) && T > 0) {
         document.getElementById('T').value = T;
-          document.getElementById('sliderT').value = T;
+        document.getElementById('sliderT').value = T;
         dataArray = [];
         modifDataArray = [];
     
