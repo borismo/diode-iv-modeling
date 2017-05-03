@@ -3,7 +3,10 @@ var main = function () {
   
   var rangeSupport = true;
 
-  var log;
+  let log;
+
+  //Calculate Machine Epsilon
+  let mchEps;
 
   function machineEpsilon() {
     var temp1, temp2;
@@ -13,7 +16,7 @@ var main = function () {
       temp1 /= 2;
       temp2 = 1.0 + temp1;
       } while (temp2 > 1.0);
-    };
+    }
   
   function syncSlidernboxReCalc(e) {
     var element = e.target,
@@ -413,9 +416,6 @@ var main = function () {
     }
   }
 
-  //Calculate Machine Epsilon
-  var mchEps;
-
   function changeModel() {
     if (document.getElementById('parallel').checked) {
       disableAndCalc(['Rp2','sliderRp2']);
@@ -617,15 +617,15 @@ var main = function () {
     const modelCases = {
       parallel: {
         arrayCalc: [arrayVI,arrayVId1,arrayVId2,arrayVIrp1],
-        plotStyle: [['line','black'],['line','orange'],['line','orange'],['line','purple']]
+        plotStyle: [['line','black','I'],['line','orange','Id1'],['line','orange','Id2'],['line','purple','Irp']]
       },
       single: {
         arrayCalc: [arrayVI,arrayVId1,arrayVIrp1],
-        plotStyle: [['line','black'],['line','orange'],['line','purple']]
+        plotStyle: [['line','black','I'],['line','orange','Id1'],['line','purple','Irp']]
       },
       series: {
         arrayCalc: [arrayVI,arrayVId1,arrayVId2,arrayVIrp1,arrayVIrp1],
-        plotStyle: [['line','black'],['line','orange'],['line','orange'],['line','purple'],['line','purple']]
+        plotStyle: [['line','black','I'],['line','orange','Id1'],['line','orange','Id2'],['line','purple','Irp1'],['line','purple','Irp2']]
       }
     };
 
