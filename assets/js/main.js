@@ -37,14 +37,6 @@ var main = function () {
     
     var unsupported = [];
     
-    //Check if HTML5 number type input is supported
-    i = document.createElement('input');
-    i.setAttribute('type', 'number');
-    if (i.type === 'text') {
-      var numberSupport = false;
-      unsupported.push('Number input type');
-    } else {var numberSupport = true;}
-    
     //Check if File API supported
     if (typeof FileReader === 'undefined') {
       unsupported.push('File API');
@@ -66,7 +58,6 @@ var main = function () {
     log.innerHTML += "<br><span style='color:cyan'>Tip: </span>Check the box next to a parameter's value to let it vary during optimization. <br>";
     
     //Opera fix: nicely rounds initial Is1 and Is2
-    if (numberSupport) {
       var	id = ['Is1', 'n1', 'n2', 'Is2', 'threshold', 'Rs', 'Rp', 'Rp2'];
       for (var i = 0; i < 8; i++) {
         var element = document.getElementById(id[i]),
@@ -74,7 +65,6 @@ var main = function () {
           oOO = orderOfMagn(nb);
         element.value = nb.toPrecision(Math.round(-log10(element.step / oOO) + 1));
       }
-    }
 
     id = ['Iph','T','n1','n2','Is1','Is2','Rp','Rp2','Rs','sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
     for (var i = 0; i < id.length; i++) {
@@ -90,7 +80,6 @@ var main = function () {
                     }, false);
     }
 
-    if (numberSupport) {
       id = ['Iph','T','n1','n2','Rs'];
       for (var i = 0; i < id.length; i++) {
         var el = document.getElementById(id[i]);
@@ -99,7 +88,7 @@ var main = function () {
                         changeStep(element);
                       }, false);
       }
-    }
+
     id = ['minVolt','maxVolt','stepVolt'];
     for (var i = 0; i < id.length; i++) {
       var el = document.getElementById(id[i]);
