@@ -28,7 +28,7 @@ var main = function () {
     SyncSlidernBox(element,false);
   }
   
-  window.onload = function () {
+  $(function () {
     log = document.getElementById('logDiv');
     log.innerHTML = '';
     machineEpsilon();
@@ -184,7 +184,7 @@ var main = function () {
                       holder.className = '';
                     }
     }
-  }
+  });
 
   function checkVoltageAndCalc () {
 
