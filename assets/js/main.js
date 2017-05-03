@@ -1,7 +1,5 @@
 var main = function () {
   'use strict';
-  
-  var rangeSupport = true;
 
   let log;
 
@@ -38,21 +36,6 @@ var main = function () {
     calcIV(true);
     
     var unsupported = [];
-    
-    //Check if HTML5 range type input is supported
-    var i = document.createElement('input');
-    i.setAttribute('type', 'range');
-    if (i.type === 'text') {
-      rangeSupport = false;
-      unsupported.push('Range input type');
-      
-      var c = document.getElementById('currentCalculation').getElementsByTagName('input'),array = [];
-        for (var i = 0; i < c.length; i++) {
-          if (c[i].id.search('slider') != -1) {
-            c[i].parentNode.removeChild(c[i]);
-          }
-        }
-    }
     
     //Check if HTML5 number type input is supported
     i = document.createElement('input');
@@ -92,32 +75,21 @@ var main = function () {
         element.value = nb.toPrecision(Math.round(-log10(element.step / oOO) + 1));
       }
     }
-    if (rangeSupport) {
-      id = ['Iph','T','n1','n2','Is1','Is2','Rp','Rp2','Rs','sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
-      for (var i = 0; i < id.length; i++) {
-        var el = document.getElementById(id[i]);
-        el.addEventListener('change',syncSlidernboxReCalc, false);
-      }
-      id = ['sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
-      for (var i = 0; i < id.length; i++) {
-        var el = document.getElementById(id[i]);
-        el.addEventListener('mouseup',function(e){
-                        var element = e.target;
-                        adjustRange(element,true);
-                      }, false);
-      }
-    } else {
-      id = ['Iph','T','n1','n2','Is1','Is2','Rp','Rp2','Rs'];
-      for (var i = 0; i < id.length; i++) {
-        var el = document.getElementById(id[i]);
-        el.addEventListener('change',function(e){
-                        calcIV(true);
-                        if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
-                          estimD1D2Rs(findDiodes());
-                        }
-                      }, false);
-      }
+
+    id = ['Iph','T','n1','n2','Is1','Is2','Rp','Rp2','Rs','sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
+    for (var i = 0; i < id.length; i++) {
+      var el = document.getElementById(id[i]);
+      el.addEventListener('change',syncSlidernboxReCalc, false);
     }
+    id = ['sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
+    for (var i = 0; i < id.length; i++) {
+      var el = document.getElementById(id[i]);
+      el.addEventListener('mouseup',function(e){
+                      var element = e.target;
+                      adjustRange(element,true);
+                    }, false);
+    }
+
     if (numberSupport) {
       id = ['Iph','T','n1','n2','Rs'];
       for (var i = 0; i < id.length; i++) {
@@ -663,9 +635,7 @@ var main = function () {
       var T = prompt('Temperature? (K)',defaultT);
       if (isFinite(T) && T > 0) {
         document.getElementById('T').value = T;
-        if (rangeSupport) {
           document.getElementById('sliderT').value = T;
-        }
         dataArray = [];
         modifDataArray = [];
     
