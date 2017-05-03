@@ -1,4 +1,4 @@
-var main = function () {
+let main = function () {
   'use strict';
 
   let log;
@@ -16,12 +16,14 @@ var main = function () {
     return temp1;
   }
   
-  function syncSlidernboxReCalc(e) {
-    var element = e.target,
+  function syncSlidernboxReCalc(event) {
+    let element = this,
       id = element.id;
-    SyncSlidernBox(element,true);
-    id = id.replace('slider','');
-    if (!document.getElementById(id+'CheckBox').checked && !document.getElementById('clear').disabled) {estimD1D2Rs(findDiodes());}
+    SyncSlidernBox(element, true);
+    id = id.replace('slider', '');
+    if (!document.getElementById(id + 'CheckBox').checked && !document.getElementById('clear').disabled) {
+      estimD1D2Rs(findDiodes());
+    }
   }
 
   function syncSlidernboxNoCalc(e) {
@@ -66,11 +68,21 @@ var main = function () {
         element.value = nb.toPrecision(Math.round(-log10(element.step / oOO) + 1));
       }
 
-    id = ['Iph','T','n1','n2','Is1','Is2','Rp','Rp2','Rs','sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
+    // Bind events
+    $('input[type=range].syncme')
+      .on('input', inputEvent)
+      .mouseup(rangeInputMouseUp);
+
+    $('input[type=number].syncme')
+      .change(inputEvent)
+      .keydown(numberInputKeyDown);
+
+/*    id = ['Iph','T','n1','n2','Is1','Is2','Rp','Rp2','Rs','sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
     for (var i = 0; i < id.length; i++) {
       var el = document.getElementById(id[i]);
       el.addEventListener('change',syncSlidernboxReCalc, false);
     }
+
     id = ['sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
     for (var i = 0; i < id.length; i++) {
       var el = document.getElementById(id[i]);
@@ -78,7 +90,11 @@ var main = function () {
                       var element = e.target;
                       adjustRange(element,true);
                     }, false);
-    }
+    }*/
+
+ /*   const eventData = {isRangeInput: true};
+    $('input[type=range]')
+      .change(eventData, adjustRange);*/
 
       id = ['Iph','T','n1','n2','Rs'];
       for (var i = 0; i < id.length; i++) {
@@ -149,6 +165,48 @@ var main = function () {
                     }
     }
   });
+
+    function rangeInputMouseUp (event) {
+      adjustRange(this);
+    }
+
+    function numberInputKeyDown (event){
+      const keyCode = event.which,
+        upOrDownArrowKeyDown = keyCode == 38 || keyCode == 40;
+
+      if (upOrDownArrowKeyDown) {
+        syncInputs(this);
+        adjustRange(this);
+        calcIV(true);
+      }
+    }
+
+    function syncInputs (sourceElem) {
+      const $sourceInput = $(sourceElem),
+        isSourceRange = $sourceInput.attr('type') === 'range',
+        sourceValue = $sourceInput.val();
+      
+      // Sync companion input
+      const $targetInput = $sourceInput
+          .siblings('input.syncme'),
+        isScaleLog = $targetInput.hasClass('logscale');
+      
+      if(isScaleLog) {
+        const targetValue = (isSourceRange)? Math.pow(10, sourceValue).toExponential(2) : log10(sourceValue);
+        $targetInput.val(targetValue);
+      } else {
+        // Linear scale
+        $targetInput.val(sourceValue);
+      }
+    }
+
+    function inputEvent(event){
+      if ($(this).attr('type') === 'number'){
+        adjustRange(this);
+      }
+      syncInputs (this);
+      calcIV(true);
+    }
 
   function checkVoltageAndCalc () {
 
@@ -250,9 +308,10 @@ var main = function () {
       }
   }
 
-  function adjustRange(element,isSlider) {
-    
-    if (isSlider) {
+  function adjustRange(element) {
+    const inputType = $(element).attr('type');
+
+    if (inputType === 'range') {
       var slider = element,
         number = document.getElementById(element.id.replace('slider',''));
     }	else {
@@ -261,14 +320,16 @@ var main = function () {
       }
     var rangeChanged = false;
     
-    if (slider.className == 'linearScaleSlider') {
+    if ($(slider).hasClass('linearscale')) {
       if (parseFloat(number.value) >= parseFloat(slider.max)) {
         slider.max = remDecimals (number.value, 1.6 * number.value);
+        slider.value = number.value;
         slider.min = remDecimals (number.value, 0.4 * number.value);
         rangeChanged = true;
       } else {
         if (parseFloat(number.value) <= parseFloat(slider.min)) {
           slider.min = remDecimals (number.value, 0.4 * number.value);
+          slider.value = number.value;
           slider.max = remDecimals (number.value, 1.6 * number.value);
           rangeChanged = true;
         }
@@ -279,16 +340,20 @@ var main = function () {
     } 	else { //when scale is Log
         if (parseFloat(number.value) >= Math.pow(10,parseFloat(slider.max))) {
           slider.max = Math.round(log10(number.value) + 3);
+        slider.value = number.value;
           slider.min = Math.round(log10(number.value) - 3);
           rangeChanged = true;
         } 	else {
             if (parseFloat(number.value) <= Math.pow(10,parseFloat(slider.min))) {
               slider.min = Math.round(log10(number.value) - 3);
+        slider.value = number.value;
               slider.max = Math.round(log10(number.value) + 3);
               rangeChanged = true;
             }
           }
       }
+      console.log(rangeChanged);
+      console.log({min: slider.min, max: slider.max});
       return rangeChanged;
   }
 
@@ -340,7 +405,7 @@ var main = function () {
             elToSync.value = Math.pow(10, element.value).toExponential(2);
           }
       }		
-    // alert(recalculate);
+
     if (recalculate) {
       calcIV(true);
       if (!document.getElementById('clear').disabled && element.id.indexOf('T') != -1) { // <=> T has been changed and a experimental file is opened
