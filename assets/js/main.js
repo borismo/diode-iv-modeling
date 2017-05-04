@@ -80,14 +80,10 @@ let main = function () {
 
     $('input[type=number].voltage')
       .change(checkVoltageAndCalc);
+
+    $('input[type=radio].model')
+      .change(changeModel)
       
-    id = ['singleDiode','doubleDiode','parallel','series'];
-    for (var i = 0; i < id.length; i++) {
-      var el = document.getElementById(id[i]);
-      el.addEventListener('change',function(e){
-                      changeModel();
-                    }, false);
-    }
     id = ['linear','log'];
     for (var i = 0; i < id.length; i++) {
       var el = document.getElementById(id[i]);
@@ -411,7 +407,7 @@ let main = function () {
     }
   }
 
-  function changeModel() {
+  function changeModel(event) {
     if (document.getElementById('parallel').checked) {
       disableAndCalc(['Rp2','sliderRp2']);
       document.getElementById('Rp2label').style = 'color:grey';
