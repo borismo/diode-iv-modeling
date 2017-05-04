@@ -3,7 +3,7 @@ html, body {
 	height:100%;
 	padding:0;
 	margin:0;
-	font-family: “Lucida Sans Unicode”, “Lucida Grande”, sans-serif;
+	font-family: ï¿½Lucida Sans Unicodeï¿½, ï¿½Lucida Grandeï¿½, sans-serif;
 	font-size:14px;
 	line-height:110%;
 }
@@ -184,4 +184,15 @@ div#logDiv{
 
 #graphParam {
 	margin-left:50px;
+}
+
+/*The two following rules make sure labels are
+greyed out when matching input is disabled*/
+
+input:disabled+label {
+	color: grey;
+}
+
+input+label {
+    float: left;
 }

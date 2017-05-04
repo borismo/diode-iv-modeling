@@ -243,35 +243,6 @@ let main = function () {
     return max;
   };
 
-  function adjustRangebac(elementToChange,changedElement) {
-    var formObject = document.forms['parameters'];
-    var slider = formObject.elements[elementToChange], number = formObject.elements[changedElement];
-    if (slider.className == 'linearScaleSlider') {
-      if (parseFloat(number.value) >= parseFloat(slider.max)) {
-        slider.max = remDecimals (number.value, 1.6 * number.value);
-        slider.min = remDecimals (number.value, 0.4 * number.value);
-      } else {
-        if (parseFloat(number.value) <= parseFloat(slider.min)) {
-          slider.min = remDecimals (number.value, 0.4 * number.value);
-          slider.max = remDecimals (number.value, 1.6 * number.value);
-        }
-      }
-      while (2 * slider.step >= (slider.max - slider.min)) {
-        slider.max = 2 * slider.step + slider.max;
-      }
-    } 	else { //when scale is Log
-        if (parseFloat(number.value) >= Math.pow(10,parseFloat(slider.max))) {
-          slider.max = Math.round(log10(number.value) + 3);
-          slider.min = Math.round(log10(number.value) - 3);
-        } 	else {
-            if (parseFloat(number.value) <= Math.pow(10,parseFloat(slider.min))) {
-              slider.min = Math.round(log10(number.value) - 3);
-              slider.max = Math.round(log10(number.value) + 3);
-            }
-          }
-      }
-  }
-
   function adjustRange(element) {
     const inputType = $(element).attr('type');
 
@@ -378,47 +349,14 @@ let main = function () {
     }
   }
 
-  function SyncSlidernBoxbac(changedElement,elementToChange,recalculate) {
-    var sliderChanged = true,
-      formObject = document.forms['currentCalculation'],
-      element1 = formObject.elements[elementToChange],
-      element2 = formObject.elements[changedElement];
-    if (changedElement.indexOf('slider') == -1) {
-      sliderChanged = false;
-      adjustRange (elementToChange, changedElement);
-      }
-      
-    if (element2.className == 'LogScale' || element1.className == 'LogScale'){
-      if (sliderChanged) {
-        element1.value = Math.pow(10, element2.value).toExponential(2);
-      } 	else {
-          element1.value = log10(element2.value);
-        }
-    } 	else {
-        element1.value = element2.value;
-      }
-
-    if (recalculate) {
-      calcIV(true);
-      if (!document.getElementById('clear').disabled && changedElement.indexOf('T') != -1) { // <=> a experimental file has been opened
-        estimD1D2Rs(findDiodes());
-      }
-    }
-  }
-
   function changeModel(event) {
     if (document.getElementById('parallel').checked) {
       disableAndCalc(['Rp2','sliderRp2']);
-      document.getElementById('Rp2label').style = 'color:grey';
       var array = ['n2','slidern2','Is2','sliderIs2','series','parallel'];
       if (!document.getElementById('clear').disabled) {
         array = array.concat(['n1CheckBox','Is1CheckBox','Rp1CheckBox','RsCheckBox','n2CheckBox','Is2CheckBox']);
       }
       enableAndCalc(array)
-      document.getElementById('n2label').style = 'color:black';
-      document.getElementById('Is2label').style = 'color:black';
-      document.getElementById('seriesLabel').style = 'color:black';
-      document.getElementById('parallelLabel').style = 'color:black';
       document.getElementById('varParams').disabled = false;
     }
     if (document.getElementById('singleDiode').checked) {
@@ -428,17 +366,11 @@ let main = function () {
       if (!document.getElementById('clear').disabled) {
         enableAndCalc(['n1CheckBox','Is1CheckBox','Rp1CheckBox','RsCheckBox']);
       }
-      document.getElementById('Rp2label').style = 'color:grey';
-      document.getElementById('n2label').style = 'color:grey';
-      document.getElementById('Is2label').style = 'color:grey';
-      document.getElementById('seriesLabel').style = 'color:grey';
-      document.getElementById('parallelLabel').style = 'color:grey';
       document.getElementById('varParams').disabled = false;
     }
     if (document.getElementById('series').checked) {
       enableAndCalc(['n2','slidern2','Is2','sliderIs2','Rp2','sliderRp2','series','parallel'])
       disableAndCalc(['IphCheckBox','TCheckBox','n1CheckBox','Is1CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox','n2CheckBox','Is2CheckBox']);
-      document.getElementById('Rp2label').style = 'color:black';
       document.getElementById('varParams').disabled = true;
     }
     

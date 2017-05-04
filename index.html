@@ -10,7 +10,7 @@
 	<script src="assets/js/fit.js"></script>
 	<script src="assets/js/bobGraph.js"></script>
 
-	<link rel="stylesheet" href="assets/css/style2.css">
+	<link rel="stylesheet" href="assets/css/index.css">
 	<link rel="shortcut icon" href="assets/images/favicon.ico" />
 	<script type="text/javascript">
 		var _gaq = _gaq || [];
@@ -36,80 +36,80 @@
 				<br>
 				<div>
 					<p>
-						<label class="form" for="Iph">I<sub>ph</sub> (mA)</label>
 						<input type="checkbox" id="IphCheckBox" disabled="disabled">
 						<!-- Range input for Iph -->
 						<input type="range" class="linearscale linearScaleSlider syncme" id="sliderIph" name="IphSlider" min=0 max=1 step=0.01 value=0>
 						<!-- Number input for Iph -->
 						<input type="number" class="linearscale linearScaleBox syncme" id="Iph" name="Iph" min=0 step=0.001 value=0>
+						<label class="form" for="Iph">I<sub>ph</sub> (mA)</label>
 					</p>
 					<p>
-						<label class="form" for="T">T (K)</label>
 						<input type="checkbox" id="TCheckBox" disabled="disabled">
 						<!-- Range input for T -->
 						<input type="range" class="linearscale linearScaleSlider syncme" id="sliderT" name="TSlider" min=200 max=400 step=1 value=298>
 						<!-- Number input for T -->
 						<input type="number" class="linearscale linearScaleBox syncme" id="T" name="T" min=1 step=1 value=298>
+						<label class="form" for="T">T (K)</label>
 					</p>
 					<br>
 					<p>
-						<label class="form" for="n1">n<sub>1</sub></label>
 						<input type="checkbox" id="n1CheckBox" checked="checked" disabled="disabled">
 						<!-- Range input for n1 -->
 						<input type="range" class="linearscale linearScaleSlider syncme" id="slidern1" name="n1Slider" min=0 max=10 step=0.01 value=3>
 						<!-- Number input for n1 -->
 						<input type="number" class="linearscale linearScaleBox syncme" id="n1" min=0 step=0.01 name="n1" value=3>
+						<label class="form" for="n1">n<sub>1</sub></label>
 					</p>
 					<p>
-						<label class="form" for="n2" id="n2label">n<sub>2</sub></label>
 						<input type="checkbox" id="n2CheckBox" disabled="disabled">
 						<!-- Range input for n2 -->
 						<input type="range" class="linearscale linearScaleSlider syncme" id="slidern2" name="n2Slider" min=0 max=10 step=0.01 value=1>
 						<!-- Number input for n2 -->
 						<input type="number" class="linearscale linearScaleBox syncme" id="n2" min=0 step=0.01 name="n2" value=1>
+						<label class="form" for="n2" id="n2label">n<sub>2</sub></label>
 					</p>
 					<br>
 					<p>
-						<label class="form" for="Is1">Is<sub>1</sub> (A)</label>
 						<input type="checkbox" id="Is1CheckBox" checked="checked" disabled="disabled">
 						<!-- Range input forIs1 -->
 						<input type="range" class="logscale linearScale syncme" name="Is1slider" id="sliderIs1" min=-10 max=0 step=0.1 value=-8>
 						<!-- Number input for Is1 -->
 						<input type="number" class="logscale linearScaleBox syncme" id="Is1" name="Is1" min=0 value=1e-8 step=1e-10>
+						<label class="form" for="Is1">Is<sub>1</sub> (A)</label>
 					</p>
 					<p>
-						<label class="form" for="Is2" id="Is2label">Is<sub>2</sub> (A)</label>
 						<input type="checkbox" id="Is2CheckBox" checked="checked" disabled="disabled">
 						<!-- Range input forIs2 -->
 						<input type="range" class="logscale linearScale syncme" name="Is2slider" id="sliderIs2" min=-19 max=0 step=0.1 value=-16>
 						<!-- Number input for Is2 -->
 						<input type="number" class="logscale linearScaleBox syncme" id="Is2" name="Is2" min=0 value=1e-16 step=1e-18>
+						<label class="form" for="Is2" id="Is2label">Is<sub>2</sub> (A)</label>
 					</p>
 					<br>
 					<p>
-						<label class="form" for="Rp">R<sub>p1</sub> (&Omega;)</label>
 						<input type="checkbox" id="Rp1CheckBox" checked="checked" disabled="disabled">
 						<!-- Range input forRp -->
 						<input type="range" class="logscale linearScale syncme" name="Rpslider" id="sliderRp" min=3 max=9 step=0.1 value=5>
 						<!-- Number input for Rp -->
 						<input type="number" class="logscale linearScaleBox syncme" id="Rp" name="Rp" min=1 value=1e5 step=1e3>
+						<label class="form" for="Rp">R<sub>p1</sub> (&Omega;)</label>
 					</p>
 					<p>
-						<label class="form" for="Rp2" id="Rp2label" style="color:grey">R<sub>p2</sub> (&Omega;)</label>
 						<input type="checkbox" id="Rp2CheckBox" disabled="disabled">
 						<!-- Range input forRp2 -->
 						<input type="range" class="logscale linearScale syncme" name="Rp2slider" id="sliderRp2" min=3 max=9 step=0.1 value=4 disabled="disabled">
 						<!-- Number input for Rp2 -->
 						<input type="number" class="logscale linearScaleBox syncme" id="Rp2" name="Rp2" min=1 value=1e4 step=1e2 disabled="disabled">
+						<label class="form" for="Rp2" id="Rp2label">R<sub>p2</sub> (&Omega;)</label>
 					</p>
 					<br>
 					<p>
-						<label class="form" for="Rs">R<sub>s</sub> (&Omega;)</label>
 						<input type="checkbox" id="RsCheckBox" checked="checked" disabled="disabled">
 						<!-- Range input forRs -->
 						<input type="range" class="linearscale linearScaleSlider syncme" id="sliderRs" name="RsSlider" min=0 max=10 step=0.01 value=1.5>
 						<!-- Number input for Rs -->
 						<input type="number" class="linearscale linearScaleBox syncme" id="Rs" min=0 step=0.01 name="Rs" value=1.5>
+						<label class="form" for="Rs">R<sub>s</sub> (&Omega;)</label>
 					</p>
 					<br>
 				</div>
