@@ -78,13 +78,9 @@ let main = function () {
       .keydown(numberInputKeyDown)
       .blur(changeStep);
 
-    id = ['minVolt','maxVolt','stepVolt'];
-    for (var i = 0; i < id.length; i++) {
-      var el = document.getElementById(id[i]);
-      el.addEventListener('change',function(e){
-                      checkVoltageAndCalc();
-                    }, false);
-    }
+    $('input[type=number].voltage')
+      .change(checkVoltageAndCalc);
+      
     id = ['singleDiode','doubleDiode','parallel','series'];
     for (var i = 0; i < id.length; i++) {
       var el = document.getElementById(id[i]);
@@ -181,8 +177,8 @@ let main = function () {
       calcIV(true);
     }
 
-  function checkVoltageAndCalc () {
-
+  function checkVoltageAndCalc (event) {
+    
     var minVolt = document.getElementById('minVolt').value,
       maxVolt = document.getElementById('maxVolt').value,
       stepVolt = document.getElementById('stepVolt').value;
