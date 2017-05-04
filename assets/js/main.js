@@ -454,7 +454,7 @@ let main = function () {
       Irp2 = V2 / Rp2;
       Ib = Id2 + Irp2;
       
-      diffI = Ib - Ia;
+      var diffI = Ib - Ia;
       
       if (diffI > 0) {L = V1;}
         else {H = V1;}
