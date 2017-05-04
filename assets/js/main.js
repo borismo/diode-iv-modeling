@@ -325,8 +325,7 @@ let main = function () {
             }
           }
       }
-      console.log(rangeChanged);
-      console.log({min: slider.min, max: slider.max});
+      
       return rangeChanged;
   }
 
