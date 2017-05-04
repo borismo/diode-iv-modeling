@@ -86,10 +86,6 @@ let main = function () {
     
     $('input[type=radio].scale')
       .change(changeScaleType);
-
-    function changeScaleType(event) {
-      calcIV(true);
-    }
     
     id = ['TCheckBox','IphCheckBox','n1CheckBox','n2CheckBox','Is1CheckBox','Is2CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox'];
     for (var i = 0; i < id.length; i++) {
@@ -129,6 +125,10 @@ let main = function () {
                     }
     }
   });
+
+    function changeScaleType(event) {
+      calcIV(true);
+    }
 
     function rangeInputMouseUp (event) {
       adjustRange(this);
