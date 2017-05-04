@@ -75,35 +75,8 @@ let main = function () {
 
     $('input[type=number].syncme')
       .change(inputEvent)
-      .keydown(numberInputKeyDown);
-
-/*    id = ['Iph','T','n1','n2','Is1','Is2','Rp','Rp2','Rs','sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
-    for (var i = 0; i < id.length; i++) {
-      var el = document.getElementById(id[i]);
-      el.addEventListener('change',syncSlidernboxReCalc, false);
-    }
-
-    id = ['sliderIph','sliderT','slidern1','slidern2','sliderIs1','sliderIs2','sliderRp','sliderRp2','sliderRs'];
-    for (var i = 0; i < id.length; i++) {
-      var el = document.getElementById(id[i]);
-      el.addEventListener('mouseup',function(e){
-                      var element = e.target;
-                      adjustRange(element,true);
-                    }, false);
-    }*/
-
- /*   const eventData = {isRangeInput: true};
-    $('input[type=range]')
-      .change(eventData, adjustRange);*/
-
-      id = ['Iph','T','n1','n2','Rs'];
-      for (var i = 0; i < id.length; i++) {
-        var el = document.getElementById(id[i]);
-        el.addEventListener('blur',function(e){
-                        var element = e.target;
-                        changeStep(element);
-                      }, false);
-      }
+      .keydown(numberInputKeyDown)
+      .blur(changeStep);
 
     id = ['minVolt','maxVolt','stepVolt'];
     for (var i = 0; i < id.length; i++) {
@@ -357,7 +330,8 @@ let main = function () {
       return rangeChanged;
   }
 
-  function changeStep(element) {
+  function changeStep(event) {
+    let element = this;
     var slider = document.getElementById('slider'+element.id),
       val = element.value;
     
