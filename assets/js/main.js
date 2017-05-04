@@ -82,14 +82,13 @@ let main = function () {
       .change(checkVoltageAndCalc);
 
     $('input[type=radio].model')
-      .change(changeModel)
-      
-    id = ['linear','log'];
-    for (var i = 0; i < id.length; i++) {
-      var el = document.getElementById(id[i]);
-      el.addEventListener('change',function(e){
-                      calcIV(true);
-                    }, false);
+      .change(changeModel);
+    
+    $('input[type=radio].scale')
+      .change(changeScaleType);
+
+    function changeScaleType(event) {
+      calcIV(true);
     }
     
     id = ['TCheckBox','IphCheckBox','n1CheckBox','n2CheckBox','Is1CheckBox','Is2CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox'];
