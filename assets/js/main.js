@@ -22,7 +22,7 @@ let main = function () {
     SyncSlidernBox(element, true);
     id = id.replace('slider', '');
     if (!document.getElementById(id + 'CheckBox').checked && !document.getElementById('clear').disabled) {
-      estimD1D2Rs(findDiodes());
+      fit.estimD1D2Rs(findDiodes());
     }
   }
 
@@ -92,7 +92,7 @@ let main = function () {
       var el = document.getElementById(id[i]);
       el.addEventListener('change',function(e){
                       if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
-                        estimD1D2Rs(findDiodes());
+                        fit.estimD1D2Rs(findDiodes());
                       }
                     }, false);
     }
@@ -344,7 +344,7 @@ let main = function () {
     if (recalculate) {
       calcIV(true);
       if (!document.getElementById('clear').disabled && element.id.indexOf('T') != -1) { // <=> T has been changed and a experimental file is opened
-        estimD1D2Rs(findDiodes());
+        fit.estimD1D2Rs(findDiodes());
       }
     }
   }
@@ -376,7 +376,7 @@ let main = function () {
     
     calcIV(true);
     if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
-      estimD1D2Rs(findDiodes());
+      fit.estimD1D2Rs(findDiodes());
     }
   }
 
@@ -553,7 +553,7 @@ let main = function () {
 
     if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
       calcSqResSum();
-      //estimD1D2Rs();
+      //fit.estimD1D2Rs();
     }
     if (plot) {
       const scaleIsLinear = document.getElementById('linear').checked,
@@ -668,7 +668,7 @@ let main = function () {
     
     estimRp();
     
-    estimD1D2Rs(findDiodes());
+    fit.estimD1D2Rs(findDiodes());
     calcSqResSum();
     document.getElementById('clear').disabled = false;
     combDataAndCalc(arrayCalc,plotStyle,scale);
