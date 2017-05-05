@@ -3,7 +3,30 @@ let main = function () {
 
   let log;
 
-  let mchEps = machineEpsilon();
+  const mchEps = machineEpsilon();
+
+  let arrayCalc,
+    dataStyle = [],
+    plotStyle = [],
+    reCalcIV = true,
+    scale = undefined,
+    userData = {
+      estimatedParams: [],
+      estimatedParameters: {
+        Rp: undefined
+      },
+      current: {
+        shunt: undefined,
+        nonLinear: undefined,
+        noIrpNoSCLCarray : undefined
+      },
+      dataArray: [],
+      modifDataArray: []
+    };
+
+  // elementary charge and Boltzmann constant
+  const q = 1.60217653E-19,
+    k = 1.3806488E-23;
 
   function machineEpsilon() {
     // Calculate Machine Epsilon
@@ -86,7 +109,16 @@ let main = function () {
     
     $('input[type=radio].scale')
       .change(changeScaleType);
-    
+
+    $('input#removeIrp')
+      .click(removeIrpClicked)
+
+    $('button#updateParams')
+      .click(updateParamsClicked);
+
+    $('button#varParams')
+      .click(fit.startPauseVary);
+
     id = ['TCheckBox','IphCheckBox','n1CheckBox','n2CheckBox','Is1CheckBox','Is2CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox'];
     for (var i = 0; i < id.length; i++) {
       var el = document.getElementById(id[i]);
@@ -145,6 +177,27 @@ let main = function () {
       }
     }
 
+    function removeIrpClicked(event) {
+      let plot = true;
+      fit.removeIrp(userData.modifDataArray, userData.current.shunt, plot);
+    }
+
+    function removeNonLinCurrClicked (event){
+      const CalculsqResSum = true,
+         plot = true
+      fit.removeNonLinCurr(userData, CalculsqResSum, plot);
+    }
+
+    function updateParamsClicked(event) {
+      reCalcIV = false;
+
+      const plot = true,
+        updateRangeInput = true;
+      fit.updateParams(userData.estimatedParams, plot, updateRangeInput);
+
+      reCalcIV = true;
+    }
+
     function syncInputs (sourceElem) {
       const $sourceInput = $(sourceElem),
         isSourceRange = $sourceInput.attr('type') === 'range',
@@ -164,12 +217,15 @@ let main = function () {
       }
     }
 
-    function inputEvent(event){
-      if ($(this).attr('type') === 'number'){
+    function inputEvent(event) {
+      if ($(this).attr('type') === 'number') {
         adjustRange(this);
       }
-      syncInputs (this);
-      calcIV(true);
+      syncInputs(this);
+
+      if (reCalcIV) {
+        calcIV(true);
+      }
     }
 
   function checkVoltageAndCalc (event) {
@@ -399,10 +455,6 @@ let main = function () {
     }
   }
 
-  // elementary charge and Boltzmann constant
-  var q = 1.60217653E-19,
-    k = 1.3806488E-23;
-
   //Functions that calculate the current at a given voltage
   //double diode (in parallel) model
   function Iparallel(V,Iph,prevI,T,n1,n2,Is1,Is2,Rp,Rs) {
@@ -538,28 +590,49 @@ let main = function () {
 
     const modelCases = {
       parallel: {
-        arrayCalc: [arrayVI,arrayVId1,arrayVId2,arrayVIrp1],
-        plotStyle: [['line','black','I'],['line','orange','Id1'],['line','orange','Id2'],['line','purple','Irp']]
+        arrayCalc: [arrayVI, arrayVId1, arrayVId2, arrayVIrp1],
+        plotStyle: [
+          ['line', 'black', 'I'],
+          ['line', 'orange', 'Id1'],
+          ['line', 'orange', 'Id2'],
+          ['line', 'purple', 'Irp']
+        ]
       },
       single: {
-        arrayCalc: [arrayVI,arrayVId1,arrayVIrp1],
-        plotStyle: [['line','black','I'],['line','orange','Id1'],['line','purple','Irp']]
+        arrayCalc: [arrayVI, arrayVId1, arrayVIrp1],
+        plotStyle: [
+          ['line', 'black', 'I'],
+          ['line', 'orange', 'Id1'],
+          ['line', 'purple', 'Irp']
+        ]
       },
       series: {
-        arrayCalc: [arrayVI,arrayVId1,arrayVId2,arrayVIrp1,arrayVIrp1],
-        plotStyle: [['line','black','I'],['line','orange','Id1'],['line','orange','Id2'],['line','purple','Irp1'],['line','purple','Irp2']]
+        arrayCalc: [arrayVI, arrayVId1, arrayVId2, arrayVIrp1, arrayVIrp1],
+        plotStyle: [
+          ['line', 'black', 'I'],
+          ['line', 'orange', 'Id1'],
+          ['line', 'orange', 'Id2'],
+          ['line', 'purple', 'Irp1'],
+          ['line', 'purple', 'Irp2']
+        ]
       }
     };
 
-    if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
-      calcSqResSum();
+    arrayCalc = modelCases[model].arrayCalc;
+    plotStyle = modelCases[model].plotStyle;
+
+    if (!document.getElementById('clear').disabled) {
+      // <=> a experimental file has been opened
+      fit.calcSqResSum(userData.dataArray, arrayCalc);
       //fit.estimD1D2Rs();
     }
+
     if (plot) {
-      const scaleIsLinear = document.getElementById('linear').checked,
-        scale = (scaleIsLinear)? 'linearScale' : 'logScale';
+      const scaleIsLinear = document.getElementById('linear').checked;
+
+      scale = (scaleIsLinear)? 'linearScale' : 'logScale';
         
-      combDataAndCalc(modelCases[model].arrayCalc, modelCases[model].plotStyle, scale);
+      combDataAndCalc(/*arrayCalc, modelCases[model].plotStyle, scale*/);
     }
   }
 
@@ -586,24 +659,20 @@ let main = function () {
       if (isFinite(T) && T > 0) {
         document.getElementById('T').value = T;
         document.getElementById('sliderT').value = T;
-        dataArray = [];
-        modifDataArray = [];
+        userData.dataArray = [];
+        userData.modifDataArray = [];
     
         stringToArray(e.target.result);
       }
     }
     reader.readAsText(file);
   }
-
-  var dataArray = [],
-    modifDataArray = [],
-    dataStyle = [];
     
   function clearData() {
-    dataArray = [];
-    modifDataArray = [];
+    userData.dataArray = [];
+    userData.modifDataArray = [];
     dataStyle = [];
-    combDataAndCalc(arrayCalc,plotStyle,scale);
+    combDataAndCalc(/*arrayCalc,plotStyle, scale*/);
     document.getElementById('clear').disabled = true;
     var button = document.getElementById('removeIrp');
     button.value = 'Hide Irp';
@@ -627,9 +696,9 @@ let main = function () {
   }
 
   function stringToArray(data) {
-    var array = data.split('\n'),
+    let array = data.split('\n'),
       row = [],
-      skipRow;
+      skipRow,
     dataArray = [];
     for (var i = 0; i < array.length; i++) {
       skipRow = false;
@@ -664,19 +733,44 @@ let main = function () {
     calcIV(false);
 
     dataArray = [dataArray];
-    modifDataArray = dataArray;
+
+    userData.dataArray = dataArray;
+    userData.modifDataArray = dataArray;
     
-    estimRp();
+    /**** Estimate parameters ****/
+
+    // Parallel resistance Rp
+    const Rp = fit.estimRp(dataArray);
+    userData.estimatedParameters.Rp = Rp;
+
+    // Calculate Parallel current and non linear reverse current
+    const current = fit.calcIrpAndNonLinRevCurr(dataArray, Rp);
+    userData.current.nonLinear = current.nonLinear;
+    userData.current.shunt = current.shunt;
     
-    fit.estimD1D2Rs(findDiodes());
-    calcSqResSum();
+    const findDiodesResult = fit.findDiodes(userData),
+      estimatedParams = fit.estimD1D2Rs(userData, findDiodesResult);
+
+    userData.estimatedParams = estimatedParams;
+
+    fit.calcSqResSum(userData.dataArray, arrayCalc);
+
     document.getElementById('clear').disabled = false;
-    combDataAndCalc(arrayCalc,plotStyle,scale);
+
+    combDataAndCalc(/*arrayCalc, plotStyle, scale*/);
   }
 
-  function combDataAndCalc(arrayCalc,plotStyle,scale) {
-    drawGraph('graph',modifDataArray.concat(arrayCalc),0,dataStyle.concat(plotStyle),scale,'V (V)','I (A)');
+  function combDataAndCalc(/*arrayCalc, plotStyle, scale*/) {
+    drawGraph('graph', userData.modifDataArray.concat(arrayCalc), 0, dataStyle.concat(plotStyle), scale, 'V (V)', 'I (A)');
     //log.innerHTML = "caller is " + arguments.callee.caller.toString().slice(0,arguments.callee.caller.toString().indexOf('{'));
     //log.scrollTop = log.scrollHeight;
+  }
+
+  return {
+    calcIV: calcIV,
+    combDataAndCalc: combDataAndCalc,
+    k: k,
+    mchEps: mchEps,
+    q: q
   }
 }();

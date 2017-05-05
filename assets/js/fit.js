@@ -1,55 +1,69 @@
 let fit = function () {
   'use strict';
 
-  var Rp,
-    Irp = [],
+  let interval,//Rp,
+    Irp = []/*,
     nonLinCurr = [],
-    shuntCurrent = [];
+    shuntCurrent = [],
+    fileData = {
+      nonLinCurr = [],
+      shuntCurrent = [],
+    }*/;
 
-  function estimRp() {
-
-    var min = +Infinity,
-      slope,
-      xy, x,
+  function estimRp(dataArray) {
+    // Estimate parallel resistance Rp
+    let min = +Infinity,
       array = dataArray[0];
-    for (var i = 0; i < array.length; i++) {
-      xy = array[i];
-      x = xy[0];
-      slope = xy[1] / x;
-      if (slope < min && Math.abs(x) > 0.001) { min = slope; }
-    }
-    Rp = 1 / min;
-    var oOM = orderOfMagn(Rp);
-    var roundedRp = Math.round(Rp * 1000 / oOM) * oOM / 1000;
 
-    calcIrpAndNonLinRevCurr()
+    for (let xy of array) {
+      let x = xy[0],
+        slope = xy[1] / x;
+      if (slope < min && Math.abs(x) > 0.001) {
+        min = slope;
+      }
+    }
+
+    let Rp = 1 / min;
+    // var oOM = orderOfMagn(Rp);
+    //var roundedRp = Math.round(Rp * 1000 / oOM) * oOM / 1000;
+
     return Rp;
   }
 
-  function calcIrpAndNonLinRevCurr() {
+  function calcIrpAndNonLinRevCurr(dataArray, Rp) {
+    let array = dataArray[0],
+      nonLinDirCurr = [],
+      shuntCurrent = [],
+      nonLinCurr = [];
 
-    var array = dataArray[0],
-      Irp, Inl, 	// Inl -> 'nl' = 'Non-Linear'
-      nonLinDirCurr = [];
-    shuntCurrent = [];
-    nonLinCurr = [];
-    for (var i = 0; i < array.length; i++) {
-      VI = array[i];
-      V = VI[0];
-      Irp = V / Rp;
+    for (let VI of array) {
+      let V = VI[0],
+        Irp = V / Rp;
       shuntCurrent.push([V, Irp]);
-      Inl = VI[1] - Irp;
 
       if (V < -0.0001) {
+        // Only looking at reverse polarization:
+        // Non-linear reverse current is total current minus parallel current (which is linear)
+        let Inl = VI[1] - Irp; // Inl -> 'nl' = 'Non-Linear'
+
+        // Deduce direct non linear current
         nonLinDirCurr.unshift([-V, -Inl]);
+
+        // Reverse
         nonLinCurr.push([V, Inl]);
       }
     }
+
+    // Combine reverse and direct
     nonLinCurr = nonLinCurr.concat([[0, 0]], nonLinDirCurr);
+
+    return {
+      shunt: shuntCurrent,
+      nonLinear: nonLinCurr
+    }
   }
 
-  function removeIrp(plot) {
-
+  function removeIrp(modifDataArray, shuntCurrent, plot) {
     var button = document.getElementById('removeIrp'),
       array = modifDataArray[0],
       IV, newArray = [];
@@ -68,13 +82,17 @@ let fit = function () {
     }
     modifDataArray = [newArray];
 
-    if (plot) { combDataAndCalc(arrayCalc, plotStyle, scale); }
+    if (plot) {
+      combDataAndCalc(/*arrayCalc, plotStyle, scale*/);
+    }
   }
 
-  function removeNonLinCurr(CalculsqResSum, plot) {
+  function removeNonLinCurr(userData, calculsqResSum, plot) {
 
-    var array1 = dataArray[0],
-      array2 = modifDataArray[0],
+    const nonLinearCurrent =  userData.current.nonLinear;
+
+    var array1 = userData.dataArray[0],
+      array2 = userData.modifDataArray[0],
       IV1, IV2,
       newArray1 = [],
       newArray2 = [],
@@ -89,30 +107,42 @@ let fit = function () {
     }
     for (var i = 0; i < array1.length; i++) {
       IV1 = array1[i];
-      newArray1.push([IV1[0], IV1[1] + sign * nonLinCurr[i][1]]);
+      newArray1.push([IV1[0], IV1[1] + sign * nonLinearCurrent[i][1]]);
       IV2 = array2[i];
-      newArray2.push([IV2[0], IV2[1] + sign * nonLinCurr[i][1]]);
+      newArray2.push([IV2[0], IV2[1] + sign * nonLinearCurrent[i][1]]);
     }
-    dataArray = [newArray1];
-    modifDataArray = [newArray2];
 
-    if (CalculsqResSum) { calcSqResSum(); }
+    if (calculsqResSum) {
+      calcSqResSum();
+    }
 
-    if (plot) { combDataAndCalc(arrayCalc, plotStyle, scale); }
+    if (plot) {
+      combDataAndCalc(/*arrayCalc, plotStyle, scale*/);
+    }
+
+    return {
+      dataArray: [newArray1],
+      modifDataArray: [newArray2]
+    }
   }
 
-  var prevSqResSum, dS;
+  let prevSqResSum, dS,
+    SqResSum = 0,
+    delS = [];
 
-  function calcSqResSum() {
-    //alert("caller is " + arguments.callee.caller.toString().slice(0,arguments.callee.caller.toString().indexOf('{')));
-    var n1 = parseFloat(document.getElementById('n1').value),
+  function calcSqResSum(dataArray, arrayCalc) {
+    const k = main.k,
+      q = main.q
+
+    let n1 = parseFloat(document.getElementById('n1').value),
       Is1 = parseFloat(document.getElementById('Is1').value),
       Rp = parseFloat(document.getElementById('Rp').value),
       Rs = parseFloat(document.getElementById('Rs').value),
       T = parseFloat(document.getElementById('T').value),
       single = document.getElementById('singleDiode').checked;
 
-    if (single) { //single diode model
+    if (single) {
+      //single diode model
       var Is2 = 0,
         n2 = 1;
     } else {
@@ -120,9 +150,10 @@ let fit = function () {
         n2 = parseFloat(document.getElementById('n2').value);
     }
 
-    if (document.getElementById('series').checked) {//dual, series diode model
-      var Rp2 = parseFloat(document.getElementById('Is2').value),
-        n1 = parseFloat(document.getElementById('n1').value);
+    if (document.getElementById('series').checked) {
+      // Dual, series diode model
+      let Rp2 = parseFloat(document.getElementById('Is2').value);
+      n1 = parseFloat(document.getElementById('n1').value);
     }
 
     var r, calcI, j = 1, x1, x2, xy1, xy2, y1, y2, slope, x,
@@ -137,7 +168,6 @@ let fit = function () {
       dSdIs2 = 0,
       dSdRp = 0,
       dSdRs = 0;
-    SqResSum = 0;
     //d2Sdn2 = 0;
     var A = Is1 * q / (k * T),
       dIdn1, dIdn2, dIdIs1, dIdIs2, dIdRp, dIdRs, exp1, exp2;
@@ -245,179 +275,37 @@ let fit = function () {
     return newArray;
   }
 
-  function findDiodesbac(array) {//argument 'array' must be d[ln(I)]/dV
-    var i = array.length - 1,
-      max = array[i];
-    i += -1;
-    while (array[i][1] > max[1]) {
-      max = array[i];
-      i += -1;
-    }
-    var iMax = i + 1, //+1 is because array of derivative starts one point later (and ends one point earlier) than the original array
-      min = max;
-    while (array[i][1] < min[1]) {
-      min = array[i];
-      i += -1;
-    }
-    var iMin = i + 1;
-    alert([max, min, iMax, iMin])
-    return [max, min, iMax, iMin];
-  }
+  function findDiodes(userData) {
+    const modifDataArray = userData.modifDataArray,
+      shuntCurrent = userData.current.shunt,
+      IprShowed = document.getElementById('removeIrp').value === 'Hide Irp',
+      nonLinearShuntCurrRemoved = document.getElementById('removeNonLinCurr').value === 'Add back non-linear reverse current',
+      plot = false;
 
-  function findDiodesbac() {
+    if (IprShowed) {
+      removeIrp(modifDataArray, shuntCurrent, plot);
+    } // diode parameters better evaluated when Rp = infinity
 
-    var IprShowed = document.getElementById('removeIrp').value === 'Hide Irp',
-      nonLinearShuntCurrRemoved = document.getElementById('removeNonLinCurr').value == 'Add back non-linear reverse current';
-
-
-    if (IprShowed) { removeIrp(false); } // diode parameters better evaluated when Rp = infinity
-    if (!nonLinearShuntCurrRemoved) { removeNonLinCurr(false, false); }
-    noIrpNoSCLCarray = modifDataArray[0];
-    var array = modifDataArray[0];
-    if (IprShowed) { removeIrp(false); }
-    if (!nonLinearShuntCurrRemoved) { removeNonLinCurr(false, false); }
-
-    var array = deriv(lnOfArray(array));
-
-    var i = array.length - 2,
-      max = array[i],
-      prev = -Infinity,
-      l = log,
-      dLn;
-
-    //l.innerHTML = '';
-    var iMax = i + 1;
-    while (i >= 0 && array[i][0] > 0.04) {// looking for a maxima between 0.04 V and Vmax
-      dLn = array[i][1];
-      // l.innerHTML += [array[i][0],dLn]+'<br>';
-      if (dLn < prev && prev > max[1] && prev - dLn < 5) {
-        iMax = i + 1;
-        max = array[iMax];
-
-        l.innerHTML += 'd2 found at ' + array[iMax][0] + ' V<br>'
-      }
-      prev = array[i][1];
-      i--;
+    if (!nonLinearShuntCurrRemoved) {
+      removeNonLinCurr(userData, false, false);
     }
 
-    var min = max;
-    prev = +Infinity;
-    i = iMax - 1;
-    while (i >= 0 && array[i][0] > 0.04 && array[i][1] > 0) {// looking for a minima between 0.04 V and Vmax
-      dLn = array[i][1];
-      if (dLn > prev && prev < min[1] && dLn - prev < 5 && dLn > 0) {
-        var iMin = i + 1;
-        min = array[iMin];
-        l.innerHTML += 'd1 found at ' + array[iMin][0] + ' V<br>'
-      }
-      prev = array[i][1];
-      i--;
-    }
-    //alert(iMin);
+    let noIrpNoSCLCarray = modifDataArray[0],
+      array = modifDataArray[0];
 
-    iMax = array.length - iMax - 1;
-    iMin = array.length - iMin - 1;
-    //iMax (and iMin) are the indexes of the maxima (and minima), starting from the *end* of the original array, in case points in reverse are missing after removal of Irp and SCLC
-    // alert([max,min,iMax,iMin]);
-    return [max, min, iMax, iMin];
-  }
-
-  function findDiodesbac2() {
-
-    var IprShowed = document.getElementById('removeIrp').value == 'Hide Irp',
-      nonLinearShuntCurrRemoved = document.getElementById('removeNonLinCurr').value === 'Add back non-linear reverse current';
-
-    if (IprShowed) { removeIrp(false); } // diode parameters better evaluated when Rp = infinity
-    if (!nonLinearShuntCurrRemoved) { removeNonLinCurr(false, false); }
-    noIrpNoSCLCarray = modifDataArray[0];
-    var array = modifDataArray[0];
-    if (IprShowed) { removeIrp(false); }
-    if (!nonLinearShuntCurrRemoved) { removeNonLinCurr(false, false); }
-
-    var array1 = deriv(lnOfArray(array)),// 1st order derivative
-      array = deriv(array1),//2nd order derivative
-      i = array.length - 2,
-      min = array[i],
-      prev = 0,
-      l = log,
-      dLn,
-      dLnMin = 0;
-
-    //l.innerHTML = '';
-    var iMin = i + 1;
-    while (i >= 0 && array[i][0] > 0.04) {// looking for a minima between 0.04 V and Vmax
-      dLn = array[i][1];
-      l.innerHTML += [array[i][0], dLn] + '<br>';
-      if (dLn > prev && prev < dLnMin) {
-        var iMin = i + 1;
-        dLnMin = prev;
-        l.innerHTML += 'minimum found at ' + array[iMin][0] + ' V<br>';
-      }
-      prev = dLn
-      i--;
+    if (IprShowed) {
+      removeIrp(modifDataArray, shuntCurrent, plot);
     }
 
-    var dLnMax = dLnMin;
-    prev = -Infinity;
-    i = iMin - 1;
-    var iMax = iMin;
-    while (i >= 0 && array[i][0] > 0.04) {// looking for a maxima between 0.04 V and Vmax
-      dLn = array[i][1];
-
-      if (dLn < prev && prev > dLnMax) {
-        iMax = i + 1;
-        dLnMax = prev;
-        l.innerHTML += 'max found at ' + array[iMax][0] + ' V<br>';
-      }
-      prev = dLn;
-      i--;
+    if (!nonLinearShuntCurrRemoved) {
+      removeNonLinCurr(userData, false, false);
     }
-    //alert(iMin);
-    i = iMax;
-    do {
-      prev = dLn;
-      i--;
-      dLn = array[i][1];
-    } while (Math.abs(dLn) < Math.abs(prev) || dLn >= 0)
-    l.innerHTML += 'D1 at ' + array[i + 1][0] + ' V<br>';
-    var iD1 = i + 1;
-    var D1dLn = array1[iD1 + 1][1];
 
-    i = iMax;
-    do {
-      prev = dLn;
-      i++;
-      dLn = array[i][1];
-    } while (Math.abs(dLn) < Math.abs(prev) || dLn >= 0)
-    l.innerHTML += 'D2 at ' + array[i - 1][0] + ' V<br>';
-    var iD2 = i - 1;
-    var D2dLn = array1[iD2 + 1][1];
+    let array1 = deriv(lnOfArray(array));// 1st order derivative
 
-    var length = array.length - 2;
+    array = deriv(array1);//2nd order derivative
 
-    iD2 = length - iD2;
-    iD1 = length - iD1;
-    /* iD2 (and iD1) are the indexes of the maxima (and minima), starting from the *end* of the original array,
-    in case points in reverse are missing after removal of Irp and SCLC */
-
-    return [D2dLn, D1dLn, iD2, iD1];
-  }
-
-  function findDiodes() {
-
-    var IprShowed = document.getElementById('removeIrp').value === 'Hide Irp',
-      nonLinearShuntCurrRemoved = document.getElementById('removeNonLinCurr').value === 'Add back non-linear reverse current';
-
-    if (IprShowed) { removeIrp(false); } // diode parameters better evaluated when Rp = infinity
-    if (!nonLinearShuntCurrRemoved) { removeNonLinCurr(false, false); }
-    noIrpNoSCLCarray = modifDataArray[0];
-    var array = modifDataArray[0];
-    if (IprShowed) { removeIrp(false); }
-    if (!nonLinearShuntCurrRemoved) { removeNonLinCurr(false, false); }
-
-    var array1 = deriv(lnOfArray(array)),// 1st order derivative
-      array = deriv(array1),//2nd order derivative
-      i = array.length - 2,
+    let i = array.length - 2,
       prev,
       l = log,
       dLn = array[i][1],
@@ -513,27 +401,34 @@ let fit = function () {
     /* iD2 (and iD1) are the indexes of the maxima (and minima), starting from the *end* of the original array,
     in case points in reverse are missing after removal of Irp and SCLC */
 
-    return [D2dLn, D1dLn, iD2, iD1];
+    return {
+      noIrpNoSCLCarray: noIrpNoSCLCarray,
+      diodes: [D2dLn, D1dLn, iD2, iD1]
+    };
   }
 
-  function estimD1D2Rs(maxmin) {
-
-    if (document.getElementById('series').checked) { return; } //for now, no estimation for series model
-    var dualDiode = !document.getElementById('singleDiode').checked,
-
-      array = noIrpNoSCLCarray;
+  function estimD1D2Rs(userData, findDiodesResult) {
+    if (document.getElementById('series').checked) {
+      //for now, no estimation for series model
+       return;
+      }
+      
+    let maxmin = findDiodesResult.diodes;
 
     if (maxmin === 'noDiode') {
       document.getElementById('paramEstim').innerHTML = 'Sorry, the diodes could not be found';
       return;
     }
-
-    var D1dLn = maxmin[1],
+    
+    let dualDiode = !document.getElementById('singleDiode').checked,
+      array = findDiodesResult.noIrpNoSCLCarray,
+      
+      D1dLn = maxmin[1],
       D2dLn = maxmin[0],
       VIAtd1 = array[array.length - 4 - maxmin[3]],
       VIAtd2 = array[array.length - 4 - maxmin[2]],
       T = document.getElementById('T').value,
-      A = q / (k * T),
+      A = main.q / (main.k * T),
       n2 = A / D2dLn;
 
     if (dualDiode) {
@@ -576,12 +471,13 @@ let fit = function () {
         Is2Fixed = ' <span style="color:grey">(fixed)</span>';
     }
     if (document.getElementById('Rp1CheckBox').checked) {
-      var newRp = Rp,
+      var newRp = userData.estimatedParameters.Rp,
         RpFixed = '';
     } else {
       var newRp = parseFloat(document.getElementById('Rp').value),
         RpFixed = ' <span style="color:grey">(fixed)</span>';
     }
+    
     if (dualDiode) {
       document.getElementById('paramEstim').innerHTML = '<b>Estimated parameters<br>(parallel dual-diode model):</b>'
         + '<br>n<sub>1</sub> = ' + n1.toPrecision(2) + n1Fixed
@@ -591,7 +487,7 @@ let fit = function () {
         + '<br>R<sub>p</sub> = ' + newRp.toPrecision(3) + RpFixed
         + '<br>R<sub>s</sub> = ' + Rs.toPrecision(2) + RsFixed;
       document.getElementById('updateParams').style.visibility = 'visible';
-      estimParams = [['n1', n1], ['n2', n2], ['Is1', Is1], ['Is2', Is2], ['Rp', newRp], ['Rs', Rs]];
+      return [['n1', n1], ['n2', n2], ['Is1', Is1], ['Is2', Is2], ['Rp', newRp], ['Rs', Rs]];
     } else {
       document.getElementById('paramEstim').innerHTML = '<b>Estimated parameters<br>(Single-diode model):</b>'
         + '<br>n = ' + n2.toPrecision(2)
@@ -599,7 +495,7 @@ let fit = function () {
         + '<br>R<sub>p</sub> = ' + Rp.toPrecision(3)
         + '<br>R<sub>s</sub> = ' + Rs.toPrecision(2)
       document.getElementById('updateParams').style.visibility = 'visible';
-      estimParams = [['n1', n2], ['Is1', Is2], ['Rp', newRp], ['Rs', Rs]];
+      return [['n1', n2], ['Is1', Is2], ['Rp', newRp], ['Rs', Rs]];
     }
   }
 
@@ -608,7 +504,7 @@ let fit = function () {
       i = array.length - 2,
       dIdVati = dIdV[i - 1][1],
       exp,
-      A = q / (n * k * T),
+      A = main.q / (n * main.k * T),
       B, C,
       IVati = array[i],
       I = IVati[1],
@@ -626,25 +522,23 @@ let fit = function () {
   }
 
   function useEstimParam() {
-    if (rangeSupport) {
-      var id = ['Iph', 'T', 'n1', 'n2', 'Is1', 'Is2', 'Rp', 'Rp2', 'Rs', 'sliderIph', 'sliderT', 'slidern1', 'slidern2', 'sliderIs1', 'sliderIs2', 'sliderRp', 'sliderRp2', 'sliderRs'];
-      for (var i = 0; i < id.length; i++) {
-        var el = document.getElementById(id[i]);
-        el.removeEventListener('change', syncSlidernboxReCalc, false);
-        el.addEventListener('change', syncSlidernboxNoCalc, false);
-      }
-    }
+/*    var id = ['Iph', 'T', 'n1', 'n2', 'Is1', 'Is2', 'Rp', 'Rp2', 'Rs', 'sliderIph', 'sliderT', 'slidern1', 'slidern2', 'sliderIs1', 'sliderIs2', 'sliderRp', 'sliderRp2', 'sliderRs'];
+    for (var i = 0; i < id.length; i++) {
+      var el = document.getElementById(id[i]);
+      el.removeEventListener('change', syncSlidernboxReCalc, false);
+      el.addEventListener('change', syncSlidernboxNoCalc, false);
+    }*/
 
-    updateParams(estimParams, true, true);
+    
 
-    if (rangeSupport) {
+    /*if (rangeSupport) {
       var id = ['Iph', 'T', 'n1', 'n2', 'Is1', 'Is2', 'Rp', 'Rp2', 'Rs', 'sliderIph', 'sliderT', 'slidern1', 'slidern2', 'sliderIs1', 'sliderIs2', 'sliderRp', 'sliderRp2', 'sliderRs'];
       for (var i = 0; i < id.length; i++) {
         var el = document.getElementById(id[i]);
         el.addEventListener('change', syncSlidernboxReCalc, false);
         el.addEventListener('change', syncSlidernboxNoCalc, false);
       }
-    }
+    }*/
   }
 
   function updateParams(params, plot, updateRangeInput) {
@@ -664,12 +558,11 @@ let fit = function () {
         el.dispatchEvent(evt);
       }
     }
-    calcIV(plot);
+    main.calcIV(plot);
   }
 
   function vary() {
-
-    var param, oOO, id, string = '', l = log, eps = mchEps;
+    var param, oOO, id, string = '', l = log, eps = main.mchEps;
 
     var n1 = parseFloat(document.getElementById('n1').value),
       n1vary = document.getElementById('n1CheckBox').checked,
@@ -680,7 +573,7 @@ let fit = function () {
       Rs = parseFloat(document.getElementById('Rs').value),
       Rsvary = document.getElementById('RsCheckBox').checked;
 
-    params = [['n1', n1, eps, n1vary], ['Is1', Is1, eps, Is1vary], ['Rp', Rp, eps, Rpvary], ['Rs', Rs, eps, Rsvary]]; // single diode model
+    let params = [['n1', n1, eps, n1vary], ['Is1', Is1, eps, Is1vary], ['Rp', Rp, eps, Rpvary], ['Rs', Rs, eps, Rsvary]]; // single diode model
 
     if (!document.getElementById('singleDiode').checked) { //dual diode model
       var Is2 = parseFloat(document.getElementById('Is2').value),
@@ -708,18 +601,7 @@ let fit = function () {
       string += ' ' + params[i][0];
     }
 
-    /* window.performance = window.performance || {};
-    performance.now = (function() 	{
-            return performance.now()       ||
-               performance.mozNow()    ||
-               performance.msNow()     ||
-               performance.oNow()      ||
-               performance.webkitNow() ||
-               false;
-                })();
-    alert(performance.now); */
-
-    v = setInterval(
+    interval = setInterval(
       function () {
         S = SqResSum;
         var newPars = [];
@@ -782,16 +664,18 @@ let fit = function () {
         }
         if (document.webkitHidden) {
           // no use to plot: the page is not visible (Webkit only)
-        } else { combDataAndCalc(arrayCalc, plotStyle, scale); }
+        } else {
+          main.combDataAndCalc(/*arrayCalc, plotStyle, scale*/);
+        }
       }
       , 1)
   }
 
-  function startPauseVary() {
+  function startPauseVary(event) {
     var el = document.getElementById('varParams');
 
     if (el.innerHTML == 'Stop') {
-      clearInterval(v);
+      clearInterval(interval);
       el.innerHTML = 'Minimize S';
     } else {
       el.innerHTML = 'Stop';
@@ -800,7 +684,13 @@ let fit = function () {
   }
 
   return {
-    estimD1D2Rs: estimD1D2Rs
+    calcIrpAndNonLinRevCurr: calcIrpAndNonLinRevCurr,
+    calcSqResSum: calcSqResSum,
+    estimD1D2Rs: estimD1D2Rs,
+    estimRp: estimRp,
+    findDiodes: findDiodes,
+    startPauseVary: startPauseVary,
+    updateParams: updateParams
   }
 
 }();

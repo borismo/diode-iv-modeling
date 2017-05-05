@@ -193,6 +193,6 @@ input:disabled+label {
 	color: grey;
 }
 
-input+label {
+input[type=number]+label {
     float: left;
 }

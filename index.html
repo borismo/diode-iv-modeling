@@ -136,13 +136,13 @@
 			</div>
 			<div id="fit">
 				<output id="estimatedRp" form="localFile"></output><br>
-				<input id="removeIrp" type="button" value="Hide Irp" disabled="disabled" onclick="removeIrp(true)"><br>
-				<input id="removeNonLinCurr" type="button" value="Remove non-linear reverse current" disabled="disabled" onclick="removeNonLinCurr(true,true)"><br>
+				<input id="removeIrp" type="button" value="Hide Irp" disabled="disabled"><br>
+				<input id="removeNonLinCurr" type="button" value="Remove non-linear reverse current" disabled="disabled"><br>
 				<output id="squaredResSum"></output><br>
 				<br>
 				<output id="paramEstim"></output><br>
-				<button id="updateParams" type="button" style="visibility:hidden" onclick="useEstimParam()">Use these parameters</button><br>
-				<button id="varParams" type="button" style="visibility:hidden" onclick="startPauseVary()">Minimize S</button>
+				<button id="updateParams" type="button" style="visibility:hidden">Use these parameters</button><br>
+				<button id="varParams" type="button" style="visibility:hidden">Minimize S</button>
 				<label id="thresholdLabel" for="threshold" style="visibility:hidden"> Threshold: |dS| </label>
 				<input id="threshold" class="logscale linearScaleBox" type="number" value=1e-9 step=1e-9 min=0 style="visibility:hidden">
 				
