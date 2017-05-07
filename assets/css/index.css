@@ -1,198 +1,125 @@
-/* mac hide \*/
-html, body {
-	height:100%;
-	padding:0;
-	margin:0;
-	font-family: �Lucida Sans Unicode�, �Lucida Grande�, sans-serif;
-	font-size:14px;
-	line-height:110%;
+/*
+ * Base structure
+ */
+
+/* Move down content because we have a fixed navbar that is 50px tall */
+body {
+  padding-top: 50px;
 }
 
-body{
-	border-left:3px solid orange;
+
+/*
+ * Global add-ons
+ */
+
+.sub-header {
+  padding-bottom: 10px;
+  border-bottom: 1px solid #eee;
 }
 
-h1{
-	font:56px impact,sans-serif;
-	margin:-12px 0 0 0;
+/*
+ * Top navigation
+ * Hide default border to remove 1px line.
+ */
+.navbar-fixed-top {
+  border: 0;
 }
 
-sub {
-	vertical-align:-3px;
+/*
+ * Sidebar
+ */
+
+@media (min-width: 768px) {
+  .sidebar {
+    position: fixed;
+    top: 51px;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    display: block;
+    padding: 20px;
+    overflow-x: hidden;
+    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */
+    background-color: #f5f5f5;
+    border-right: 1px solid #eee;
+  }
 }
 
-a:link {
-	text-decoration:none;}
-a:visited {
-	text-decoration:none;}
-a:hover {
-	text-decoration:underline;}
-a:active {
-	text-decoration:underline;}
-
-a.white {
-	color:white
+/* Sidebar navigation */
+.nav-sidebar {
+  margin-right: -21px; /* 20px padding + 1px border */
+  margin-bottom: 20px;
+  margin-left: -20px;
+}
+.nav-sidebar > li > a {
+  padding-right: 20px;
+  padding-left: 20px;
+}
+.nav-sidebar > .active > a,
+.nav-sidebar > .active > a:hover,
+.nav-sidebar > .active > a:focus {
+  color: #fff;
+  background-color: #428bca;
 }
 
-.orange {
-	color:orange
+
+/*
+ * Main content
+ */
+
+.main {
+  padding: 20px;
+}
+@media (min-width: 768px) {
+  .main {
+    padding-right: 40px;
+    padding-left: 40px;
+  }
+}
+.main .page-header {
+  margin-top: 0;
 }
 
-label.form{
-	width:60px;
-    float:left;
- }
- 
-.linearScaleBox {
-	width: 50px;
-	margin-bottom:1px;
-	margin-top:1px;
+/* fa icons */
+.fa-toggle-on, .fa-toggle-off {
+  cursor: pointer;
 }
 
-.LogScaleBox {
-	width: 70px;
-	margin-bottom:1px;
-	margin-top:1px;
+.fa-toggle-on {
+  /*color: #f1f1f1;*/
+  color: #dddddd;
+  color: #8ce196;
 }
 
-.LogScale,.linearScaleSlider{
-	width: 156px;
-	height: 15px;
-	margin-bottom:1px;
-	margin-top:1px;
-	margin-right:1px;
-	margin-left:1px;
-	
+.fa-toggle-off {
+  color: #dddddd;
 }
 
-/* end hide*/
-
-#outer {
-	min-height:100%;/*for mozilla as IE treats height as min-height anyway*/
-	margin-left:350px;
-
-	border-left:3px solid orange;
-	border-right:3px solid orange;
-	margin-bottom:-32px;
-	color: #000000;
+button.play > span#pause {
+  display: none;
 }
 
-* html #outer {
-	height:100%;
+button.pause > span#play {
+  display: none;
 }
 
-header {
-	position:absolute;
-	top:0;
-	left:0;
-	width:100%;
-	height:50px;
-	background: orange;
-	/*border-top:1px solid #000;
-	border-bottom:1px solid #000;*/
-	overflow:hidden;
-	color: #FFFFFF;
-	text-align:center;
+div.input-group#ds {
+  width: 60%;
 }
 
-#left {
-	position:relative;/*ie needs this to show float */
-	width:330px;
-	float:left;
-	margin-left:-349px;/*must be 1px less than width otherwise won't push footer down */
-	left:-1px;/* line things up exactly*/
-	padding:62px 0 0 10px;	
+.panel {
+  position: relative;
 }
 
-* html #left {
-	margin-right:-3px
-}/* three pixel jog*/
-
-#left p {
-	padding-left:3px;
-	padding-right:2px
-}
-
-#centrecontent {
-	float:right;
-	width:100%;
-	margin:0 0 0 -1px;
-	position:relative;
-	z-index:1;
-	padding:52px 0 0;
-}
-
-footer {
-	width:100%;
-	clear:both;
-	height:30px;
-	border-top:1px solid #FFC04D;
-	border-bottom:1px solid #FFC04D;
-	background: orange;
-	color: #FFFFFF;
-	text-align:center;
-	position:relative;
-	margin-top:-32px;
-}
-
-span.red {
-	color: red;
-}
-
-span.green {
-	color: green;
-}
-
-address {
-	font-style:inherit;	
-	margin:8px 0 0 0;
-}
-
-#clearfooter {
-	clear:both;
-	height:32px;
-}/*needed to make room for footer*/
-
-canvas {
-	float:left;
-	margin:6px;
-}
-
-.hover{
-	margin: 0px;
-	border: 6px dashed orange;
-}
-
-div#clearLog{
-	background: grey;
-	color: white;
-}
-div#logDiv{
-	font-family:'Courier New';
-	border-radius:5px;
-	background: grey;
-	color: white;
-	height:300px;
-	margin-left:550px;
-	margin-top:10px;
-	margin-right:10px;
-	margin-bottom:10px;
-	padding:15px;
-	overflow:auto;
-	box-shadow: 1px 1px 5px #888888;
-}
-
-#graphParam {
-	margin-left:50px;
-}
-
-/*The two following rules make sure labels are
-greyed out when matching input is disabled*/
-
-input:disabled+label {
-	color: grey;
-}
-
-input[type=number]+label {
-    float: left;
+.panel.nofile:after {
+  content: " ";
+  z-index: 10;
+  display: block;
+  position: absolute;
+  height: 100%;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
 }

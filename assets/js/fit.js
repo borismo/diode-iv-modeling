@@ -63,23 +63,19 @@ let fit = function () {
     }
   }
 
-  function removeIrp(modifDataArray, shuntCurrent, plot) {
-    var button = document.getElementById('removeIrp'),
-      array = modifDataArray[0],
-      IV, newArray = [];
+  function toggleIrp(modifDataArray, shuntCurrent, plot, show) {
+    // Show or hide Irp on graph
 
-    if (button.value === 'Hide Irp') {
-      var sign = -1;
-      button.value = 'Show Irp';
-    } else {
-      var sign = 1;
-      button.value = 'Hide Irp';
-    }
+    let array = modifDataArray[0],
+      newArray = [],
+      i = 0,
+      sign = (show) ? 1 : -1;
 
-    for (var i = 0; i < array.length; i++) {
-      IV = array[i];
+    for (let IV of array) {
       newArray.push([IV[0], IV[1] + sign * shuntCurrent[i][1]]);
+      i++;
     }
+
     modifDataArray = [newArray];
 
     if (plot) {
@@ -87,7 +83,7 @@ let fit = function () {
     }
   }
 
-  function removeNonLinCurr(userData, calculsqResSum, plot) {
+  function toggleNonLinCurr(userData, calculsqResSum, plot, show) {
 
     const nonLinearCurrent =  userData.current.nonLinear;
 
@@ -96,24 +92,18 @@ let fit = function () {
       IV1, IV2,
       newArray1 = [],
       newArray2 = [],
-      button = document.getElementById('removeNonLinCurr');
-    if (button.value === 'Remove non-linear reverse current') {
-      var sign = -1;
-      button.value = 'Add back non-linear reverse current';
-    }
-    else {
-      var sign = 1;
-      button.value = 'Remove non-linear reverse current';
-    }
-    for (var i = 0; i < array1.length; i++) {
-      IV1 = array1[i];
+      sign = (show) ? 1 : -1,
+      i = 0;
+      
+    for (let IV1 of array1) {
       newArray1.push([IV1[0], IV1[1] + sign * nonLinearCurrent[i][1]]);
       IV2 = array2[i];
       newArray2.push([IV2[0], IV2[1] + sign * nonLinearCurrent[i][1]]);
+      i++;
     }
 
     if (calculsqResSum) {
-      calcSqResSum();
+      calcSqResSum([newArray1], [newArray2]);
     }
 
     if (plot) {
@@ -126,7 +116,8 @@ let fit = function () {
     }
   }
 
-  let prevSqResSum, dS,
+  let prevSqResSum = undefined,
+    dS,
     SqResSum = 0,
     delS = [];
 
@@ -159,7 +150,6 @@ let fit = function () {
     var r, calcI, j = 1, x1, x2, xy1, xy2, y1, y2, slope, x,
       calcIV = arrayCalc[0],
       array = dataArray[0],
-      el = document.getElementById('squaredResSum'),
       stringArray = '',
       data,
       dSdn1 = 0,
@@ -172,8 +162,10 @@ let fit = function () {
     var A = Is1 * q / (k * T),
       dIdn1, dIdn2, dIdIs1, dIdIs2, dIdRp, dIdRs, exp1, exp2;
 
-    for (var i = 0; i < array.length; i++) {//for each data point
+    for (var i = 0; i < array.length; i++) {
+      //for each data point
       x = array[i][0];
+
       while (x > calcIV[j][0]) { j++; }
       xy1 = calcIV[j - 1];
       xy2 = calcIV[j];
@@ -225,14 +217,15 @@ let fit = function () {
       //stringArray = stringArray.concat('\n'+calcI+'\t'+data);
     }
 
-    dS = SqResSum - prevSqResSum;
-    //alert(stringArray);
-    if (isNaN(dS)) { var str = ''; } //1st time SqResSum is calculated
-    else {
-      if (dS < 0) { var str = ' (<span class="green">' + dS.toExponential(2) + '</span>)' }
-      else { var str = ' (<span class="red">+' + dS.toExponential(2) + '</span>)' }
+    // Display residue
+    $('#s').text(SqResSum.toExponential(2));
+
+    if (typeof prevSqResSum === 'number'){
+      dS = SqResSum - prevSqResSum;
+      $('#ds').text(dS.toExponential(2));
+    } else {
+      $('#ds').empty();
     }
-    el.innerHTML = 'S = ' + SqResSum.toExponential(2) + str;
 
     prevSqResSum = SqResSum;
   }
@@ -275,30 +268,29 @@ let fit = function () {
     return newArray;
   }
 
-  function findDiodes(userData) {
+  function findDiodes(userData, IprShowed, nonLinearCurrentShowed) {
     const modifDataArray = userData.modifDataArray,
       shuntCurrent = userData.current.shunt,
-      IprShowed = document.getElementById('removeIrp').value === 'Hide Irp',
-      nonLinearShuntCurrRemoved = document.getElementById('removeNonLinCurr').value === 'Add back non-linear reverse current',
       plot = false;
 
     if (IprShowed) {
-      removeIrp(modifDataArray, shuntCurrent, plot);
+      toggleIrp(modifDataArray, shuntCurrent, plot, false);
     } // diode parameters better evaluated when Rp = infinity
 
-    if (!nonLinearShuntCurrRemoved) {
-      removeNonLinCurr(userData, false, false);
+    if (nonLinearCurrentShowed) {
+      toggleNonLinCurr(userData, false, false);
     }
 
     let noIrpNoSCLCarray = modifDataArray[0],
       array = modifDataArray[0];
 
     if (IprShowed) {
-      removeIrp(modifDataArray, shuntCurrent, plot);
+      // If initially showed: show Irp again
+      toggleIrp(modifDataArray, shuntCurrent, plot, true);
     }
 
-    if (!nonLinearShuntCurrRemoved) {
-      removeNonLinCurr(userData, false, false);
+    if (nonLinearCurrentShowed) {
+      toggleNonLinCurr(userData, false, false);
     }
 
     let array1 = deriv(lnOfArray(array));// 1st order derivative
@@ -479,14 +471,13 @@ let fit = function () {
     }
     
     if (dualDiode) {
-      document.getElementById('paramEstim').innerHTML = '<b>Estimated parameters<br>(parallel dual-diode model):</b>'
-        + '<br>n<sub>1</sub> = ' + n1.toPrecision(2) + n1Fixed
-        + '<br>n<sub>2</sub> = ' + n2.toPrecision(2) + n2Fixed
-        + '<br>Is<sub>1</sub> = ' + Is1.toExponential(2) + Is1Fixed
-        + '<br>Is<sub>2</sub> = ' + Is2.toExponential(2) + Is2Fixed
-        + '<br>R<sub>p</sub> = ' + newRp.toPrecision(3) + RpFixed
-        + '<br>R<sub>s</sub> = ' + Rs.toPrecision(2) + RsFixed;
-      document.getElementById('updateParams').style.visibility = 'visible';
+      $('td.estimation#n1').text(n1.toPrecision(2));
+      $('td.estimation#n2').text(n2.toPrecision(2));
+      $('td.estimation#is1').text(Is1.toExponential(2));
+      $('td.estimation#is2').text(Is2.toExponential(2));
+      $('td.estimation#rp1').text(newRp.toPrecision(3));
+      $('td.estimation#rs').text(Rs.toPrecision(2));
+      
       return [['n1', n1], ['n2', n2], ['Is1', Is1], ['Is2', Is2], ['Rp', newRp], ['Rs', Rs]];
     } else {
       document.getElementById('paramEstim').innerHTML = '<b>Estimated parameters<br>(Single-diode model):</b>'

@@ -1,11 +1,10 @@
 let main = function () {
   'use strict';
 
-  let log;
-
   const mchEps = machineEpsilon();
 
   let arrayCalc,
+    fileOpened = false,
     dataStyle = [],
     plotStyle = [],
     reCalcIV = true,
@@ -18,13 +17,13 @@ let main = function () {
       current: {
         shunt: undefined,
         nonLinear: undefined,
-        noIrpNoSCLCarray : undefined
+        noIrpNoSCLCarray: undefined
       },
       dataArray: [],
       modifDataArray: []
     };
 
-  // elementary charge and Boltzmann constant
+  // Elementary charge and Boltzmann constant
   const q = 1.60217653E-19,
     k = 1.3806488E-23;
 
@@ -39,48 +38,12 @@ let main = function () {
     return temp1;
   }
   
-  function syncSlidernboxReCalc(event) {
-    let element = this,
-      id = element.id;
-    SyncSlidernBox(element, true);
-    id = id.replace('slider', '');
-    if (!document.getElementById(id + 'CheckBox').checked && !document.getElementById('clear').disabled) {
-      fit.estimD1D2Rs(findDiodes());
-    }
-  }
-
-  function syncSlidernboxNoCalc(e) {
-    var element = e.target;
-    SyncSlidernBox(element,false);
-  }
-  
   $(function () {
-    log = document.getElementById('logDiv');
-    log.innerHTML = '';
-  
-    calcIV(true);
-    
-    var unsupported = [];
-    
-    //Check if File API supported
-    if (typeof FileReader === 'undefined') {
-      unsupported.push('File API');
-      document.getElementById('fileInput').disabled = true;
-      var string = 'import your own data and ',
-        fileAPI = false;
-    } 	else {
-        var string = '',
-          fileAPI = true;
-        log.innerHTML += 'You can import your own IV data (text file with 2 tab-separated columns) with the button above or simply by dragging and dropping the file onto the graph.<br>'
-      }
-    
-    if (unsupported.length) {
-      var str = unsupported.join(', '),
-        string = '';
-      log.innerHTML += "Your browser doesn't seem to support some of the HTML5 standards ("+str+"). Upgrade to <a class='orange' href='http://www.opera.com/browser/' target='_blank'>Opera</a> or <a class='orange' href='https://www.google.com/intl/en/chrome/browser/' target='_blank'>Chrome</a> to be able to "+string+"play with the parameters more easily. But you're still welcome to have a look around.<br>If your administrator doesn't allow you to change your browser, you can head to the portable versions (<a class='orange' href='http://www.opera-usb.com/operausben.htm' target='_blank'>Opera@USB</a> and <a class='orange' href='http://portableapps.com/apps/internet/google_chrome_portable' target='_blank'>Chrome Portable</a>).<br>";
-    }
-    
-    log.innerHTML += "<br><span style='color:cyan'>Tip: </span>Check the box next to a parameter's value to let it vary during optimization. <br>";
+    // When page loaded, calculate a first time
+    // IV using the initial parameters, and plot
+    // the result
+    const plot = true;  
+    calcIV(plot);
     
     //Opera fix: nicely rounds initial Is1 and Is2
       var	id = ['Is1', 'n1', 'n2', 'Is2', 'threshold', 'Rs', 'Rp', 'Rp2'];
@@ -119,6 +82,12 @@ let main = function () {
     $('button#varParams')
       .click(fit.startPauseVary);
 
+    $(':file')
+      .change(fileInputChanged);
+
+    $('.fa-toggle-on, .fa-toggle-off')
+      .click(faToggleClicked);
+
     id = ['TCheckBox','IphCheckBox','n1CheckBox','n2CheckBox','Is1CheckBox','Is2CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox'];
     for (var i = 0; i < id.length; i++) {
       var el = document.getElementById(id[i]);
@@ -129,14 +98,12 @@ let main = function () {
                     }, false);
     }
     
-    if (fileAPI) {
-    
-      var el = document.getElementById('fileInput');
+/*      var el = document.getElementById('fileInput');
       el.addEventListener('change',	function(e){
                         var files = e.target.files;
                         if (files.length > 1) {processMultFiles(files);}
                           else {processFiles(files);}
-                      }, false);
+                      }, false);*/
 
       var holder = document.getElementById('graph');
 
@@ -155,7 +122,6 @@ let main = function () {
                       processFiles(e.dataTransfer.files);
                       holder.className = '';
                     }
-    }
   });
 
     function changeScaleType(event) {
@@ -198,14 +164,30 @@ let main = function () {
       reCalcIV = true;
     }
 
+    function fileInputChanged (event) {
+      const file = this.files[0];
+      $(this)
+        .closest('.input-group')
+        .children('input:text')
+        .val(file.name);
+      processFiles(file);
+    }
+
+    function faToggleClicked(event) {
+      const $i = $(this) // <i> element
+        .toggleClass('fa-toggle-on fa-toggle-off');
+    }
+
     function syncInputs (sourceElem) {
       const $sourceInput = $(sourceElem),
         isSourceRange = $sourceInput.attr('type') === 'range',
+        targetType = (isSourceRange) ? 'number' : 'range',
         sourceValue = $sourceInput.val();
       
       // Sync companion input
       const $targetInput = $sourceInput
-          .siblings('input.syncme'),
+          .closest('.row')
+          .find('input.syncme[type=' + targetType + ']'),
         isScaleLog = $targetInput.hasClass('logscale');
       
       if(isScaleLog) {
@@ -218,9 +200,15 @@ let main = function () {
     }
 
     function inputEvent(event) {
-      if ($(this).attr('type') === 'number') {
+      // Fired when user moves range input or change number input
+      // So "this" is a number or range input
+
+      const isNumberInput = $(this).attr('type') === 'number';
+
+      if (isNumberInput) {
         adjustRange(this);
       }
+
       syncInputs(this);
 
       if (reCalcIV) {
@@ -228,23 +216,23 @@ let main = function () {
       }
     }
 
-  function checkVoltageAndCalc (event) {
-    
-    var minVolt = document.getElementById('minVolt').value,
-      maxVolt = document.getElementById('maxVolt').value,
-      stepVolt = document.getElementById('stepVolt').value;
-      
-    if (maxVolt < minVolt) {
-      document.getElementById('minVolt').value = maxVolt;
-      document.getElementById('maxVolt').value = minVolt;
+    function checkVoltageAndCalc(event) {
+
+      var minVolt = document.getElementById('minVolt').value,
+        maxVolt = document.getElementById('maxVolt').value,
+        stepVolt = document.getElementById('stepVolt').value;
+
+      if (maxVolt < minVolt) {
+        document.getElementById('minVolt').value = maxVolt;
+        document.getElementById('maxVolt').value = minVolt;
+      }
+
+      if (stepVolt == 0) { document.getElementById('stepVolt').value = 25; }
+
+      if (stepVolt < 0) { document.getElementById('stepVolt').value = Math.abs(stepVolt); }
+
+      calcIV(true);
     }
-    
-    if (stepVolt == 0) {document.getElementById('stepVolt').value = 25;}
-    
-    if (stepVolt < 0) {document.getElementById('stepVolt').value = Math.abs(stepVolt);}
-    
-    calcIV(true);
-  }
 
   function log10(val) {
     return Math.log(val) / Math.log(10);
@@ -516,24 +504,27 @@ let main = function () {
     return [Ia,Id1,Id2,Irp1,Irp2];
   }
 
-  //Calculate current for a range of voltage values
   function calcIV(plot) {
-    //alert("caller is " + arguments.callee.caller.toString().slice(0,arguments.callee.caller.toString().indexOf('{')));
-    
-    var	minVolt 	= parseFloat(document.getElementById('minVolt').value),
-      maxVolt 	= parseFloat(document.getElementById('maxVolt').value),
-      stepVolt 	= parseFloat(document.getElementById('stepVolt').value),
-      Iph 		= parseFloat(document.getElementById('Iph').value),
-      T			= parseFloat(document.getElementById('T').value),
-      n1 			= parseFloat(document.getElementById('n1').value),
-      Is1 		= parseFloat(document.getElementById('Is1').value);
-      //log.innerHTML += T+' K calc<br>';
-    if (document.getElementById('singleDiode').checked) {var n2 = 1,Is2 = 0, Rp2;}
-      else {
-        var n2 	= parseFloat(document.getElementById('n2').value),
-          Is2 = parseFloat(document.getElementById('Is2').value),
-          Rp2 = parseFloat(document.getElementById('Rp2').value);
-      }
+    // Calculates current for a range of voltage values
+    // "plot" parameter is a boolean
+
+    const minVolt = parseFloat(document.getElementById('minVolt').value),
+      maxVolt = parseFloat(document.getElementById('maxVolt').value),
+      stepVolt = parseFloat(document.getElementById('stepVolt').value),
+      Iph = parseFloat(document.getElementById('Iph').value),
+      T = parseFloat(document.getElementById('T').value),
+      n1 = parseFloat(document.getElementById('n1').value),
+      Is1 = parseFloat(document.getElementById('Is1').value);
+
+    if (document.getElementById('singleDiode').checked) {
+      var n2 = 1,
+        Is2 = 0,
+        Rp2;
+    } else {
+      var n2 = parseFloat(document.getElementById('n2').value),
+        Is2 = parseFloat(document.getElementById('Is2').value),
+        Rp2 = parseFloat(document.getElementById('Rp2').value);
+    }
       
     var	Rp = parseFloat(document.getElementById('Rp').value),
       Rs = parseFloat(document.getElementById('Rs').value);
@@ -621,7 +612,7 @@ let main = function () {
     arrayCalc = modelCases[model].arrayCalc;
     plotStyle = modelCases[model].plotStyle;
 
-    if (!document.getElementById('clear').disabled) {
+    if (fileOpened) {
       // <=> a experimental file has been opened
       fit.calcSqResSum(userData.dataArray, arrayCalc);
       //fit.estimD1D2Rs();
@@ -640,34 +631,42 @@ let main = function () {
     
   }
 
-  function processFiles(files) {
-    var file = files[0],
-      fileName, defaultT,
-      reader = new FileReader();
-      reader.onload = function (e) {
-      // When this event fires, the data is ready.
-      
-      //Guess T from file name
-      // fileName = escape(file.name);
-      fileName = file.name;
-      //alert(fileName);
-      while (isNaN(parseFloat(fileName)) && fileName.length > 0) {fileName = fileName.substring(1);}
-      fileName = parseFloat(fileName);
-      if (isNaN(fileName)) {defaultT = 298} else {defaultT = fileName;}
-      
-      var T = prompt('Temperature? (K)',defaultT);
-      if (isFinite(T) && T > 0) {
-        document.getElementById('T').value = T;
-        document.getElementById('sliderT').value = T;
-        userData.dataArray = [];
-        userData.modifDataArray = [];
+  function processFiles(file) {
+    // Fired when file input changed
+
+    let reader = new FileReader();
     
-        stringToArray(e.target.result);
-      }
-    }
+    reader.onload = readerOnLoad;
+    reader.filename = file.name;
+
     reader.readAsText(file);
   }
-    
+
+  function readerOnLoad(event) {
+    // Fired when data is ready
+
+    // Guess T from file name
+    let fileName = this.filename;
+
+    while (isNaN(parseFloat(fileName)) && fileName.length > 0) {
+      fileName = fileName.substring(1);
+    }
+
+    fileName = parseFloat(fileName);
+
+    const defaultT = (isNaN(fileName)) ? 298 : fileName,
+      T = prompt('Temperature? (K)', defaultT);
+
+    if (isFinite(T) && T > 0) {
+      document.getElementById('T').value = T;
+      document.getElementById('sliderT').value = T;
+      userData.dataArray = [];
+      userData.modifDataArray = [];
+
+      stringToArray(event.target.result);
+    }
+  }
+
   function clearData() {
     userData.dataArray = [];
     userData.modifDataArray = [];
@@ -710,13 +709,18 @@ let main = function () {
       if (!skipRow) {dataArray.push(row);}
     }
     
-    document.getElementById('removeIrp').disabled = false;
+    $('.panel')
+      .removeClass('nofile');
+    
+    fileOpened = true;
+
+/*    document.getElementById('removeIrp').disabled = false;
     document.getElementById('removeNonLinCurr').disabled = false;
     document.getElementById('varParams').style.visibility = 'visible';
     document.getElementById('removeIrp').value = 'Hide Irp';
     document.getElementById('removeNonLinCurr').value = 'Remove non-linear reverse current';
     document.getElementById('threshold').style.visibility = 'visible';
-    document.getElementById('thresholdLabel').style.visibility = 'visible';
+    document.getElementById('thresholdLabel').style.visibility = 'visible';*/
     
     if (!document.getElementById('series').checked) {
       array = ['n1CheckBox','Is1CheckBox','Rp1CheckBox','RsCheckBox'];
@@ -730,12 +734,12 @@ let main = function () {
     
     document.getElementById('minVolt').value = dataArray[0][0];
     document.getElementById('maxVolt').value = dataArray[dataArray.length - 1][0] + document.getElementById('stepVolt').value / 1000;
-    calcIV(false);
 
     dataArray = [dataArray];
 
     userData.dataArray = dataArray;
     userData.modifDataArray = dataArray;
+    calcIV(false);
     
     /**** Estimate parameters ****/
 
@@ -747,17 +751,21 @@ let main = function () {
     const current = fit.calcIrpAndNonLinRevCurr(dataArray, Rp);
     userData.current.nonLinear = current.nonLinear;
     userData.current.shunt = current.shunt;
-    
-    const findDiodesResult = fit.findDiodes(userData),
+
+    const findDiodesResult = fit.findDiodes(userData, IprShowed()),
       estimatedParams = fit.estimD1D2Rs(userData, findDiodesResult);
 
     userData.estimatedParams = estimatedParams;
 
-    fit.calcSqResSum(userData.dataArray, arrayCalc);
+    fit.calcSqResSum(dataArray, arrayCalc);
 
     document.getElementById('clear').disabled = false;
 
     combDataAndCalc(/*arrayCalc, plotStyle, scale*/);
+  }
+
+  function IprShowed() {
+    return $('#hideIrp').hasClass('fa-toggle-off');
   }
 
   function combDataAndCalc(/*arrayCalc, plotStyle, scale*/) {
