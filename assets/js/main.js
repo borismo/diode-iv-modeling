@@ -46,7 +46,7 @@ let main = function () {
     calcIV(plot);
     
     //Opera fix: nicely rounds initial Is1 and Is2
-      var	id = ['Is1', 'n1', 'n2', 'Is2', 'threshold', 'Rs', 'Rp', 'Rp2'];
+      var	id = ['is1', 'n1', 'n2', 'is2', 'threshold', 'rs', 'rp1', 'rp2'];
       for (var i = 0; i < 8; i++) {
         var element = document.getElementById(id[i]),
           nb = parseFloat(element.value),
@@ -73,20 +73,23 @@ let main = function () {
     $('input[type=radio].scale')
       .change(changeScaleType);
 
-    $('input#removeIrp')
+    /*$('input#removeIrp')
       .click(removeIrpClicked)
 
     $('button#updateParams')
-      .click(updateParamsClicked);
-
-    $('button#varParams')
-      .click(fit.startPauseVary);
+      .click(updateParamsClicked);*/
 
     $(':file')
       .change(fileInputChanged);
 
     $('.fa-toggle-on, .fa-toggle-off')
       .click(faToggleClicked);
+
+    $('#useestimatedparams')
+      .click(useEstimatedParams);
+
+    $('button#start')
+      .click(startButtonClicked)
 
     id = ['TCheckBox','IphCheckBox','n1CheckBox','n2CheckBox','Is1CheckBox','Is2CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox'];
     for (var i = 0; i < id.length; i++) {
@@ -97,13 +100,6 @@ let main = function () {
                       }
                     }, false);
     }
-    
-/*      var el = document.getElementById('fileInput');
-      el.addEventListener('change',	function(e){
-                        var files = e.target.files;
-                        if (files.length > 1) {processMultFiles(files);}
-                          else {processFiles(files);}
-                      }, false);*/
 
       var holder = document.getElementById('graph');
 
@@ -424,6 +420,37 @@ let main = function () {
     }
   }
 
+  function useEstimatedParams(event) {
+    // Fired when user clicks "Use estimated paameters" button
+    $('td.estimation')
+      .each(updateInput);
+    
+    const plot = true;
+    calcIV(plot);
+  }
+
+  function updateInput(index, element) {
+    // Update a parameter input with an estimation
+
+    const $td = $(element),
+      id = $td.attr('id'),
+      value = parseFloat($td.text());
+      
+    $('input[type=number]#' + id)
+      .val(value);
+  }
+
+  function startButtonClicked(event) {
+    // Fired when user clicks on the play/pause button
+    // to start or pause the fitting
+
+    const start = $(this)
+      .toggleClass('play pause')
+      .hasClass('pause');
+
+    fit.startPauseVary(start);
+  }
+
   function disableAndCalc(arrayOfId) {
     for (var i = 0; i < arrayOfId.length; i++) {
       var e = document.getElementById(arrayOfId[i]);
@@ -514,7 +541,7 @@ let main = function () {
       Iph = parseFloat(document.getElementById('Iph').value),
       T = parseFloat(document.getElementById('T').value),
       n1 = parseFloat(document.getElementById('n1').value),
-      Is1 = parseFloat(document.getElementById('Is1').value);
+      Is1 = parseFloat(document.getElementById('is1').value);
 
     if (document.getElementById('singleDiode').checked) {
       var n2 = 1,
@@ -522,12 +549,12 @@ let main = function () {
         Rp2;
     } else {
       var n2 = parseFloat(document.getElementById('n2').value),
-        Is2 = parseFloat(document.getElementById('Is2').value),
-        Rp2 = parseFloat(document.getElementById('Rp2').value);
+        Is2 = parseFloat(document.getElementById('is2').value),
+        Rp2 = parseFloat(document.getElementById('rp2').value);
     }
       
-    var	Rp = parseFloat(document.getElementById('Rp').value),
-      Rs = parseFloat(document.getElementById('Rs').value);
+    var	Rp = parseFloat(document.getElementById('rp1').value),
+      Rs = parseFloat(document.getElementById('rs').value);
       
     var Ipar,Iser,I,Id1,Id2,
       arrayVI = [],

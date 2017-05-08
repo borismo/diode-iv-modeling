@@ -81,14 +81,15 @@ let fit = function () {
     if (plot) {
       combDataAndCalc(/*arrayCalc, plotStyle, scale*/);
     }
+    return modifDataArray;
   }
 
-  function toggleNonLinCurr(userData, calculsqResSum, plot, show) {
+  function toggleNonLinCurr(userData, modifDataArray, calculsqResSum, plot, show) {
 
     const nonLinearCurrent =  userData.current.nonLinear;
 
     var array1 = userData.dataArray[0],
-      array2 = userData.modifDataArray[0],
+      array2 = modifDataArray[0],
       IV1, IV2,
       newArray1 = [],
       newArray2 = [],
@@ -126,9 +127,9 @@ let fit = function () {
       q = main.q
 
     let n1 = parseFloat(document.getElementById('n1').value),
-      Is1 = parseFloat(document.getElementById('Is1').value),
-      Rp = parseFloat(document.getElementById('Rp').value),
-      Rs = parseFloat(document.getElementById('Rs').value),
+      Is1 = parseFloat(document.getElementById('is1').value),
+      Rp = parseFloat(document.getElementById('rp1').value),
+      Rs = parseFloat(document.getElementById('rs').value),
       T = parseFloat(document.getElementById('T').value),
       single = document.getElementById('singleDiode').checked;
 
@@ -137,13 +138,13 @@ let fit = function () {
       var Is2 = 0,
         n2 = 1;
     } else {
-      var Is2 = parseFloat(document.getElementById('Is2').value),
+      var Is2 = parseFloat(document.getElementById('is2').value),
         n2 = parseFloat(document.getElementById('n2').value);
     }
 
     if (document.getElementById('series').checked) {
       // Dual, series diode model
-      let Rp2 = parseFloat(document.getElementById('Is2').value);
+      let Rp2 = parseFloat(document.getElementById('is2').value);
       n1 = parseFloat(document.getElementById('n1').value);
     }
 
@@ -269,16 +270,17 @@ let fit = function () {
   }
 
   function findDiodes(userData, IprShowed, nonLinearCurrentShowed) {
-    const modifDataArray = userData.modifDataArray,
+    let modifDataArray = userData.modifDataArray,
       shuntCurrent = userData.current.shunt,
       plot = false;
 
     if (IprShowed) {
-      toggleIrp(modifDataArray, shuntCurrent, plot, false);
+      modifDataArray = toggleIrp(modifDataArray, shuntCurrent, plot, false);
     } // diode parameters better evaluated when Rp = infinity
 
     if (nonLinearCurrentShowed) {
-      toggleNonLinCurr(userData, false, false);
+      let result = toggleNonLinCurr(userData, modifDataArray, false, false, false);
+      modifDataArray = result.modifDataArray;
     }
 
     let noIrpNoSCLCarray = modifDataArray[0],
@@ -290,8 +292,11 @@ let fit = function () {
     }
 
     if (nonLinearCurrentShowed) {
-      toggleNonLinCurr(userData, false, false);
+      toggleNonLinCurr(userData, modifDataArray, false, false, true);
     }
+let text = '';
+for (let row of array){text += row[0] + ',' + row[1] + '\n';}
+console.log(text);
 
     let array1 = deriv(lnOfArray(array));// 1st order derivative
 
@@ -392,7 +397,7 @@ let fit = function () {
     iD1 = length - iD1;
     /* iD2 (and iD1) are the indexes of the maxima (and minima), starting from the *end* of the original array,
     in case points in reverse are missing after removal of Irp and SCLC */
-
+    
     return {
       noIrpNoSCLCarray: noIrpNoSCLCarray,
       diodes: [D2dLn, D1dLn, iD2, iD1]
@@ -557,26 +562,26 @@ let fit = function () {
 
     var n1 = parseFloat(document.getElementById('n1').value),
       n1vary = document.getElementById('n1CheckBox').checked,
-      Is1 = parseFloat(document.getElementById('Is1').value),
+      Is1 = parseFloat(document.getElementById('is1').value),
       Is1vary = document.getElementById('Is1CheckBox').checked,
-      Rp = parseFloat(document.getElementById('Rp').value),
+      Rp = parseFloat(document.getElementById('rp1').value),
       Rpvary = document.getElementById('Rp1CheckBox').checked,
-      Rs = parseFloat(document.getElementById('Rs').value),
+      Rs = parseFloat(document.getElementById('rs').value),
       Rsvary = document.getElementById('RsCheckBox').checked;
 
-    let params = [['n1', n1, eps, n1vary], ['Is1', Is1, eps, Is1vary], ['Rp', Rp, eps, Rpvary], ['Rs', Rs, eps, Rsvary]]; // single diode model
+    let params = [['n1', n1, eps, n1vary], ['is1', Is1, eps, Is1vary], ['rp1', Rp, eps, Rpvary], ['rs', Rs, eps, Rsvary]]; // single diode model
 
     if (!document.getElementById('singleDiode').checked) { //dual diode model
-      var Is2 = parseFloat(document.getElementById('Is2').value),
+      var Is2 = parseFloat(document.getElementById('is2').value),
         Is2vary = document.getElementById('Is2CheckBox').checked,
         n2 = parseFloat(document.getElementById('n2').value),
         n2vary = document.getElementById('n2CheckBox').checked;
-      params = [['n1', n1, eps, n1vary], ['n2', n2, eps, n2vary], ['Is1', Is1, eps, Is1vary], ['Is2', Is2, eps, Is2vary], ['Rp', Rp, eps, Rpvary], ['Rs', Rs, eps, Rsvary]];
+      params = [['n1', n1, eps, n1vary], ['n2', n2, eps, n2vary], ['is1', Is1, eps, Is1vary], ['is2', Is2, eps, Is2vary], ['rp1', Rp, eps, Rpvary], ['rs', Rs, eps, Rsvary]];
     }
     if (document.getElementById('series').checked) {//dual, series diode model
-      var Rp2 = parseFloat(document.getElementById('Is2').value),
+      var Rp2 = parseFloat(document.getElementById('is2').value),
         n1 = parseFloat(document.getElementById('n1').value);
-      params = [['n1', n1], ['n2', n2], ['Is1', Is1], ['Is2', Is2], ['Rp', Rp], ['Rp2', Rp2], ['Rs', Rs]];
+      params = [['n1', n1], ['n2', n2], ['is1', Is1], ['is2', Is2], ['rp1', Rp], ['rp2', Rp2], ['rs', Rs]];
     }
 
     var del,
@@ -662,15 +667,13 @@ let fit = function () {
       , 1)
   }
 
-  function startPauseVary(event) {
-    var el = document.getElementById('varParams');
+  function startPauseVary(start) {
+    // start parameter is a boolean
 
-    if (el.innerHTML == 'Stop') {
-      clearInterval(interval);
-      el.innerHTML = 'Minimize S';
-    } else {
-      el.innerHTML = 'Stop';
+    if (start === true) {
       vary();
+    } else {
+      clearInterval(interval);
     }
   }
 
