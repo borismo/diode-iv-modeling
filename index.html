@@ -44,7 +44,7 @@
   <div class="container-fluid">
     <div class="row">
       <div class="col-md-4 sidebar">
-        <form class="form-horizontal" name="parameters" action="#" id="currentCalculation">
+        <div class="form-horizontal" name="parameters" action="#" id="currentCalculation">
           <div class="form-group">
             <label class="col-sm-3 control-label" for="minVolt">V<sub>i</sub> (V)</label>
             <div class="col-sm-4">
@@ -136,10 +136,10 @@
                   <input type="checkbox" id="Is1CheckBox" checked="checked" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="logscale syncme" name="Is1slider" id="sliderIs1" min=-10 max=0 step=0.1 value=-8>
+                  <input type="range" class="logscale syncme" name="Is1slider" id="sliderIs1" min="-10" max="0" step="0.1" value="-8">
                 </div>
                 <div class="col-sm-4">
-                  <input type="number" class="form-control logscale linearScaleBox syncme" id="is1" name="Is1" min=0 value=1e-8 step=1e-10>
+                  <input type="number" class="form-control logscale linearScaleBox syncme" id="is1" name="Is1" min="0" value="1e-8" step="1e-10">
                 </div>
               </div>
             </div>
@@ -152,10 +152,10 @@
                   <input type="checkbox" id="Is2CheckBox" checked="checked" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="logscale syncme" name="Is2slider" id="sliderIs2" min=-19 max=0 step=0.1 value=-16>
+                  <input type="range" class="logscale syncme" name="Is2slider" id="sliderIs2" min="-19" max="0" step="0.1" value="-16">
                 </div>
                 <div class="col-sm-4">
-                  <input type="number" class="form-control logscale linearScaleBox syncme" id="is2" name="Is2" min=0 value=1e-16 step=1e-18>
+                  <input type="number" class="form-control logscale linearScaleBox syncme" id="is2" name="Is2" min="0" value="1e-16" step="1e-18">
                 </div>
               </div>
             </div>
@@ -168,10 +168,10 @@
                   <input type="checkbox" id="Rp1CheckBox" checked="checked" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="logscale syncme" name="Rpslider" id="sliderRp" min=3 max=9 step=0.1 value=5>
+                  <input type="range" class="logscale syncme" name="Rpslider" id="sliderRp" min="3" max="9" step="0.1" value="5">
                 </div>
                 <div class="col-sm-4">
-                  <input type="number" class="form-control logscale linearScaleBox syncme" id="rp1" name="Rp" min=1 value=1e5 step=1e3>
+                  <input type="number" class="form-control logscale linearScaleBox syncme" id="rp1" name="Rp" min="1" value="1e5" step="1e3">
                 </div>
               </div>
             </div>
@@ -218,7 +218,7 @@
               </div>
               <div class="radio">
                 <label>
-                  <input type="radio" class="model" name="nbDiodes" id="doubleDiode" value="double" checked>
+                  <input type="radio" class="default model" name="nbDiodes" id="doubleDiode" value="double">
                   Double Diode
                 </label>
               </div>
@@ -226,7 +226,7 @@
             <div class="col-sm-5">
               <div class="radio">
                 <label>
-                  <input type="radio" class="model" name="model" id="parallel" value="parallel" checked>
+                  <input type="radio" class="default model" name="model" id="parallel" value="parallel">
                   Parallel
                 </label>
               </div>
@@ -238,7 +238,7 @@
               </div>
             </div>
           </div>
-        </form>
+        </div>
       </div>
       <div class="col-md-8 col-md-offset-4 main">
         <div class="row">
@@ -251,7 +251,7 @@
                     <input type="radio" class="scale" name="scale" id="linear" value="linear"> Linear
                   </label>
                   <label class="radio-inline">
-                    <input type="radio" class="scale" name="scale" id="log" value="log" checked> Logarithmic
+                    <input type="radio" class="default scale" name="scale" id="log" value="log"> Logarithmic
                   </label>
                 </form>
                 <canvas id="graph" width="550" height="400" dropzone="link string:text/html file:image/png">
@@ -267,7 +267,7 @@
                   <strong>Typical workflow:</strong>
                   <ol>
                     <li>Play around with the parameters on the left and observe how the IV curve is impacted</li>
-                    <li>Import one of your own data files (text file with 2 tab-separated Voltage and Current columns)</li>
+                    <li>Import one of your own data files (text file with 2 tab-separated Voltage and Current columns. <a href="samplefiles/T279K.txt" download>Here's a sample file</a>)</li>
                     <li>Take a look at the estimated parameters. Looking good? Then click on "Use estimated parameters"</li>
                     <li>You can adjust again the parameters manually, then start fitting (check the box next to a parameter's
                       value to let it vary during optimization)</li>
@@ -280,7 +280,6 @@
             </div>
           </div>
           <div class="col-md-5">
-            <form>
               <div class="form-group">
                 <div class="input-group">
                   <label class="input-group-btn">
@@ -291,13 +290,12 @@
                   <input type="text" class="form-control" readonly>
                 </div>
               </div>
-            </form>
             <div class="panel panel-default nofile">
               <div class="panel-body">
                 <div id="overlay"></div>
                 <form>
                   <div class="form-group">
-                    <input type="button" class="btn btn-default" id="clear" value="Clear" onclick="clearData()">
+                    <input type="button" class="btn btn-default" id="clear" value="Clear">
                   </div>
                 </form>
                 <div class="form-horizontal">

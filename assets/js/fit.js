@@ -63,7 +63,7 @@ let fit = function () {
     }
   }
 
-  function toggleIrp(modifDataArray, shuntCurrent, plot, show) {
+  function toggleIrp(modifDataArray, shuntCurrent, show) {
     // Show or hide Irp on graph
 
     let array = modifDataArray[0],
@@ -79,17 +79,17 @@ let fit = function () {
     modifDataArray = [newArray];
 
     if (plot) {
-      combDataAndCalc(/*arrayCalc, plotStyle, scale*/);
+      main.combDataAndCalc();
     }
     return modifDataArray;
   }
 
-  function toggleNonLinCurr(userData, modifDataArray, calculsqResSum, plot, show) {
+  function toggleNonLinCurr(userData, modifDataArray, show) {
 
     const nonLinearCurrent =  userData.current.nonLinear;
 
     var array1 = userData.dataArray[0],
-      array2 = modifDataArray[0],
+      array2 = userData.modifDataArray[0],
       IV1, IV2,
       newArray1 = [],
       newArray2 = [],
@@ -102,14 +102,6 @@ let fit = function () {
       newArray2.push([IV2[0], IV2[1] + sign * nonLinearCurrent[i][1]]);
       i++;
     }
-
-    if (calculsqResSum) {
-      calcSqResSum([newArray1], [newArray2]);
-    }
-
-    // if (plot) {
-    //   combDataAndCalc(/*arrayCalc, plotStyle, scale*/);
-    // }
 
     return {
       dataArray: [newArray1],
@@ -279,7 +271,7 @@ let fit = function () {
     } // diode parameters better evaluated when Rp = infinity
 
     if (nonLinearCurrentShowed) {
-      let result = toggleNonLinCurr(userData, modifDataArray, false, false, false);
+      let result = toggleNonLinCurr(userData, modifDataArray, false);
       modifDataArray = result.modifDataArray;
     }
 
@@ -438,9 +430,11 @@ let fit = function () {
         var Is1 = parseFloat(document.getElementById('Is1').value),
           Is1Fixed = ' <span style="color:grey">(fixed)</span>';
       }
-    } else {//single diode
+    } else {
+      //single diode
       var n = n2;
     }
+
     if (document.getElementById('RsCheckBox').checked) {
       var Rs = estimRs(array, T, n),
         RsFixed = '';
@@ -448,6 +442,7 @@ let fit = function () {
       var Rs = parseFloat(document.getElementById('Rs').value),
         RsFixed = ' <span style="color:grey">(fixed)</span>';
     }
+
     if (document.getElementById('Is2CheckBox').checked) {
       var Is2 = VIAtd2[1] / (Math.exp((VIAtd2[0] - VIAtd2[1] * Rs) * A / n2) - 1),
         Is2Fixed = '';
@@ -455,6 +450,7 @@ let fit = function () {
       var Is2 = parseFloat(document.getElementById('Is2').value),
         Is2Fixed = ' <span style="color:grey">(fixed)</span>';
     }
+
     if (document.getElementById('Rp1CheckBox').checked) {
       var newRp = userData.estimatedParameters.Rp,
         RpFixed = '';
@@ -463,22 +459,20 @@ let fit = function () {
         RpFixed = ' <span style="color:grey">(fixed)</span>';
     }
     
+    $('td.estimation#rp1').text(newRp.toPrecision(3));
+    $('td.estimation#rs').text(Rs.toPrecision(2));
+  
     if (dualDiode) {
       $('td.estimation#n1').text(n1.toPrecision(2));
       $('td.estimation#n2').text(n2.toPrecision(2));
       $('td.estimation#is1').text(Is1.toExponential(2));
       $('td.estimation#is2').text(Is2.toExponential(2));
-      $('td.estimation#rp1').text(newRp.toPrecision(3));
-      $('td.estimation#rs').text(Rs.toPrecision(2));
-      
       return [['n1', n1], ['n2', n2], ['Is1', Is1], ['Is2', Is2], ['Rp', newRp], ['Rs', Rs]];
     } else {
-      document.getElementById('paramEstim').innerHTML = '<b>Estimated parameters<br>(Single-diode model):</b>'
-        + '<br>n = ' + n2.toPrecision(2)
-        + '<br>I<sub>s</sub> = ' + Is2.toExponential(2)
-        + '<br>R<sub>p</sub> = ' + Rp.toPrecision(3)
-        + '<br>R<sub>s</sub> = ' + Rs.toPrecision(2)
-      document.getElementById('updateParams').style.visibility = 'visible';
+      $('td.estimation#n1').text(n2.toPrecision(2));
+      $('td.estimation#n2').text('');
+      $('td.estimation#is1').text(Is2.toExponential(2));
+      $('td.estimation#is2').text('');
       return [['n1', n2], ['Is1', Is2], ['Rp', newRp], ['Rs', Rs]];
     }
   }
@@ -673,6 +667,8 @@ let fit = function () {
     estimRp: estimRp,
     findDiodes: findDiodes,
     startPauseVary: startPauseVary,
+    toggleIrp: toggleIrp,
+    toggleNonLinCurr: toggleNonLinCurr,
     updateParams: updateParams
   }
 

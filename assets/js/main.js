@@ -39,11 +39,16 @@ let main = function () {
   }
   
   $(function () {
+    $('input[type=radio].default')
+      .attr('checked', true);
+
     // When page loaded, calculate a first time
     // IV using the initial parameters, and plot
     // the result
-    const plot = true;  
+    const plot = true;
     calcIV(plot);
+
+    clearFileInput();
 
     // Bind events
     $('input[type=range].syncme')
@@ -81,6 +86,9 @@ let main = function () {
 
     $('button#start')
       .click(startButtonClicked)
+
+    $('input#clear')
+      .click(clearData)
 
     const id = ['TCheckBox','IphCheckBox','n1CheckBox','n2CheckBox','Is1CheckBox','Is2CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox'];
     for (var i = 0; i < id.length; i++) {
@@ -161,8 +169,22 @@ let main = function () {
     }
 
     function faToggleClicked(event) {
-      const $i = $(this) // <i> element
+      const iElem = this; // <i> element
+
+      $(iElem)
         .toggleClass('fa-toggle-on fa-toggle-off');
+      
+      if (iElem.id === 'hideIrp') {
+        userData.modifDataArray = fit.toggleIrp(userData.modifDataArray, userData.current.shunt, IprShowed());
+        combDataAndCalc();
+      }
+      
+      if (iElem.id === 'hideNonLinCurr') {
+        const toggleResult = fit.toggleNonLinCurr(userData, userData.modifDataArray, nonLinearCurrentShowed());
+        userData.dataArray = toggleResult.dataArray
+        userData.modifDataArray = toggleResult.modifDataArray
+        combDataAndCalc();
+      }
     }
 
     function syncInputs (sourceElem) {
@@ -388,33 +410,42 @@ let main = function () {
   }
 
   function changeModel(event) {
+    // Fired when user changes number of diodes or the equivalent circuit
+
     if (document.getElementById('parallel').checked) {
-      disableAndCalc(['Rp2','sliderRp2']);
-      var array = ['n2','slidern2','Is2','sliderIs2','series','parallel'];
-      if (!document.getElementById('clear').disabled) {
+      disableAndCalc(['rp2','sliderRp2']);
+      var array = ['n2','slidern2','is2','sliderIs2','series','parallel'];
+
+      if (fileOpened) {
         array = array.concat(['n1CheckBox','Is1CheckBox','Rp1CheckBox','RsCheckBox','n2CheckBox','Is2CheckBox']);
       }
-      enableAndCalc(array)
-      document.getElementById('varParams').disabled = false;
+      enableAndCalc(array);
     }
+
     if (document.getElementById('singleDiode').checked) {
       document.getElementById('series').checked = false;
       document.getElementById('parallel').checked = true;
-      disableAndCalc(['n2','slidern2','Is2','sliderIs2','Rp2','sliderRp2','series','parallel','n2CheckBox','Is2CheckBox']);
+      disableAndCalc(['n2','slidern2','is2','sliderIs2','rp2','sliderRp2','series','parallel','n2CheckBox','Is2CheckBox']);
       if (!document.getElementById('clear').disabled) {
         enableAndCalc(['n1CheckBox','Is1CheckBox','Rp1CheckBox','RsCheckBox']);
       }
-      document.getElementById('varParams').disabled = false;
+      document.getElementById('start').disabled = false;
     }
     if (document.getElementById('series').checked) {
-      enableAndCalc(['n2','slidern2','Is2','sliderIs2','Rp2','sliderRp2','series','parallel'])
+      enableAndCalc(['n2','slidern2','is2','sliderIs2','rp2','sliderRp2','series','parallel'])
       disableAndCalc(['IphCheckBox','TCheckBox','n1CheckBox','Is1CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox','n2CheckBox','Is2CheckBox']);
-      document.getElementById('varParams').disabled = true;
+      document.getElementById('start').disabled = true;
     }
     
     calcIV(true);
-    if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
-      fit.estimD1D2Rs(findDiodes());
+
+    if (fileOpened) {
+      const findDiodesResult = fit.findDiodes(userData, IprShowed(), nonLinearCurrentShowed()),
+        estimatedParams = fit.estimD1D2Rs(userData, findDiodesResult);
+
+      userData.estimatedParams = estimatedParams;
+
+      fit.calcSqResSum(userData.dataArray, arrayCalc);
     }
   }
 
@@ -434,10 +465,12 @@ let main = function () {
 
     const $td = $(element),
       id = $td.attr('id'),
-      value = parseFloat($td.text());
-      
-    $('input[type=number]#' + id)
-      .val(value);
+      $input = $('input[type=number]#' + id);
+    
+    if ($input.prop('disabled') === false) {
+      const value = parseFloat($td.text());
+      $input.val(value);
+    }
   }
 
   function startButtonClicked(event) {
@@ -696,31 +729,48 @@ let main = function () {
     }
   }
 
-  function clearData() {
+  function clearData(event) {
+    // Fired when user clicks on the Clear button
+
     userData.dataArray = [];
     userData.modifDataArray = [];
     dataStyle = [];
+    fileOpened = false;
     combDataAndCalc(/*arrayCalc,plotStyle, scale*/);
-    document.getElementById('clear').disabled = true;
-    var button = document.getElementById('removeIrp');
-    button.value = 'Hide Irp';
-    button.disabled = true;
-    button = document.getElementById('removeNonLinCurr');
-    button.value = 'Remove non-linear reverse current';
-    button.disabled = true;
+    
+    $('.panel')
+      .addClass('nofile');
+
+    $('.fa-toggle-on')
+      .toggleClass('fa-toggle-on fa-toggle-off');
+      
     if (window.localFile /* FF is picky about that: not importing the file through classic 'browse' button result in an error here */) {
       window.localFile.reset();
     }
-    Rp = undefined;
-    document.getElementById('squaredResSum').innerHTML = '';
-    document.getElementById('paramEstim').innerHTML = '';
-    document.getElementById('updateParams').style.visibility = 'hidden';
-    document.getElementById('varParams').style.visibility = 'hidden';
-    document.getElementById('threshold').style.visibility = 'hidden';
-    document.getElementById('thresholdLabel').style.visibility = 'hidden';
-    log.innerHTML = '';
+
+    clearFileInput();
+
+    $('.estimation')
+      .add('.final')
+      .add('#s')
+      .add('#ds')
+      .empty();
+
+    if ($('#start').hasClass('pause')) {
+      togglePlayButton();
+    }
+
+    userData.estimatedParameters.Rp = undefined;
     
     disableAndCalc(['IphCheckBox','TCheckBox','n1CheckBox','Is1CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox','n2CheckBox','Is2CheckBox']);
+  }
+
+  function clearFileInput() {
+    $('input[type=file]')
+      .val(null)
+      .closest('div')
+      .children('input[type=text]')
+      .val('');
   }
 
   function stringToArray(data) {
@@ -742,14 +792,6 @@ let main = function () {
       .removeClass('nofile');
     
     fileOpened = true;
-
-/*    document.getElementById('removeIrp').disabled = false;
-    document.getElementById('removeNonLinCurr').disabled = false;
-    document.getElementById('varParams').style.visibility = 'visible';
-    document.getElementById('removeIrp').value = 'Hide Irp';
-    document.getElementById('removeNonLinCurr').value = 'Remove non-linear reverse current';
-    document.getElementById('threshold').style.visibility = 'visible';
-    document.getElementById('thresholdLabel').style.visibility = 'visible';*/
     
     if (!document.getElementById('series').checked) {
       array = ['n1CheckBox','Is1CheckBox','Rp1CheckBox','RsCheckBox'];
@@ -788,9 +830,7 @@ let main = function () {
 
     fit.calcSqResSum(dataArray, arrayCalc);
 
-    document.getElementById('clear').disabled = false;
-
-    combDataAndCalc(/*arrayCalc, plotStyle, scale*/);
+    combDataAndCalc();
   }
 
   function IprShowed() {
