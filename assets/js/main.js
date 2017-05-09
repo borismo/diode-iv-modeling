@@ -69,12 +69,6 @@ let main = function () {
     $('input[type=radio].scale')
       .change(changeScaleType);
 
-    /*$('input#removeIrp')
-      .click(removeIrpClicked)
-
-    $('button#updateParams')
-      .click(updateParamsClicked);*/
-
     $(':file')
       .change(fileInputChanged);
 
@@ -90,15 +84,8 @@ let main = function () {
     $('input#clear')
       .click(clearData)
 
-    const id = ['TCheckBox','IphCheckBox','n1CheckBox','n2CheckBox','Is1CheckBox','Is2CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox'];
-    for (var i = 0; i < id.length; i++) {
-      var el = document.getElementById(id[i]);
-      el.addEventListener('change',function(e){
-                      if (!document.getElementById('clear').disabled) { // <=> a experimental file has been opened
-                        fit.estimD1D2Rs(findDiodes());
-                      }
-                    }, false);
-    }
+    $('[type=checkbox]')
+      .change(parameterCheckBoxChanged)
 
       var holder = document.getElementById('graph');
 
@@ -185,6 +172,10 @@ let main = function () {
         userData.modifDataArray = toggleResult.modifDataArray
         combDataAndCalc();
       }
+    }
+
+    function parameterCheckBoxChanged (event) {
+      findAndEstimateDiodes();
     }
 
     function syncInputs (sourceElem) {
@@ -440,13 +431,17 @@ let main = function () {
     calcIV(true);
 
     if (fileOpened) {
+      findAndEstimateDiodes();
+
+      fit.calcSqResSum(userData.dataArray, arrayCalc);
+    }
+  }
+
+  function findAndEstimateDiodes(){
       const findDiodesResult = fit.findDiodes(userData, IprShowed(), nonLinearCurrentShowed()),
         estimatedParams = fit.estimD1D2Rs(userData, findDiodesResult);
 
       userData.estimatedParams = estimatedParams;
-
-      fit.calcSqResSum(userData.dataArray, arrayCalc);
-    }
   }
 
   function useEstimatedParams(event) {
@@ -823,10 +818,7 @@ let main = function () {
     userData.current.nonLinear = current.nonLinear;
     userData.current.shunt = current.shunt;
 
-    const findDiodesResult = fit.findDiodes(userData, IprShowed(), nonLinearCurrentShowed()),
-      estimatedParams = fit.estimD1D2Rs(userData, findDiodesResult);
-
-    userData.estimatedParams = estimatedParams;
+    findAndEstimateDiodes();
 
     fit.calcSqResSum(dataArray, arrayCalc);
 

@@ -629,10 +629,8 @@ let fit = function () {
           if (fitSuccessful){
             const addContext = true;
             main.tableSuccessContext(addContext);
-          } else {
-            main.togglePlayButton();
           }
-          main.togglePlayButton()
+          main.togglePlayButton();
           const start = false;
           startPauseVary(start);
 
