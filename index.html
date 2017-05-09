@@ -136,7 +136,7 @@
                   <input type="checkbox" id="Is1CheckBox" checked="checked" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="logscale linearScale syncme" name="Is1slider" id="sliderIs1" min=-10 max=0 step=0.1 value=-8>
+                  <input type="range" class="logscale syncme" name="Is1slider" id="sliderIs1" min=-10 max=0 step=0.1 value=-8>
                 </div>
                 <div class="col-sm-4">
                   <input type="number" class="form-control logscale linearScaleBox syncme" id="is1" name="Is1" min=0 value=1e-8 step=1e-10>
@@ -152,7 +152,7 @@
                   <input type="checkbox" id="Is2CheckBox" checked="checked" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="logscale linearScale syncme" name="Is2slider" id="sliderIs2" min=-19 max=0 step=0.1 value=-16>
+                  <input type="range" class="logscale syncme" name="Is2slider" id="sliderIs2" min=-19 max=0 step=0.1 value=-16>
                 </div>
                 <div class="col-sm-4">
                   <input type="number" class="form-control logscale linearScaleBox syncme" id="is2" name="Is2" min=0 value=1e-16 step=1e-18>
@@ -168,7 +168,7 @@
                   <input type="checkbox" id="Rp1CheckBox" checked="checked" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="logscale linearScale syncme" name="Rpslider" id="sliderRp" min=3 max=9 step=0.1 value=5>
+                  <input type="range" class="logscale syncme" name="Rpslider" id="sliderRp" min=3 max=9 step=0.1 value=5>
                 </div>
                 <div class="col-sm-4">
                   <input type="number" class="form-control logscale linearScaleBox syncme" id="rp1" name="Rp" min=1 value=1e5 step=1e3>
@@ -184,7 +184,7 @@
                   <input type="checkbox" id="Rp2CheckBox" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="logscale linearScale syncme" name="Rp2slider" id="sliderRp2" min=3 max=9 step=0.1 value=4 disabled="disabled">
+                  <input type="range" class="logscale syncme" name="Rp2slider" id="sliderRp2" min=3 max=9 step=0.1 value=4 disabled="disabled">
                 </div>
                 <div class="col-sm-4">
                   <input type="number" class="form-control logscale linearScaleBox syncme" id="rp2" name="Rp2" min=1 value=1e4 step=1e2 disabled="disabled">
@@ -271,7 +271,7 @@
                     <li>Take a look at the estimated parameters. Looking good? Then click on "Use estimated parameters"</li>
                     <li>You can adjust again the parameters manually, then start fitting (check the box next to a parameter's
                       value to let it vary during optimization)</li>
-                    <li>The optimization can be interrupted at any time by clicking on "stop", otherwise it will stop when the
+                    <li>The optimization can be interrupted at any time by clicking on "pause", otherwise it will stop when the
                       condition on dS is satisfied
                     </li>
                   </ol>
@@ -326,37 +326,37 @@
                     <tr>
                       <th>n<sub>1</sub></th>
                       <td class="estimation" id="n1"></td>
-                      <td></td>
+                      <td class="final" id="final-n1"></td>
                     </tr>
                     <tr>
                       <th>n<sub>2</sub></th>
                       <td class="estimation" id="n2"></td>
-                      <td></td>
+                      <td class="final" id="final-n2"></td>
                     </tr>
                     <tr>
                       <th>I<sub>s1</sub></th>
                       <td class="estimation" id="is1"></td>
-                      <td></td>
+                      <td class="final" id="final-is1"></td>
                     </tr>
                     <tr>
                       <th>I<sub>s2</sub></th>
                       <td class="estimation" id="is2"></td>
-                      <td></td>
+                      <td class="final" id="final-is2"></td>
                     </tr>
                     <tr>
                       <th>R<sub>p1</sub></th>
                       <td class="estimation" id="rp1"></td>
-                      <td></td>
+                      <td class="final" id="final-rp1"></td>
                     </tr>
                     <tr>
                       <th>R<sub>p2</sub></th>
                       <td class="estimation" id="rp2"></td>
-                      <td></td>
+                      <td class="final" id="final-rp2"></td>
                     </tr>
                     <tr>
                       <th>R<sub>s</sub></th>
                       <td class="estimation" id="rs"></td>
-                      <td></td>
+                      <td class="final" id="final-rs"></td>
                     </tr>
                     <tr>
                     </tr>
@@ -376,9 +376,9 @@
                   </div>
                 </div>
                 <div class="form-group">
-                  <div class="input-group" id="threshold">
+                  <div class="input-group">
                     <span class="input-group-addon">Threshold: |dS|</span>
-                    <input type="number" class="form-control" value="1e-9">
+                    <input type="number" class="form-control" id="threshold" value="1e-9">
                   </div>
                 </div>
 

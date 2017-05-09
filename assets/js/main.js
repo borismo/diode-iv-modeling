@@ -44,15 +44,6 @@ let main = function () {
     // the result
     const plot = true;  
     calcIV(plot);
-    
-    //Opera fix: nicely rounds initial Is1 and Is2
-      var	id = ['is1', 'n1', 'n2', 'is2', 'threshold', 'rs', 'rp1', 'rp2'];
-      for (var i = 0; i < 8; i++) {
-        var element = document.getElementById(id[i]),
-          nb = parseFloat(element.value),
-          oOO = orderOfMagn(nb);
-        element.value = nb.toPrecision(Math.round(-log10(element.step / oOO) + 1));
-      }
 
     // Bind events
     $('input[type=range].syncme')
@@ -91,7 +82,7 @@ let main = function () {
     $('button#start')
       .click(startButtonClicked)
 
-    id = ['TCheckBox','IphCheckBox','n1CheckBox','n2CheckBox','Is1CheckBox','Is2CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox'];
+    const id = ['TCheckBox','IphCheckBox','n1CheckBox','n2CheckBox','Is1CheckBox','Is2CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox'];
     for (var i = 0; i < id.length; i++) {
       var el = document.getElementById(id[i]);
       el.addEventListener('change',function(e){
@@ -193,6 +184,13 @@ let main = function () {
         // Linear scale
         $targetInput.val(sourceValue);
       }
+    }
+
+    function syncAllInputs() {
+      $('input[type=number].syncme')
+        .each(function (index, element) {
+          syncInputs(element);
+        });
     }
 
     function inputEvent(event) {
@@ -424,6 +422,8 @@ let main = function () {
     // Fired when user clicks "Use estimated paameters" button
     $('td.estimation')
       .each(updateInput);
+
+    syncAllInputs();
     
     const plot = true;
     calcIV(plot);
@@ -445,10 +445,16 @@ let main = function () {
     // to start or pause the fitting
 
     const start = $(this)
-      .toggleClass('play pause')
-      .hasClass('pause');
+      .hasClass('play');
+
+    togglePlayButton();
 
     fit.startPauseVary(start);
+  }
+
+  function togglePlayButton() {
+    $('#start')
+      .toggleClass('play pause');
   }
 
   function disableAndCalc(arrayOfId) {
@@ -654,10 +660,6 @@ let main = function () {
     }
   }
 
-  function processMultFiles(files) {
-    
-  }
-
   function processFiles(file) {
     // Fired when file input changed
 
@@ -779,7 +781,7 @@ let main = function () {
     userData.current.nonLinear = current.nonLinear;
     userData.current.shunt = current.shunt;
 
-    const findDiodesResult = fit.findDiodes(userData, IprShowed()),
+    const findDiodesResult = fit.findDiodes(userData, IprShowed(), nonLinearCurrentShowed()),
       estimatedParams = fit.estimD1D2Rs(userData, findDiodesResult);
 
     userData.estimatedParams = estimatedParams;
@@ -795,10 +797,27 @@ let main = function () {
     return $('#hideIrp').hasClass('fa-toggle-off');
   }
 
+  function nonLinearCurrentShowed() {
+    return $('#hideNonLinCurr').hasClass('fa-toggle-off');
+  }
+
   function combDataAndCalc(/*arrayCalc, plotStyle, scale*/) {
     drawGraph('graph', userData.modifDataArray.concat(arrayCalc), 0, dataStyle.concat(plotStyle), scale, 'V (V)', 'I (A)');
     //log.innerHTML = "caller is " + arguments.callee.caller.toString().slice(0,arguments.callee.caller.toString().indexOf('{'));
     //log.scrollTop = log.scrollHeight;
+  }
+
+  function tableSuccessContext(add) {
+    // Add or remove "success" color on
+    // parameter's table's 3rd column
+
+    const $td = $('td.final');
+
+    if(add) {
+      $td.addClass('success');
+    } else {
+      $td.removeClass('success');
+    }
   }
 
   return {
@@ -806,6 +825,9 @@ let main = function () {
     combDataAndCalc: combDataAndCalc,
     k: k,
     mchEps: mchEps,
-    q: q
+    q: q,
+    syncAllInputs: syncAllInputs,
+    tableSuccessContext: tableSuccessContext,
+    togglePlayButton: togglePlayButton
   }
 }();

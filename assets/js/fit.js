@@ -107,9 +107,9 @@ let fit = function () {
       calcSqResSum([newArray1], [newArray2]);
     }
 
-    if (plot) {
-      combDataAndCalc(/*arrayCalc, plotStyle, scale*/);
-    }
+    // if (plot) {
+    //   combDataAndCalc(/*arrayCalc, plotStyle, scale*/);
+    // }
 
     return {
       dataArray: [newArray1],
@@ -117,14 +117,16 @@ let fit = function () {
     }
   }
 
-  let prevSqResSum = undefined,
+  let SqResSum,
+    prevSqResSum = undefined,
     dS,
-    SqResSum = 0,
     delS = [];
 
   function calcSqResSum(dataArray, arrayCalc) {
+    // Calculates the sum of squared residuals
+
     const k = main.k,
-      q = main.q
+      q = main.q;
 
     let n1 = parseFloat(document.getElementById('n1').value),
       Is1 = parseFloat(document.getElementById('is1').value),
@@ -133,11 +135,14 @@ let fit = function () {
       T = parseFloat(document.getElementById('T').value),
       single = document.getElementById('singleDiode').checked;
 
+    SqResSum = 0;
+
     if (single) {
-      //single diode model
+      // Single diode model
       var Is2 = 0,
         n2 = 1;
     } else {
+      // Dual diode model
       var Is2 = parseFloat(document.getElementById('is2').value),
         n2 = parseFloat(document.getElementById('n2').value);
     }
@@ -221,14 +226,9 @@ let fit = function () {
     // Display residue
     $('#s').text(SqResSum.toExponential(2));
 
-    if (typeof prevSqResSum === 'number'){
-      dS = SqResSum - prevSqResSum;
-      $('#ds').text(dS.toExponential(2));
-    } else {
-      $('#ds').empty();
-    }
-
     prevSqResSum = SqResSum;
+
+    return SqResSum;
   }
 
   function toggleresidualPlot() {
@@ -285,18 +285,6 @@ let fit = function () {
 
     let noIrpNoSCLCarray = modifDataArray[0],
       array = modifDataArray[0];
-
-    if (IprShowed) {
-      // If initially showed: show Irp again
-      toggleIrp(modifDataArray, shuntCurrent, plot, true);
-    }
-
-    if (nonLinearCurrentShowed) {
-      toggleNonLinCurr(userData, modifDataArray, false, false, true);
-    }
-let text = '';
-for (let row of array){text += row[0] + ',' + row[1] + '\n';}
-console.log(text);
 
     let array1 = deriv(lnOfArray(array));// 1st order derivative
 
@@ -517,48 +505,40 @@ console.log(text);
     return Rs;
   }
 
-  function useEstimParam() {
-/*    var id = ['Iph', 'T', 'n1', 'n2', 'Is1', 'Is2', 'Rp', 'Rp2', 'Rs', 'sliderIph', 'sliderT', 'slidern1', 'slidern2', 'sliderIs1', 'sliderIs2', 'sliderRp', 'sliderRp2', 'sliderRs'];
-    for (var i = 0; i < id.length; i++) {
-      var el = document.getElementById(id[i]);
-      el.removeEventListener('change', syncSlidernboxReCalc, false);
-      el.addEventListener('change', syncSlidernboxNoCalc, false);
-    }*/
-
-    
-
-    /*if (rangeSupport) {
-      var id = ['Iph', 'T', 'n1', 'n2', 'Is1', 'Is2', 'Rp', 'Rp2', 'Rs', 'sliderIph', 'sliderT', 'slidern1', 'slidern2', 'sliderIs1', 'sliderIs2', 'sliderRp', 'sliderRp2', 'sliderRs'];
-      for (var i = 0; i < id.length; i++) {
-        var el = document.getElementById(id[i]);
-        el.addEventListener('change', syncSlidernboxReCalc, false);
-        el.addEventListener('change', syncSlidernboxNoCalc, false);
-      }
-    }*/
-  }
-
   function updateParams(params, plot, updateRangeInput) {
-    var par,
-      id;
+    // Update number input and result table
+
     if (updateRangeInput) {
       var evt = document.createEvent('HTMLEvents');
       evt.initEvent('change', false, false);
     }
-    for (var i = 0; i < params.length; i++) {
-      par = params[i];
-      id = par[0];
-      var el = document.getElementById(id);
-      el.value = par[1];
-      //SyncSlidernBox(el,false);
+
+    for (let param of params) {
+      const id = param[0],
+        value = param[1];
+
+      let element = document.getElementById(id);
+      
       if (updateRangeInput) {
-        el.dispatchEvent(evt);
+        element.dispatchEvent(evt);
       }
+
+      const $td = $('td#final-' + id),
+        isScaleLog = $(element).hasClass('logscale'),
+        formattedValue = (isScaleLog) ? value.toExponential(2) : value.toPrecision(2);
+
+      element.value = value;
+      $td
+        .text(formattedValue);
     }
     main.calcIV(plot);
   }
 
   function vary() {
-    var param, oOO, id, string = '', l = log, eps = main.mchEps;
+    // Varies checked diode parameters until
+    // sum of square residuals is minimized
+
+    var param, oOO, id, eps = main.mchEps;
 
     var n1 = parseFloat(document.getElementById('n1').value),
       n1vary = document.getElementById('n1CheckBox').checked,
@@ -571,14 +551,16 @@ console.log(text);
 
     let params = [['n1', n1, eps, n1vary], ['is1', Is1, eps, Is1vary], ['rp1', Rp, eps, Rpvary], ['rs', Rs, eps, Rsvary]]; // single diode model
 
-    if (!document.getElementById('singleDiode').checked) { //dual diode model
+    if (!document.getElementById('singleDiode').checked) {
+      // Dual diode model
       var Is2 = parseFloat(document.getElementById('is2').value),
         Is2vary = document.getElementById('Is2CheckBox').checked,
         n2 = parseFloat(document.getElementById('n2').value),
         n2vary = document.getElementById('n2CheckBox').checked;
       params = [['n1', n1, eps, n1vary], ['n2', n2, eps, n2vary], ['is1', Is1, eps, Is1vary], ['is2', Is2, eps, Is2vary], ['rp1', Rp, eps, Rpvary], ['rs', Rs, eps, Rsvary]];
     }
-    if (document.getElementById('series').checked) {//dual, series diode model
+    if (document.getElementById('series').checked) {
+      // Dual, series diode model
       var Rp2 = parseFloat(document.getElementById('is2').value),
         n1 = parseFloat(document.getElementById('n1').value);
       params = [['n1', n1], ['n2', n2], ['is1', Is1], ['is2', Is2], ['rp1', Rp], ['rp2', Rp2], ['rs', Rs]];
@@ -590,20 +572,16 @@ console.log(text);
       j = 0,
       ii = 0,
       sign,
-      string = 'Iteration S |dS|',
       stop = false;
-
-    for (var i = 0; i < params.length; i++) {
-      string += ' ' + params[i][0];
-    }
 
     interval = setInterval(
       function () {
         S = SqResSum;
         var newPars = [];
         //del = delS;
-        for (var i = 0; i < params.length; i++) {//for each parameter
-          if (params[i][3]) {// is this parameter allowed to vary?
+        for (var i = 0; i < params.length; i++) {
+          if (params[i][3]) {
+            // This parameter is allowed to vary
             del = delS[i];
             sign = del / Math.abs(del);
 
@@ -616,10 +594,8 @@ console.log(text);
               params[i][2] /= 2;
               newPar = params[i][1] * Math.pow((1 + params[i][2]), -sign); //update parameter
               updateParams([[params[i][0], newPar]], false, false);
-              //l.innerHTML = l.innerHTML+params[i][0]+' ### '+j+' '+params[i][2]+' '+del+'<br>';
               j++;
             }
-            //l.innerHTML = l.innerHTML+params[i][0]+' '+j+' '+del+'<br>';
 
             var jj = 0;
             while (del / Math.abs(del) == delS[i] / Math.abs(delS[i]) && jj < 100 && newPar !== 0) {
@@ -627,7 +603,6 @@ console.log(text);
               newPar = params[i][1] * Math.pow((1 + params[i][2]), -sign); //update parameter
               updateParams([[params[i][0], newPar]], false, false);
 
-              //l.innerHTML = l.innerHTML+params[i][0]+' *** '+jj+' '+newPar+' '+params[i][2]+sign+' '+' <br>';
               jj++;
             }
             params[i][1] = newPar;
@@ -635,28 +610,40 @@ console.log(text);
 
             if (isNaN(newPar)) {
               stop += true;
-              log.innerHTML += 'Sorry, ' + params[i][0] + ' is NaN (' + newPar + ').<br>';
-              l.scrollTop = l.scrollHeight;
             }
           }
         }
 
-        string += '<br>' + ii + ' ' + SqResSum + ' ' + Math.abs(dS) + ' ' + newPars.join(' ');
-
-        // l.innerHTML = l.innerHTML+ii+' '+SqResSum+' '+newPars.join('\t')+'<br>';
-        // l.scrollTop = l.scrollHeight;
         ii++;
 
-        var threshold = document.getElementById('threshold').value;
-        if (Math.abs(SqResSum - S) < threshold || ii > 1000 || stop) {
-          startPauseVary();
-          log.innerHTML += '<br>' + string + '<br>';
-          l.scrollTop = l.scrollHeight;
+        const dS = SqResSum - S;
 
-          var id = ['Iph', 'T', 'n1', 'n2', 'Is1', 'Is2', 'Rp', 'Rp2', 'Rs']
-          for (var i = 0; i < id.length; i++) {
-            SyncSlidernBox(document.getElementById(id[i]), false);
+        if (typeof S === 'number'){
+          $('#ds').text(dS.toExponential(2));
+        } else {
+          $('#ds').empty();
+        }
+
+        const threshold = document.getElementById('threshold').value,
+          fitSuccessful = Math.abs(dS) < threshold;
+
+        if (fitSuccessful || ii > 1000 || stop) {
+          console.log('fitSuccessful: ' + fitSuccessful);
+          console.log('Too many iterations: ' +  (ii > 1000));
+          console.log('NaN: ' + stop);
+
+          if (fitSuccessful){
+            const addContext = true;
+            main.tableSuccessContext(addContext);
+          } else {
+            main.togglePlayButton();
           }
+          main.togglePlayButton()
+          const start = false;
+          startPauseVary(start);
+
+          // Sync number and range inputs
+          main.syncAllInputs();
         }
         if (document.webkitHidden) {
           // no use to plot: the page is not visible (Webkit only)
@@ -671,6 +658,8 @@ console.log(text);
     // start parameter is a boolean
 
     if (start === true) {
+      const addContext = false;
+      main.tableSuccessContext(addContext);
       vary();
     } else {
       clearInterval(interval);
