@@ -1,140 +1,421 @@
 <!DOCTYPE html>
-<html lang='en'>
+<html lang="en">
+
 <head>
-	<meta charset='utf-8'>
-	<title>IV modelling</title>
-	<script src='Script02.js'></script>
-	<script src='fit.js'></script>
-	<script src='bobGraph.js'></script>
-	<link rel='stylesheet' href='style2.css'>
-	<link rel='shortcut icon' href='file://localhost/D:/Documents/HTML/favicon.ico' />
-	<script type='text/javascript'>
-		var _gaq = _gaq || [];
-		_gaq.push(['_setAccount', 'UA-34791046-1']);
-		_gaq.push(['_trackPageview']);
-		(function() {
-			var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-			ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-			var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-		})();
-	</script>
+  <meta charset="utf-8">
+  <title>Diode IV modeling</title>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+    crossorigin="anonymous"></script>
+
+  <script src="https://use.fontawesome.com/46d50587ad.js"></script>
+
+  <script src="assets/js/main.js"></script>
+  <script src="assets/js/fit.js"></script>
+  <script src="assets/js/bobGraph.js"></script>
+
+  <link rel="stylesheet" href="assets/css/index.css">
+  <link rel="shortcut icon" href="assets/images/favicon.ico" />
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(["_setAccount", "UA-34791046-1"]);
+    _gaq.push(["_trackPageview"]);
+    (function () {
+      var ga = document.createElement("script"); ga.type = "text/javascript"; ga.async = true;
+      ga.src = ("https:" == document.location.protocol ? "https://ssl" : "http://www") + ".google-analytics.com/ga.js";
+      var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
 </head>
+
 <body>
-	<div id='outer'>
-		<div id='left'>
-			<form name='parameters' action='#' id='currentCalculation'>
-				<label class='form' for='minVolt'>V<sub>i</sub> (V)</label>
-				<input class='linearScaleBox' id='minVolt' type='number' name='minVolt' step=0.01 value=-1.4><br>
-				<label class='form' for='maxVolt'>V<sub>f</sub> (V)</label>
-				<input class='linearScaleBox' id='maxVolt' type='number' name='maxVolt' step=0.01 value=1.4><br>
-				<label class='form' for='stepVolt'>&Delta;V (mV)</label>
-				<input class='linearScaleBox' id='stepVolt' type='number' name='stepVolt' min=0.01 step=5 value=25><br>
-				<br>
-				
-				<label class='form' for='Iph'>I<sub>ph</sub> (mA)</label>
-				<input type='checkbox' id='IphCheckBox' disabled='disabled'>
-				<!-- Slider for Iph -->
-				<input id='sliderIph' name='IphSlider' class='linearScaleSlider' type='range' min=0 max=1 step=0.01 value=0>
-				<!-- Text box for Iph -->
-				<input id='Iph' name='Iph' class='linearScaleBox' type='number' min=0 step=0.001 value=0><br>
-				<label class='form' for='T'>T (K)</label>
-				<input type='checkbox' id='TCheckBox' disabled='disabled'>
-				<!-- Slider for T -->
-				<input id='sliderT' name='TSlider' class='linearScaleSlider' type='range' min=200 max=400 step=1 value=298>
-				<!-- Text box for T -->
-				<input id='T' class='linearScaleBox' type='number' name='T' min=1 value=298 step=1><br>
-				<br>
-				<label class='form' for='n1'>n<sub>1</sub></label>
-				<input type='checkbox' id='n1CheckBox' checked='checked' disabled='disabled'>
-				<!-- Slider for n1 -->
-				<input id='slidern1' name='n1Slider' class='linearScaleSlider' type='range' min=0 max=10 step=0.01 value=3>
-				<!-- Text box for n1 -->
-				<input id='n1' class='linearScaleBox' type='number' min=0 step=0.01 name='n1' value=3><br>
-				<label class='form' for='n2' id='n2label'>n<sub>2</sub></label>
-				<input type='checkbox' id='n2CheckBox' disabled='disabled'>
-				<!-- Slider for n2 -->
-				<input id='slidern2' name='n2Slider' class='linearScaleSlider' type='range' min=0 max=10 step=0.01 value=1>
-				<!-- Text box for n2 -->
-				<input id='n2' class='linearScaleBox' type='number' min=0 step=0.01 name='n2' value=1><br>
-				<br>
-				<label class='form' for='Is1'>Is<sub>1</sub> (A)</label>
-				<input type='checkbox' id='Is1CheckBox' checked='checked' disabled='disabled'>
-				<!-- Slider for Is1 -->
-				<input name='Is1slider' id='sliderIs1' class='LogScale' type='range' min=-10 max=0 step=0.1 value=-8>
-				<!-- Text box for Is1 -->
-				<input type='number' class='LogScaleBox' id='Is1' name='Is1' min=0 value=1e-8 step=1e-10><br>
-				<label class='form' for='Is2' id='Is2label'>Is<sub>2</sub> (A)</label>
-				<input type='checkbox' id='Is2CheckBox' checked='checked' disabled='disabled'>
-				<!-- Slider for Is2 -->
-				<input name='Is2slider' id='sliderIs2' class='LogScale' type='range' min=-19 max=0 step=0.1 value=-16>
-				<!-- Text box for Is2 -->
-				<input type='number' class='LogScaleBox' id='Is2' name='Is2' min=0 value=1e-16 step=1e-18><br>
-				<br>
-				<label class='form' for='Rp'>R<sub>p1</sub> (&Omega;)</label>
-				<input type='checkbox' id='Rp1CheckBox' checked='checked' disabled='disabled'>
-				<!-- Slider for Rp -->
-				<input name='Rpslider' id='sliderRp' class='LogScale' type='range' min=3 max=9 step=0.1 value=5>
-				<!-- Text box for Rp -->
-				<input type='number' class='LogScaleBox' id='Rp' name='Rp' min=1 value=1e5 step=1e3><br>
-				<label class='form' for='Rp2' id='Rp2label' style='color:grey'>R<sub>p2</sub> (&Omega;)</label>
-				<input type='checkbox' id='Rp2CheckBox' disabled='disabled'>
-				<!-- Slider for Rp2 -->
-				<input name='Rp2slider' id='sliderRp2' class='LogScale' type='range' min=3 max=9 step=0.1 value=4 disabled='disabled'>
-				<!-- Text box for Rp2 -->
-				<input type='number' class='LogScaleBox' id='Rp2' name='Rp2' min=1 value=1e4 step=1e2 disabled='disabled'><br>
-				<br>
-				<label class='form' for='Rs'>R<sub>s</sub> (&Omega;)</label>
-				<input type='checkbox' id='RsCheckBox' checked='checked' disabled='disabled'>
-				<!-- Slider for Rs -->
-				<input id='sliderRs' name='RsSlider' class='linearScaleSlider' type='range' min=0 max=10 step=0.01 value=1.5>
-				<!-- Text box for Rs -->
-				<input id='Rs' class='linearScaleBox' type='number' min=0 step=0.01 name='Rs' value=1.5><br>
-				<br>
-				<input type='radio' name='nbDiodes' id='singleDiode'><label for='singleDiode'>Single Diode</label><br>
-				<input type='radio' name='nbDiodes' id='doubleDiode' checked='checked'><label for='doubleDiode'>Double Diode</label>
-				<br><br>
-				<input type='radio' name='model' id='parallel' checked='checked'><label for='parallel' id='parallelLabel'>Parallel</label><br>
-				<input type='radio' name='model' id='series'><label for='series' id='seriesLabel'>Series</label>
-			</form>
-		</div>
-		<div id='centrecontent'>
-			<form name='graph' id='graphParam' action='#'>
-				Scale type: 
-				<input type='radio' name='scale' id='linear'><label for='linear'>Linear</label>
-				<input type='radio' name='scale' id='log' checked='checked'><label for='log'>Logarithmic</label>
-			</form>
-			<canvas id='graph' width='550' height='400' dropzone="link string:text/html file:image/png">[No canvas support. Consider upgrade your browser to Opera or Chrome. Or at least Firefox or Internet Explorer 9]</canvas>
-			<canvas id='fitProgress' width='550' height='400' style='display:none;'></canvas>
-			<div id='rightCol'>
-				<form id='localFile'>
-					<input id='fileInput' type='file'><!-- onchange='processFiles(this.files)' --><br>
-					<input id='clear' type='button' value='Clear' disabled='disabled' onclick='clearData()'>
-				</form>
-			</div>
-			<div id='fit'>
-				<output id='estimatedRp' form='localFile'></output><br>
-				<input id='removeIrp' type='button' value='Hide Irp' disabled='disabled' onclick='removeIrp(true)'><br>
-				<input id='removeNonLinCurr' type='button' value='Remove non-linear reverse current' disabled='disabled' onclick='removeNonLinCurr(true,true)'><br>
-				<output id='squaredResSum'></output><br>
-				<br>
-				<output id='paramEstim'></output><br>
-				<button id='updateParams' type='button' style='visibility:hidden' onclick='useEstimParam()'>Use these parameters</button><br>
-				<button id='varParams' type='button' style='visibility:hidden' onclick='startPauseVary()'>Minimize S</button>
-				<label id='thresholdLabel' for='threshold' style='visibility:hidden'> Threshold: |dS| < </label>
-				<input id='threshold' class='LogScaleBox' type='number' value=1e-9 step=1e-9 min=0 style='visibility:hidden'>
-				
-				<div id='logDiv'></div>
-			</div>
-		</div>
-		<div id='clearfooter'></div><!-- to clear footer -->
-	</div> <!-- end outer div -->
-	<footer>
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">Diode IV modeling</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-4 sidebar">
+        <div class="form-horizontal" name="parameters" action="#" id="currentCalculation">
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="minVolt">V<sub>i</sub> (V)</label>
+            <div class="col-sm-4">
+              <input type="number" class="form-control linearscale linearScaleBox voltage" id="minVolt" name="minVolt" step=0.01 value=-1.4>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="maxVolt">V<sub>f</sub> (V)</label>
+            <div class="col-sm-4">
+              <input type="number" class="form-control linearscale linearScaleBox voltage" id="maxVolt" name="maxVolt" step=0.01 value=1.4>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="stepVolt">&Delta;V (mV)</label>
+            <div class="col-sm-4">
+              <input type="number" class="form-control linearscale linearScaleBox voltage" id="stepVolt" name="stepVolt" min=0.01 step=5
+                value=25><br>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="Iph">I<sub>ph</sub> (mA)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" id="IphCheckBox" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="linearscale linearScaleSlider syncme" id="sliderIph" name="IphSlider" min=0 max=1 step=0.01 value=0>
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control linearscale linearScaleBox syncme" id="Iph" name="Iph" min=0 step=0.001 value=0>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="T">T (K)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" id="TCheckBox" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="linearscale linearScaleSlider syncme" id="sliderT" name="TSlider" min=200 max=400 step=1 value=298>
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control linearscale linearScaleBox syncme" id="T" name="T" min=1 step=1 value=298>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="n1">n<sub>1</sub></label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" id="n1CheckBox" checked="checked" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="linearscale linearScaleSlider syncme" id="slidern1" name="n1Slider" min=0 max=10 step=0.01 value=3>
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control linearscale linearScaleBox syncme" id="n1" min=0 step=0.01 name="n1" value=3>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="n2" id="n2label">n<sub>2</sub></label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" id="n2CheckBox" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="linearscale linearScaleSlider syncme" id="slidern2" name="n2Slider" min=0 max=10 step=0.01 value=1>
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control linearscale linearScaleBox syncme" id="n2" min=0 step=0.01 name="n2" value=1>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="Is1">Is<sub>1</sub> (A)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" id="Is1CheckBox" checked="checked" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="logscale syncme" name="Is1slider" id="sliderIs1" min="-10" max="0" step="0.1" value="-8">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control logscale linearScaleBox syncme" id="is1" name="Is1" min="0" value="1e-8" step="1e-10">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="Is2" id="Is2label">Is<sub>2</sub> (A)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" id="Is2CheckBox" checked="checked" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="logscale syncme" name="Is2slider" id="sliderIs2" min="-19" max="0" step="0.1" value="-16">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control logscale linearScaleBox syncme" id="is2" name="Is2" min="0" value="1e-16" step="1e-18">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="Rp">R<sub>p1</sub> (&Omega;)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" id="Rp1CheckBox" checked="checked" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="logscale syncme" name="Rpslider" id="sliderRp" min="3" max="9" step="0.1" value="5">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control logscale linearScaleBox syncme" id="rp1" name="Rp" min="1" value="1e5" step="1e3">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="Rp2" id="Rp2label">R<sub>p2</sub> (&Omega;)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" id="Rp2CheckBox" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="logscale syncme" name="Rp2slider" id="sliderRp2" min=3 max=9 step=0.1 value=4 disabled="disabled">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control logscale linearScaleBox syncme" id="rp2" name="Rp2" min=1 value=1e4 step=1e2 disabled="disabled">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="Rs">R<sub>s</sub> (&Omega;)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" id="RsCheckBox" checked="checked" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="linearscale linearScaleSlider syncme" id="sliderRs" name="RsSlider" min=0 max=10 step=0.01 value=1.5>
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control linearscale linearScaleBox syncme" id="rs" min=0 step=0.01 name="Rs" value=1.5>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-5 col-sm-offset-2">
+              <div class="radio">
+                <label>
+                  <input type="radio" class="model" name="nbDiodes" id="singleDiode" value="single">
+                  Single Diode
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" class="default model" name="nbDiodes" id="doubleDiode" value="double">
+                  Double Diode
+                </label>
+              </div>
+            </div>
+            <div class="col-sm-5">
+              <div class="radio">
+                <label>
+                  <input type="radio" class="default model" name="model" id="parallel" value="parallel">
+                  Parallel
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" class="model" name="model" id="series" value="series">
+                  Series <span class="label label-default">Experimental</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8 col-md-offset-4 main">
+        <div class="row">
+          <div class="col-md-7">
+            <div class="row">
+              <div class="col-md-12">
+                <form name="graph" id="graphParam" action="#">
+                  <label>Scale type:</label>
+                  <label class="radio-inline">
+                    <input type="radio" class="scale" name="scale" id="linear" value="linear"> Linear
+                  </label>
+                  <label class="radio-inline">
+                    <input type="radio" class="default scale" name="scale" id="log" value="log"> Logarithmic
+                  </label>
+                </form>
+                <canvas id="graph" width="550" height="400" dropzone="link string:text/html file:image/png">
+                  [No canvas support. Consider upgrading your browser]
+                </canvas>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <br>
+                <div class="alert alert-info alert-dismissible" role="alert">
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <strong>Typical workflow:</strong>
+                  <ol>
+                    <li>Play around with the parameters on the left and observe how the IV curve is impacted</li>
+                    <li>Import one of your own data files (text file with 2 tab-separated Voltage and Current columns. <a href="samplefiles/T279K.txt" download>Here's a sample file</a>)</li>
+                    <li>Take a look at the estimated parameters. Looking good? Then click on "Use estimated parameters"</li>
+                    <li>You can adjust again the parameters manually, then start fitting (check the box next to a parameter's
+                      value to let it vary during optimization)</li>
+                    <li>The optimization can be interrupted at any time by clicking on "pause", otherwise it will stop when the
+                      condition on dS is satisfied
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-5">
+              <div class="form-group">
+                <div class="input-group">
+                  <label class="input-group-btn">
+                      <span class="btn btn-default">
+                          Browse&hellip; <input type="file" style="display: none;">
+                      </span>
+                  </label>
+                  <input type="text" class="form-control" readonly>
+                </div>
+              </div>
+            <div class="panel panel-default nofile">
+              <div class="panel-body">
+                <div id="overlay"></div>
+                <form>
+                  <div class="form-group">
+                    <input type="button" class="btn btn-default" id="clear" value="Clear">
+                  </div>
+                </form>
+                <div class="form-horizontal">
+                  <div class="form-group">
+                    <label for="hideIrp" class="col-md-9 control-label">Hide Irp</label>
+                    <p class="col-md-3 form-control-static">
+                      <i class="fa fa-toggle-off fa-lg" id="hideIrp"></i>
+                    </p>
+                  </div>
+                  <div class="form-group">
+                    <label for="hideNonLinCurr" class="col-md-9 control-label">Hide non-linear reverse current</label>
+                    <p class="col-md-3 form-control-static">
+                      <i class="fa fa-toggle-off fa-lg" id="hideNonLinCurr"></i>
+                    </p>
+                  </div>
+                </div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Parameter</th>
+                      <th>Estimation</th>
+                      <th>Final result</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th>n<sub>1</sub></th>
+                      <td class="estimation" id="n1"></td>
+                      <td class="final" id="final-n1"></td>
+                    </tr>
+                    <tr>
+                      <th>n<sub>2</sub></th>
+                      <td class="estimation" id="n2"></td>
+                      <td class="final" id="final-n2"></td>
+                    </tr>
+                    <tr>
+                      <th>I<sub>s1</sub></th>
+                      <td class="estimation" id="is1"></td>
+                      <td class="final" id="final-is1"></td>
+                    </tr>
+                    <tr>
+                      <th>I<sub>s2</sub></th>
+                      <td class="estimation" id="is2"></td>
+                      <td class="final" id="final-is2"></td>
+                    </tr>
+                    <tr>
+                      <th>R<sub>p1</sub></th>
+                      <td class="estimation" id="rp1"></td>
+                      <td class="final" id="final-rp1"></td>
+                    </tr>
+                    <tr>
+                      <th>R<sub>p2</sub></th>
+                      <td class="estimation" id="rp2"></td>
+                      <td class="final" id="final-rp2"></td>
+                    </tr>
+                    <tr>
+                      <th>R<sub>s</sub></th>
+                      <td class="estimation" id="rs"></td>
+                      <td class="final" id="final-rs"></td>
+                    </tr>
+                    <tr>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="form-group">
+                  <div class="btn-group" role="group" aria-label="...">
+                    <button type="button" class="btn btn-default" id="useestimatedparams">Use estimated parameters</button>
+                    <button type="button" class="btn btn-primary play" id="start">
+                      <span id="play">
+                        <i class="fa fa-play" aria-hidden="true"></i> Start fitting
+                      </span>
+                      <span id="pause">
+                        <i class="fa fa-pause" aria-hidden="true"></i> Pause fitting
+                      </span>
+                    </button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="input-group">
+                    <span class="input-group-addon">Threshold: |dS|</span>
+                    <input type="number" class="form-control" id="threshold" value="1e-9">
+                  </div>
+                </div>
+
+                <table class="table">
+                  <tbody>
+                    <tr>
+                      <th>S</th>
+                      <td id="s"></td>
+                    </tr>
+                    <tr>
+                      <th>dS</th>
+                      <td id="ds"></td>
+                    </tr>
+                  </tbody>
+                </table>
+                <!--<div id="fit">
+              <output id="estimatedRp" form="localFile"></output><br>
+              <<input id="removeIrp" type="button" value="Hide Irp" disabled="disabled"><br>
+              <input id="removeNonLinCurr" type="button" value="Remove non-linear reverse current" disabled="disabled"><br>
+              <output id="squaredResSum"></output><br>
+              <br>
+              <output id="paramEstim"></output><br>
+              <button id="updateParams" type="button" style="visibility:hidden">Use these parameters</button><br>
+              <button id="varParams" type="button" style="visibility:hidden">Minimize S</button>
+              <label id="thresholdLabel" for="threshold" style="visibility:hidden"> Threshold: |dS| </label>
+              <input id="threshold" class="logscale linearScaleBox" type="number" value=1e-9 step=1e-9 min=0 style="visibility:hidden">
+            </div>-->
+              </div>
+            </div>
+          </div>
+        </div>
+        <!--<canvas id="fitProgress" width="550" height="400" style="display:none;"></canvas>-->
+      </div>
+    </div>
+  </div>
+  <!--<footer>
 		<address>
-			<a class='white' href='mailto:boris.morel@outlook.com' rel='author'>Contact</a> | 
-			<a class='white' href='http://be.linkedin.com/in/borismorel' hreflang='en' rel='author' target='_blank'>linkedin.com/in/borismorel</a>
+			<a class="white" href="mailto:boris.morel@outlook.com" rel="author">Contact</a> |
+			<a class="white" href="http://be.linkedin.com/in/borismorel" hreflang="en" rel="author" target="_blank">linkedin.com/in/borismorel</a>
 		</address>
-	</footer>
-	<header>
-		<h1>IV Modelling</h1>
-	</header>
+	</footer>-->
 </body>
