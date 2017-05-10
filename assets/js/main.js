@@ -7,7 +7,6 @@ let main = function () {
     fileOpened = false,
     dataStyle = [],
     plotStyle = [],
-    scale = undefined,
     userData = {
       estimatedParams: [],
       estimatedParameters: {
@@ -668,18 +667,18 @@ let main = function () {
     plotStyle = modelCases[model].plotStyle;
 
     if (fileOpened) {
-      // <=> a experimental file has been opened
       fit.calcSqResSum(userData.dataArray, arrayCalc);
-      //fit.estimD1D2Rs();
     }
 
     if (plot) {
-      const scaleIsLinear = document.getElementById('linear').checked;
 
-      scale = (scaleIsLinear) ? 'linearScale' : 'logScale';
-
-      combDataAndCalc(/*arrayCalc, modelCases[model].plotStyle, scale*/);
+      combDataAndCalc();
     }
+  }
+
+  function scaleType() {
+    const scaleIsLinear = document.getElementById('linear').checked;
+    return (scaleIsLinear) ? 'linearScale' : 'logScale';
   }
 
   function processFiles(file) {
@@ -725,7 +724,7 @@ let main = function () {
     userData.modifDataArray = [];
     dataStyle = [];
     fileOpened = false;
-    combDataAndCalc(/*arrayCalc,plotStyle, scale*/);
+    combDataAndCalc();
 
     $('.panel')
       .addClass('nofile');
@@ -829,10 +828,14 @@ let main = function () {
     return $('#hideNonLinCurr').hasClass('fa-toggle-off');
   }
 
-  function combDataAndCalc(/*arrayCalc, plotStyle, scale*/) {
-    drawGraph('graph', userData.modifDataArray.concat(arrayCalc), 0, dataStyle.concat(plotStyle), scale, 'V (V)', 'I (A)');
-    //log.innerHTML = "caller is " + arguments.callee.caller.toString().slice(0,arguments.callee.caller.toString().indexOf('{'));
-    //log.scrollTop = log.scrollHeight;
+  function combDataAndCalc() {
+    const canvasID = 'graph',
+      data = userData.modifDataArray.concat(arrayCalc),
+      primaryPlotIndex = 0,
+      style = dataStyle.concat(plotStyle),
+      xTitle = 'V (V)',
+      yTitle = 'I (A)';
+    drawGraph(canvasID, data, primaryPlotIndex, style, scaleType(), xTitle, yTitle);
   }
 
   function tableSuccessContext(add) {
