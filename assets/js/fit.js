@@ -210,9 +210,6 @@ let fit = function () {
         delS.splice(1, 0, dSdn2);
         delS.splice(3, 0, dSdIs2);
       }
-      //alert(delS);
-      //log.innerHTML = log.innerHTML+x+' '+calcI+' '+data+' '+r+'<br>';
-      //stringArray = stringArray.concat('\n'+calcI+'\t'+data);
     }
 
     // Display residue
@@ -233,7 +230,6 @@ let fit = function () {
   }
 
   function deriv(array) {
-    //alert("caller is " + arguments.callee.caller.toString().slice(0,arguments.callee.caller.toString().indexOf('{')));
     var der, prev, next, derArray = [], stringArray = 'V\tln(I)\td[ln(I)]/dV';
     for (var i = 1; i < array.length - 1; i++) {//Derivative not calculated for 1st and last point
       prev = array[i - 1];
@@ -242,19 +238,16 @@ let fit = function () {
       derArray.push([array[i][0], der]);
       stringArray = stringArray.concat('\n' + array[i][0] + '\t' + array[i][1] + '\t' + der);
     }
-    //alert (stringArray);
     return derArray;
   }
 
   function lnOfArray(array) {
     var xy, y, newArray = [];
-    //var string = 'V\td[ln(I)]/dV';
     for (var i = 0; i < array.length; i++) {
       xy = array[i];
       y = xy[1];
       if (y != 0) {
         newArray.push([xy[0], Math.log(Math.abs(y))]);
-        //string = string.concat('\n'+xy[0]+'\t'+Math.log(Math.abs(y)));
       }
     }
 
@@ -284,7 +277,6 @@ let fit = function () {
 
     let i = array.length - 2,
       prev,
-      l = log,
       dLn = array[i][1],
       dLnMin = 0,
       deltaLnMax = 0,
@@ -299,7 +291,6 @@ let fit = function () {
       return sum / (length - 1);
     }
     var avD = avDelta(array);
-    //l.innerHTML += 'average: '+avD+'<br>';
 
     var iMin = i,
       fluctIn2ndHalf = false;
@@ -311,16 +302,13 @@ let fit = function () {
         i--;
         prev = dLn;
         dLn = array[i][1];
-        //l.innerHTML += [array[i][0],dLn]+'<br>';
+
         fluctIn2ndHalf += Math.abs(dLn - prev) > avD && i < array.length / 2;
         maxPassed += prev > dLn && Math.abs(dLn - prev) < avD;
         var carryOn = !maxPassed || dLn < prev;
       } while (i >= 0 && array[i][0] > 0.04 && carryOn && !fluctIn2ndHalf)
-      // alert(fluctIn2ndHalf);
       iMin = i + 1;
       dLnMin = prev;
-
-      // l.innerHTML += 'min: '+iMin+' '+dLnMin+'<br>';
 
       var dLnMax = dLnMin;
       prev = -Infinity;
@@ -332,18 +320,14 @@ let fit = function () {
         if (dLn < prev && prev > dLnMax && Math.abs(dLn - prev) < avD) {
           iMax = i;
           dLnMax = prev;
-          // l.innerHTML += 'max found at ' + array[iMax + 1][0] + ' V<br>';
         }
         prev = dLn;
         i--;
       }
 
-      // l.innerHTML += 'iMax: ' + iMax + '<br>';
-      // l.innerHTML += 'iMin: ' + iMin + '<br>';
       if (dLnMax - dLnMin > deltaLnMax) {
         deltaLnMax = dLnMax - dLnMin;
         var iMaxMax = iMax;
-        // l.innerHTML += 'Keep<br>';
       }
       j++;
     } while (iMax != iMin && j < 10 && !fluctIn2ndHalf)
@@ -358,7 +342,6 @@ let fit = function () {
       dLn = array[i][1];
     } while (Math.abs(dLn) < Math.abs(prev) || dLn >= 0)
     var iD1 = i + 2;
-    l.innerHTML += 'D1 at ' + array[iD1][0] + ' V<br>';
     var D1dLn = array1[iD1 + 1][1];
 
     i = iMax;
@@ -368,7 +351,6 @@ let fit = function () {
       dLn = array[i][1];
     } while (Math.abs(dLn) < Math.abs(prev) || dLn >= 0)
     var iD2 = i - 1;
-    l.innerHTML += 'D2 at ' + array[iD2][0] + ' V<br>';
     var D2dLn = array1[iD2 + 1][1];
 
     var length = array.length - 2;
@@ -386,14 +368,14 @@ let fit = function () {
 
   function estimD1D2Rs(userData, findDiodesResult) {
     if (document.getElementById('series').checked) {
-      //for now, no estimation for series model
+      // For now, no estimation for series model
        return;
       }
       
     let maxmin = findDiodesResult.diodes;
 
     if (maxmin === 'noDiode') {
-      document.getElementById('paramEstim').innerHTML = 'Sorry, the diodes could not be found';
+      // TODO: Display message
       return;
     }
     
@@ -492,14 +474,13 @@ let fit = function () {
       I = IVati[1],
       V = IVati[0],
       Rs = 0;
-    //alert(IVati);
+
     do {
       exp = Math.exp(A * (V - I * Rs));
       B = A * exp / (exp - 1);
       C = B / (1 / I + Rs * B);
       Rs += 0.01;
     } while (C > dIdVati)
-    //alert(C);
     return Rs;
   }
 
