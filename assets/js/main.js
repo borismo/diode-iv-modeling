@@ -36,7 +36,7 @@ let main = function () {
     } while (temp2 > 1.0);
     return temp1;
   }
-  
+
   $(function () {
     $('input[type=radio].default')
       .attr('checked', true);
@@ -64,7 +64,7 @@ let main = function () {
 
     $('input[type=radio].model')
       .change(changeModel);
-    
+
     $('input[type=radio].scale')
       .change(changeScaleType);
 
@@ -86,175 +86,177 @@ let main = function () {
     $('[type=checkbox]')
       .change(parameterCheckBoxChanged)
 
-      var holder = document.getElementById('graph');
+    var holder = document.getElementById('graph');
 
-      holder.ondragenter = holder.ondragover = function (event) {
-        event.preventDefault();
-        holder.className = 'hover';
-      }
-      
-      holder.ondragleave = function (event) {
-        event.preventDefault();
-        holder.className = '';
-      }
-      
-      holder.ondrop =	function (e) {
-                      e.preventDefault();
-                      processFiles(e.dataTransfer.files);
-                      holder.className = '';
-                    }
-  });
-
-    function changeScaleType(event) {
-      calcIV(true);
+    holder.ondragenter = holder.ondragover = function (event) {
+      event.preventDefault();
+      holder.className = 'hover';
     }
 
-    function rangeInputMouseUp (event) {
+    holder.ondragleave = function (event) {
+      event.preventDefault();
+      holder.className = '';
+    }
+
+    holder.ondrop = function (e) {
+      e.preventDefault();
+      processFiles(e.dataTransfer.files);
+      holder.className = '';
+    }
+  });
+
+  function changeScaleType(event) {
+    calcIV(true);
+  }
+
+  function rangeInputMouseUp(event) {
+    adjustRange(this);
+  }
+
+  function numberInputKeyDown(event) {
+    const keyCode = event.which,
+      upOrDownArrowKeyDown = keyCode == 38 || keyCode == 40;
+
+    if (upOrDownArrowKeyDown) {
+      syncInputs(this);
+      adjustRange(this);
+      calcIV(true);
+    }
+  }
+
+  function removeIrpClicked(event) {
+    let plot = true;
+    fit.removeIrp(userData.modifDataArray, userData.current.shunt, plot);
+  }
+
+  function removeNonLinCurrClicked(event) {
+    const CalculsqResSum = true,
+      plot = true
+    fit.removeNonLinCurr(userData, CalculsqResSum, plot);
+  }
+
+  function fileInputChanged(event) {
+    const file = this.files[0];
+    $(this)
+      .closest('.input-group')
+      .children('input:text')
+      .val(file.name);
+    processFiles(file);
+  }
+
+  function faToggleClicked(event) {
+    const iElem = this; // <i> element
+
+    $(iElem)
+      .toggleClass('fa-toggle-on fa-toggle-off');
+
+    if (iElem.id === 'hideIrp') {
+      userData.modifDataArray = fit.toggleIrp(userData.modifDataArray, userData.current.shunt, IprShowed());
+      combDataAndCalc();
+    }
+
+    if (iElem.id === 'hideNonLinCurr') {
+      const toggleResult = fit.toggleNonLinCurr(userData, userData.modifDataArray, nonLinearCurrentShowed());
+      userData.dataArray = toggleResult.dataArray
+      userData.modifDataArray = toggleResult.modifDataArray
+      combDataAndCalc();
+    }
+  }
+
+  function parameterCheckBoxChanged(event) {
+    findAndEstimateDiodes();
+  }
+
+  function syncInputs(sourceElem) {
+    const $sourceInput = $(sourceElem),
+      isSourceRange = $sourceInput.attr('type') === 'range',
+      targetType = (isSourceRange) ? 'number' : 'range',
+      sourceValue = $sourceInput.val();
+
+    // Sync companion input
+    const $targetInput = $sourceInput
+      .closest('.row')
+      .find('input.syncme[type=' + targetType + ']'),
+      isScaleLog = $targetInput.hasClass('logscale');
+
+    if (isScaleLog) {
+      const targetValue = (isSourceRange) ? Math.pow(10, sourceValue).toExponential(2) : log10(sourceValue);
+      $targetInput.val(targetValue);
+    } else {
+      // Linear scale
+      $targetInput.val(sourceValue);
+    }
+  }
+
+  function syncAllInputs() {
+    $('input[type=number].syncme')
+      .each(function (index, element) {
+        syncInputs(element);
+      });
+  }
+
+  function inputEvent(event) {
+    // Fired when user moves range input or change number input
+    // So "this" is a number or range input
+
+    const isNumberInput = $(this).attr('type') === 'number';
+
+    if (isNumberInput) {
       adjustRange(this);
     }
 
-    function numberInputKeyDown (event){
-      const keyCode = event.which,
-        upOrDownArrowKeyDown = keyCode == 38 || keyCode == 40;
+    syncInputs(this);
+    calcIV(true);
+  }
 
-      if (upOrDownArrowKeyDown) {
-        syncInputs(this);
-        adjustRange(this);
-        calcIV(true);
-      }
+  function checkVoltageAndCalc(event) {
+
+    var minVolt = document.getElementById('minVolt').value,
+      maxVolt = document.getElementById('maxVolt').value,
+      stepVolt = document.getElementById('stepVolt').value;
+
+    if (maxVolt < minVolt) {
+      document.getElementById('minVolt').value = maxVolt;
+      document.getElementById('maxVolt').value = minVolt;
     }
 
-    function removeIrpClicked(event) {
-      let plot = true;
-      fit.removeIrp(userData.modifDataArray, userData.current.shunt, plot);
-    }
+    if (stepVolt == 0) { document.getElementById('stepVolt').value = 25; }
 
-    function removeNonLinCurrClicked (event){
-      const CalculsqResSum = true,
-         plot = true
-      fit.removeNonLinCurr(userData, CalculsqResSum, plot);
-    }
+    if (stepVolt < 0) { document.getElementById('stepVolt').value = Math.abs(stepVolt); }
 
-    function fileInputChanged (event) {
-      const file = this.files[0];
-      $(this)
-        .closest('.input-group')
-        .children('input:text')
-        .val(file.name);
-      processFiles(file);
-    }
-
-    function faToggleClicked(event) {
-      const iElem = this; // <i> element
-
-      $(iElem)
-        .toggleClass('fa-toggle-on fa-toggle-off');
-      
-      if (iElem.id === 'hideIrp') {
-        userData.modifDataArray = fit.toggleIrp(userData.modifDataArray, userData.current.shunt, IprShowed());
-        combDataAndCalc();
-      }
-      
-      if (iElem.id === 'hideNonLinCurr') {
-        const toggleResult = fit.toggleNonLinCurr(userData, userData.modifDataArray, nonLinearCurrentShowed());
-        userData.dataArray = toggleResult.dataArray
-        userData.modifDataArray = toggleResult.modifDataArray
-        combDataAndCalc();
-      }
-    }
-
-    function parameterCheckBoxChanged (event) {
-      findAndEstimateDiodes();
-    }
-
-    function syncInputs (sourceElem) {
-      const $sourceInput = $(sourceElem),
-        isSourceRange = $sourceInput.attr('type') === 'range',
-        targetType = (isSourceRange) ? 'number' : 'range',
-        sourceValue = $sourceInput.val();
-      
-      // Sync companion input
-      const $targetInput = $sourceInput
-          .closest('.row')
-          .find('input.syncme[type=' + targetType + ']'),
-        isScaleLog = $targetInput.hasClass('logscale');
-      
-      if(isScaleLog) {
-        const targetValue = (isSourceRange)? Math.pow(10, sourceValue).toExponential(2) : log10(sourceValue);
-        $targetInput.val(targetValue);
-      } else {
-        // Linear scale
-        $targetInput.val(sourceValue);
-      }
-    }
-
-    function syncAllInputs() {
-      $('input[type=number].syncme')
-        .each(function (index, element) {
-          syncInputs(element);
-        });
-    }
-
-    function inputEvent(event) {
-      // Fired when user moves range input or change number input
-      // So "this" is a number or range input
-
-      const isNumberInput = $(this).attr('type') === 'number';
-
-      if (isNumberInput) {
-        adjustRange(this);
-      }
-
-      syncInputs(this);
-      calcIV(true);
-    }
-
-    function checkVoltageAndCalc(event) {
-
-      var minVolt = document.getElementById('minVolt').value,
-        maxVolt = document.getElementById('maxVolt').value,
-        stepVolt = document.getElementById('stepVolt').value;
-
-      if (maxVolt < minVolt) {
-        document.getElementById('minVolt').value = maxVolt;
-        document.getElementById('maxVolt').value = minVolt;
-      }
-
-      if (stepVolt == 0) { document.getElementById('stepVolt').value = 25; }
-
-      if (stepVolt < 0) { document.getElementById('stepVolt').value = Math.abs(stepVolt); }
-
-      calcIV(true);
-    }
+    calcIV(true);
+  }
 
   function log10(val) {
     return Math.log(val) / Math.log(10);
   }
 
-  function remDecimals(model,number) {
-    var nbDecimals = nbAfterDot (model);
-    return Math.round(number * Math.pow(10,nbDecimals)) * Math.pow(10,-nbDecimals);
+  function remDecimals(model, number) {
+    var nbDecimals = nbAfterDot(model);
+    return Math.round(number * Math.pow(10, nbDecimals)) * Math.pow(10, -nbDecimals);
   }
 
   function nbDecimals(number) {
     var i = -1;
     while (number != 0) {
       i++;
-      number = Math.round(1e8*(number - Math.floor(number)))*1e-7;
+      number = Math.round(1e8 * (number - Math.floor(number))) * 1e-7;
     }
-    
-  return i;
+
+    return i;
   }
 
   function nbAfterDot(number) {
     var n = number.toString().indexOf('.');
-    if (n == -1) {return 0}
-      else {
-        var i = 0;
-        while (number.charAt(n + 1 + i) != '' && isFinite(number.charAt(n + 1 + i))) {
-          i++;
-        }
+    if (n == -1) {
+      return 0;
+    }
+    else {
+      var i = 0;
+      while (number.charAt(n + 1 + i) != '' && isFinite(number.charAt(n + 1 + i))) {
+        i++;
       }
+    }
     return i;
   }
 
@@ -263,7 +265,7 @@ let main = function () {
     var min;
     for (var i = 0; i < array.length; i++) {
       if (!min || array[i] < min) {
-      min = array[i];
+        min = array[i];
       };
     };
     return min;
@@ -274,7 +276,7 @@ let main = function () {
     var max;
     for (var i = 0; i < array.length; i++) {
       if (!max || array[i] > max) {
-      max = array[i];
+        max = array[i];
       };
     };
     return max;
@@ -285,98 +287,99 @@ let main = function () {
 
     if (inputType === 'range') {
       var slider = element,
-        number = document.getElementById(element.id.replace('slider',''));
-    }	else {
-        var slider = document.getElementById('slider'+element.id),
-          number = element;
-      }
+        number = document.getElementById(element.id.replace('slider', ''));
+    } else {
+      var slider = document.getElementById('slider' + element.id),
+        number = element;
+    }
     var rangeChanged = false;
-    
+
     if ($(slider).hasClass('linearscale')) {
       if (parseFloat(number.value) >= parseFloat(slider.max)) {
-        slider.max = remDecimals (number.value, 1.6 * number.value);
+        slider.max = remDecimals(number.value, 1.6 * number.value);
         slider.value = number.value;
-        slider.min = remDecimals (number.value, 0.4 * number.value);
+        slider.min = remDecimals(number.value, 0.4 * number.value);
         rangeChanged = true;
       } else {
         if (parseFloat(number.value) <= parseFloat(slider.min)) {
-          slider.min = remDecimals (number.value, 0.4 * number.value);
+          slider.min = remDecimals(number.value, 0.4 * number.value);
           slider.value = number.value;
-          slider.max = remDecimals (number.value, 1.6 * number.value);
+          slider.max = remDecimals(number.value, 1.6 * number.value);
           rangeChanged = true;
         }
       }
       while (2 * slider.step >= (slider.max - slider.min)) {
         slider.max = 2 * slider.step + slider.max;
       }
-    } 	else { //when scale is Log
-        if (parseFloat(number.value) >= Math.pow(10,parseFloat(slider.max))) {
-          slider.max = Math.round(log10(number.value) + 3);
+    } else { //when scale is Log
+      if (parseFloat(number.value) >= Math.pow(10, parseFloat(slider.max))) {
+        slider.max = Math.round(log10(number.value) + 3);
         slider.value = number.value;
+        slider.min = Math.round(log10(number.value) - 3);
+        rangeChanged = true;
+      } else {
+        if (parseFloat(number.value) <= Math.pow(10, parseFloat(slider.min))) {
           slider.min = Math.round(log10(number.value) - 3);
+          slider.value = number.value;
+          slider.max = Math.round(log10(number.value) + 3);
           rangeChanged = true;
-        } 	else {
-            if (parseFloat(number.value) <= Math.pow(10,parseFloat(slider.min))) {
-              slider.min = Math.round(log10(number.value) - 3);
-        slider.value = number.value;
-              slider.max = Math.round(log10(number.value) + 3);
-              rangeChanged = true;
-            }
-          }
+        }
       }
-      
-      return rangeChanged;
+    }
+
+    return rangeChanged;
   }
 
   function changeStep(event) {
     let element = this;
-    var slider = document.getElementById('slider'+element.id),
+    var slider = document.getElementById('slider' + element.id),
       val = element.value;
-    
-    if (element.className.indexOf('LogScale') == -1){ //Linear Scale
+
+    if (element.className.indexOf('LogScale') == -1) { //Linear Scale
       element.value = parseFloat(val);//for Chrome
-      var newStep = Math.pow(10,-1 * nbAfterDot(val));
-      //alert(newStep);
+      var newStep = Math.pow(10, -1 * nbAfterDot(val));
+
       element.step = newStep;
     }
-    
+
     slider.step = newStep;
   }
 
-  function SyncSlidernBox(element,recalculate) {
+  function SyncSlidernBox(element, recalculate) {
     //alert("caller is " + arguments.callee.caller.toString().slice(0,arguments.callee.caller.toString().indexOf('{')));
     //log.innerHTML += [element.id,recalculate]+'<br>';
-    
+
     if (element.id.indexOf('slider') == -1) {//box changed
       var sliderChanged = false;
-      
-      var elToSync = document.getElementById('slider'+element.id);
+
+      var elToSync = document.getElementById('slider' + element.id);
       //round
       // var val = parseFloat(element.value),
-        // oOO = orderOfMagn(val);
+      // oOO = orderOfMagn(val);
       // if (element.className.indexOf('LogScale') != -1){element.step = oOO / 100;}
       // var	precision = Math.round(-log10(element.step / oOO) + 1);
       // if (!isFinite(precision)) {precision = 3};
       // val = parseFloat(val.toPrecision(precision));
-      
-      if (adjustRange(element,false)) {var time = 100} else {var time = 0}
-      setTimeout(function(){// setTimeOut needed for Opera, otherwise value is not updated when range input's max and min modified
-        if (element.className.indexOf('LogScale') != -1){//Are we dealing with a Log Scale?
+
+      if (adjustRange(element, false)) { var time = 100 } else { var time = 0 }
+      setTimeout(function () {// setTimeOut needed for Opera, otherwise value is not updated when range input's max and min modified
+        if (element.className.indexOf('LogScale') != -1) {//Are we dealing with a Log Scale?
           elToSync.value = log10(element.value);
           //element.value = val.toExponential(precision - 1);
-        } 	else {
+        } else {
           elToSync.value = element.value;
-          }
-      },time);
-    } 	else {//slider changed
-        var sliderChanged = true,
-          elToSync = document.getElementById(element.id.replace('slider',''));
-        if (element.className.indexOf('LogScale') == -1){//Linear Scale?
-          elToSync.value = element.value;
-        }	else {
-            elToSync.value = Math.pow(10, element.value).toExponential(2);
-          }
-      }		
+        }
+      }, time);
+    } else {
+      // Range input changed
+      var sliderChanged = true,
+        elToSync = document.getElementById(element.id.replace('slider', ''));
+      if (element.className.indexOf('LogScale') == -1) {//Linear Scale?
+        elToSync.value = element.value;
+      } else {
+        elToSync.value = Math.pow(10, element.value).toExponential(2);
+      }
+    }
 
     if (recalculate) {
       calcIV(true);
@@ -390,11 +393,11 @@ let main = function () {
     // Fired when user changes number of diodes or the equivalent circuit
 
     if (document.getElementById('parallel').checked) {
-      disableAndCalc(['rp2','sliderRp2']);
-      var array = ['n2','slidern2','is2','sliderIs2','series','parallel'];
+      disableAndCalc(['rp2', 'sliderRp2']);
+      var array = ['n2', 'slidern2', 'is2', 'sliderIs2', 'series', 'parallel'];
 
       if (fileOpened) {
-        array = array.concat(['n1CheckBox','Is1CheckBox','Rp1CheckBox','RsCheckBox','n2CheckBox','Is2CheckBox']);
+        array = array.concat(['n1CheckBox', 'Is1CheckBox', 'Rp1CheckBox', 'RsCheckBox', 'n2CheckBox', 'Is2CheckBox']);
       }
       enableAndCalc(array);
     }
@@ -402,18 +405,18 @@ let main = function () {
     if (document.getElementById('singleDiode').checked) {
       document.getElementById('series').checked = false;
       document.getElementById('parallel').checked = true;
-      disableAndCalc(['n2','slidern2','is2','sliderIs2','rp2','sliderRp2','series','parallel','n2CheckBox','Is2CheckBox']);
+      disableAndCalc(['n2', 'slidern2', 'is2', 'sliderIs2', 'rp2', 'sliderRp2', 'series', 'parallel', 'n2CheckBox', 'Is2CheckBox']);
       if (!document.getElementById('clear').disabled) {
-        enableAndCalc(['n1CheckBox','Is1CheckBox','Rp1CheckBox','RsCheckBox']);
+        enableAndCalc(['n1CheckBox', 'Is1CheckBox', 'Rp1CheckBox', 'RsCheckBox']);
       }
       document.getElementById('start').disabled = false;
     }
     if (document.getElementById('series').checked) {
-      enableAndCalc(['n2','slidern2','is2','sliderIs2','rp2','sliderRp2','series','parallel'])
-      disableAndCalc(['IphCheckBox','TCheckBox','n1CheckBox','Is1CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox','n2CheckBox','Is2CheckBox']);
+      enableAndCalc(['n2', 'slidern2', 'is2', 'sliderIs2', 'rp2', 'sliderRp2', 'series', 'parallel'])
+      disableAndCalc(['IphCheckBox', 'TCheckBox', 'n1CheckBox', 'Is1CheckBox', 'Rp1CheckBox', 'Rp2CheckBox', 'RsCheckBox', 'n2CheckBox', 'Is2CheckBox']);
       document.getElementById('start').disabled = true;
     }
-    
+
     calcIV(true);
 
     if (fileOpened) {
@@ -423,11 +426,11 @@ let main = function () {
     }
   }
 
-  function findAndEstimateDiodes(){
-      const findDiodesResult = fit.findDiodes(userData, IprShowed(), nonLinearCurrentShowed()),
-        estimatedParams = fit.estimD1D2Rs(userData, findDiodesResult);
+  function findAndEstimateDiodes() {
+    const findDiodesResult = fit.findDiodes(userData, IprShowed(), nonLinearCurrentShowed()),
+      estimatedParams = fit.estimD1D2Rs(userData, findDiodesResult);
 
-      userData.estimatedParams = estimatedParams;
+    userData.estimatedParams = estimatedParams;
   }
 
   function useEstimatedParams(event) {
@@ -436,7 +439,7 @@ let main = function () {
       .each(updateInput);
 
     syncAllInputs();
-    
+
     const plot = true;
     calcIV(plot);
   }
@@ -447,7 +450,7 @@ let main = function () {
     const $td = $(element),
       id = $td.attr('id'),
       $input = $('input[type=number]#' + id);
-    
+
     if ($input.prop('disabled') === false) {
       const value = parseFloat($td.text());
       $input.val(value);
@@ -477,7 +480,7 @@ let main = function () {
       if (e) { //this is in case slider was removed because not supported by browser
         e.disabled = true;
       }
-    }	
+    }
   }
 
   function enableAndCalc(arrayOfId) {
@@ -490,46 +493,50 @@ let main = function () {
     }
   }
 
-  //Functions that calculate the current at a given voltage
-  //double diode (in parallel) model
-  function Iparallel(V,Iph,prevI,T,n1,n2,Is1,Is2,Rp,Rs) {
+  // Functions that calculate the current at a given voltage
+  // double diode (in parallel) model
+  function Iparallel(V, Iph, prevI, T, n1, n2, Is1, Is2, Rp, Rs) {
     var i = 0, I, f, df, r, Id1, Id2, Irp;
     Iph = Iph / 1000 // mA -> A
-    if (!prevI) {I = Iph; prevI = I;}
-    
+    if (!prevI) {
+      I = Iph; prevI = I;
+    }
+
     do {
-      if (i > 0) {prevI = I}
-      //if (V>1){alert(prevI);}
-      Id1 = Is1*(Math.exp(q*(V+prevI*Rs)/(n1*k*T))-1);
-      Id2 = Is2*(Math.exp(q*(V+prevI*Rs)/(n2*k*T))-1);
-      Irp = (V+prevI*Rs)/Rp;
+      if (i > 0) {
+        prevI = I;
+      }
 
-      //f(V,prevI)
-      f = Iph-Id1-Id2-Irp-prevI;
+      Id1 = Is1 * (Math.exp(q * (V + prevI * Rs) / (n1 * k * T)) - 1);
+      Id2 = Is2 * (Math.exp(q * (V + prevI * Rs) / (n2 * k * T)) - 1);
+      Irp = (V + prevI * Rs) / Rp;
 
-      //df(V,prevI)/dprevI
-      df =-((Is1*Rs)/(n1*T*k/q))*Math.exp((V+prevI*Rs)/(n1*T*k/q))
-        -((Is2*Rs)/(n2*T*k/q))*Math.exp((V+prevI*Rs)/(n2*T*k/q))
-        -Rs/Rp-1;
+      // f(V,prevI)
+      f = Iph - Id1 - Id2 - Irp - prevI;
 
-      //f/df
-      r=f/df;
-      
-      I=prevI-r;
+      // df(V,prevI)/dprevI
+      df = -((Is1 * Rs) / (n1 * T * k / q)) * Math.exp((V + prevI * Rs) / (n1 * T * k / q))
+        - ((Is2 * Rs) / (n2 * T * k / q)) * Math.exp((V + prevI * Rs) / (n2 * T * k / q))
+        - Rs / Rp - 1;
+
+      // f/df
+      r = f / df;
+
+      I = prevI - r;
 
       i++;
 
-    } while (Math.abs(I-prevI) > mchEps && i < 500)
-    //log.innerHTML = log.innerHTML+V+'\t'+I+'<br>';
-    return [I,Id1,Id2,Irp,Id1+Id2+Irp];
+    } while (Math.abs(I - prevI) > mchEps && i < 500)
+
+    return [I, Id1, Id2, Irp, Id1 + Id2 + Irp];
   };
-  //double diode (in series) model
-  function Iseries(V,T,Iph,n1,n2,Is1,Is2,Rp1,Rp2,Rs) {
-    var i=0, Ia, Ib, V1, V2, Id1, Id2, Irp1, Irp2, H = 10, L = -10;
+  // Double diode (in series) model
+  function Iseries(V, T, Iph, n1, n2, Is1, Is2, Rp1, Rp2, Rs) {
+    var i = 0, Ia, Ib, V1, V2, Id1, Id2, Irp1, Irp2, H = 10, L = -10;
 
     do {
       V1 = (H + L) / 2;
-    
+
       Id1 = Is1 * Math.exp(q * V1 / (n1 * k * T) - 1);
       Irp1 = V1 / Rp1;
 
@@ -537,18 +544,21 @@ let main = function () {
 
       V2 = V - V1 - Rs * Ia;
 
-      Id2 = Is2 * Math.exp( q * V2 / (n2 * k * T) - 1);
+      Id2 = Is2 * Math.exp(q * V2 / (n2 * k * T) - 1);
       Irp2 = V2 / Rp2;
       Ib = Id2 + Irp2;
-      
+
       var diffI = Ib - Ia;
-      
-      if (diffI > 0) {L = V1;}
-        else {H = V1;}
+
+      if (diffI > 0) {
+        L = V1;
+      } else {
+        H = V1;
+      }
       i++;
-      
+
     } while (Math.abs(diffI) > mchEps && i < 500);
-    return [Ia,Id1,Id2,Irp1,Irp2];
+    return [Ia, Id1, Id2, Irp1, Irp2];
   }
 
   function calcIV(plot) {
@@ -572,11 +582,11 @@ let main = function () {
         Is2 = parseFloat(document.getElementById('is2').value),
         Rp2 = parseFloat(document.getElementById('rp2').value);
     }
-      
-    var	Rp = parseFloat(document.getElementById('rp1').value),
+
+    var Rp = parseFloat(document.getElementById('rp1').value),
       Rs = parseFloat(document.getElementById('rs').value);
-      
-    var Ipar,Iser,I,Id1,Id2,
+
+    var Ipar, Iser, I, Id1, Id2,
       arrayVI = [],
       arrayJustV = [],
       arrayJustI = [],
@@ -585,45 +595,43 @@ let main = function () {
       arrayVId2 = [],
       arrayVIrp1 = [],
       arrayVIrp2 = [];
-      //var stringArray = 'V (V)\tI (A)\n';
-      
-      if (document.getElementById('parallel').checked) {
-        var parallel = true,
-          model = 'parallel';
-      }
-      if (document.getElementById('singleDiode').checked) {
-        var parallel = true,
-          model = 'single';
-      }
-      if (document.getElementById('series').checked) {
-        var model = 'series';
-      }
-      
+
+    if (document.getElementById('parallel').checked) {
+      var parallel = true,
+        model = 'parallel';
+    }
+    if (document.getElementById('singleDiode').checked) {
+      var parallel = true,
+        model = 'single';
+    }
+    if (document.getElementById('series').checked) {
+      var model = 'series';
+    }
+
     for (var V = minVolt; V <= maxVolt; V += stepVolt / 1000) {
-      
       if (parallel) {
-        Ipar = Iparallel(V,Iph,I,T,n1,n2,Is1,Is2,Rp,Rs);
+        Ipar = Iparallel(V, Iph, I, T, n1, n2, Is1, Is2, Rp, Rs);
         I = - Ipar[0];
         Id1 = Ipar[1];
         Id2 = Ipar[2];
         var Irp = Ipar[3];
-        arrayVIrp1.push([V,Irp]);
-        //Calculated current is used as the initial current for next voltage,
-        //speeds up equation solving, is important for high direct bias
-      } 	else {
-          Iser = Iseries(V,T,Iph,n1,n2,Is1,Is2,Rp,Rp2,Rs);
-          I = Iser[0];
-          Id1 = Iser[1];
-          Id2 = Iser[2];
-          var Irp1 = Iser[3],
-            Irp2 = Iser[4];
-          arrayVIrp1.push([V,Irp1]);
-          arrayVIrp2.push([V,Irp2]);
-        }
-      
-      arrayVI.push([V,I]);
-      arrayVId1.push([V,Id1]);
-      arrayVId2.push([V,Id2]);
+        arrayVIrp1.push([V, Irp]);
+        // Calculated current is used as the initial current for next voltage,
+        // speeds up equation solving, is important for high direct bias
+      } else {
+        Iser = Iseries(V, T, Iph, n1, n2, Is1, Is2, Rp, Rp2, Rs);
+        I = Iser[0];
+        Id1 = Iser[1];
+        Id2 = Iser[2];
+        var Irp1 = Iser[3],
+          Irp2 = Iser[4];
+        arrayVIrp1.push([V, Irp1]);
+        arrayVIrp2.push([V, Irp2]);
+      }
+
+      arrayVI.push([V, I]);
+      arrayVId1.push([V, Id1]);
+      arrayVId2.push([V, Id2]);
     }
 
     const modelCases = {
@@ -668,8 +676,8 @@ let main = function () {
     if (plot) {
       const scaleIsLinear = document.getElementById('linear').checked;
 
-      scale = (scaleIsLinear)? 'linearScale' : 'logScale';
-        
+      scale = (scaleIsLinear) ? 'linearScale' : 'logScale';
+
       combDataAndCalc(/*arrayCalc, modelCases[model].plotStyle, scale*/);
     }
   }
@@ -678,7 +686,7 @@ let main = function () {
     // Fired when file input changed
 
     let reader = new FileReader();
-    
+
     reader.onload = readerOnLoad;
     reader.filename = file.name;
 
@@ -718,13 +726,13 @@ let main = function () {
     dataStyle = [];
     fileOpened = false;
     combDataAndCalc(/*arrayCalc,plotStyle, scale*/);
-    
+
     $('.panel')
       .addClass('nofile');
 
     $('.fa-toggle-on')
       .toggleClass('fa-toggle-on fa-toggle-off');
-      
+
     if (window.localFile /* FF is picky about that: not importing the file through classic 'browse' button result in an error here */) {
       window.localFile.reset();
     }
@@ -742,8 +750,8 @@ let main = function () {
     }
 
     userData.estimatedParameters.Rp = undefined;
-    
-    disableAndCalc(['IphCheckBox','TCheckBox','n1CheckBox','Is1CheckBox','Rp1CheckBox','Rp2CheckBox','RsCheckBox','n2CheckBox','Is2CheckBox']);
+
+    disableAndCalc(['IphCheckBox', 'TCheckBox', 'n1CheckBox', 'Is1CheckBox', 'Rp1CheckBox', 'Rp2CheckBox', 'RsCheckBox', 'n2CheckBox', 'Is2CheckBox']);
   }
 
   function clearFileInput() {
@@ -758,7 +766,7 @@ let main = function () {
     let array = data.split('\n'),
       row = [],
       skipRow,
-    dataArray = [];
+      dataArray = [];
     for (var i = 0; i < array.length; i++) {
       skipRow = false;
       row = array[i].split('\t');
@@ -766,24 +774,26 @@ let main = function () {
         row[j] = Number(row[j]);
         skipRow += isNaN(row[j]);
       }
-      if (!skipRow) {dataArray.push(row);}
+      if (!skipRow) {
+        dataArray.push(row);
+      }
     }
-    
+
     $('.panel')
       .removeClass('nofile');
-    
+
     fileOpened = true;
-    
+
     if (!document.getElementById('series').checked) {
-      array = ['n1CheckBox','Is1CheckBox','Rp1CheckBox','RsCheckBox'];
+      array = ['n1CheckBox', 'Is1CheckBox', 'Rp1CheckBox', 'RsCheckBox'];
       if (!document.getElementById('singleDiode').checked) {
-        array = array.concat(['n2CheckBox','Is2CheckBox']);
+        array = array.concat(['n2CheckBox', 'Is2CheckBox']);
       }
-      enableAndCalc(array);		
+      enableAndCalc(array);
     }
-    
-    dataStyle = [['verticalCross','purple','Data']];
-    
+
+    dataStyle = [['verticalCross', 'purple', 'Data']];
+
     document.getElementById('minVolt').value = dataArray[0][0];
     document.getElementById('maxVolt').value = dataArray[dataArray.length - 1][0] + document.getElementById('stepVolt').value / 1000;
 
@@ -792,7 +802,7 @@ let main = function () {
     userData.dataArray = dataArray;
     userData.modifDataArray = dataArray;
     calcIV(false);
-    
+
     /**** Estimate parameters ****/
 
     // Parallel resistance Rp
@@ -831,7 +841,7 @@ let main = function () {
 
     const $td = $('td.final');
 
-    if(add) {
+    if (add) {
       $td.addClass('success');
     } else {
       $td.removeClass('success');
