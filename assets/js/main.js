@@ -11,7 +11,6 @@ let main = function () {
     fileOpened = false,
     plotStyle = [],
     userData = {
-      estimatedParams: [],
       estimatedParameters: {
         Rp: undefined
       },
@@ -427,8 +426,29 @@ let main = function () {
   function findAndEstimateDiodes() {
     const findDiodesResult = fit.findDiodes(userData, IprShowed(), nonLinearCurrentShowed()),
       estimatedParams = fit.estimD1D2Rs(userData, findDiodesResult);
+      
+    displayEstimatedParams(estimatedParams);
+  }
 
-    userData.estimatedParams = estimatedParams;
+  function displayEstimatedParams(estimatedParams) {
+    // Display the result of fit.estimD1D2Rs into
+    // the results table
+
+    for (let paramName in estimatedParams) {
+      const id = paramName.toLowerCase(),
+        value = estimatedParams[paramName],
+        text = (isParamScaleLog(id)) ? value.toExponential(2) : value.toPrecision(2);
+
+      $('td.estimation#' + id)
+        .text(text);
+    }
+  }
+
+  function isParamScaleLog(elemID) {
+    // Returns whether scale type used for
+    // a given diode parameter is a logarithmic one
+    return $('[type=number]#' + elemID)
+        .hasClass('logscale');
   }
 
   function useEstimatedParams(event) {

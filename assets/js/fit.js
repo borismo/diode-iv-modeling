@@ -463,17 +463,21 @@ let fit = function () {
     $('td.estimation#rs').text(Rs.toPrecision(2));
   
     if (dualDiode) {
-      $('td.estimation#n1').text(n1.toPrecision(2));
-      $('td.estimation#n2').text(n2.toPrecision(2));
-      $('td.estimation#is1').text(Is1.toExponential(2));
-      $('td.estimation#is2').text(Is2.toExponential(2));
-      return [['n1', n1], ['n2', n2], ['Is1', Is1], ['Is2', Is2], ['Rp', newRp], ['Rs', Rs]];
+      return {
+        n1: n1,
+        n2: n2,
+        Is1: Is1,
+        Is2: Is2,
+        Rp1: newRp,
+        Rs: Rs
+      };
     } else {
-      $('td.estimation#n1').text(n2.toPrecision(2));
-      $('td.estimation#n2').text('');
-      $('td.estimation#is1').text(Is2.toExponential(2));
-      $('td.estimation#is2').text('');
-      return [['n1', n2], ['Is1', Is2], ['Rp', newRp], ['Rs', Rs]];
+      return {
+        n1: n2,
+        Is1: Is2,
+        Rp1: newRp,
+        Rs: Rs
+      };
     }
   }
 
