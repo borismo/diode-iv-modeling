@@ -3,9 +3,12 @@ let main = function () {
 
   const mchEps = machineEpsilon();
 
+  // Elementary charge and Boltzmann constant
+  const q = 1.60217653E-19,
+    k = 1.3806488E-23;
+
   let arrayCalc,
     fileOpened = false,
-    dataStyle = [],
     plotStyle = [],
     userData = {
       estimatedParams: [],
@@ -20,10 +23,6 @@ let main = function () {
       dataArray: [],
       modifDataArray: []
     };
-
-  // Elementary charge and Boltzmann constant
-  const q = 1.60217653E-19,
-    k = 1.3806488E-23;
 
   function machineEpsilon() {
     // Calculate Machine Epsilon
@@ -722,7 +721,6 @@ let main = function () {
 
     userData.dataArray = [];
     userData.modifDataArray = [];
-    dataStyle = [];
     fileOpened = false;
     combDataAndCalc();
 
@@ -791,8 +789,6 @@ let main = function () {
       enableAndCalc(array);
     }
 
-    dataStyle = [['verticalCross', 'purple', 'Data']];
-
     document.getElementById('minVolt').value = dataArray[0][0];
     document.getElementById('maxVolt').value = dataArray[dataArray.length - 1][0] + document.getElementById('stepVolt').value / 1000;
 
@@ -832,9 +828,17 @@ let main = function () {
     const canvasID = 'graph',
       data = userData.modifDataArray.concat(arrayCalc),
       primaryPlotIndex = 0,
-      style = dataStyle.concat(plotStyle),
+      dataStyle = [['verticalCross', 'purple', 'Data']],
       xTitle = 'V (V)',
       yTitle = 'I (A)';
+
+      if (fileOpened) {
+        const dataStyle = [['verticalCross', 'purple', 'Data']];
+        var style = dataStyle.concat(plotStyle);
+      } else {
+        var style = plotStyle;
+      }
+      
     drawGraph(canvasID, data, primaryPlotIndex, style, scaleType(), xTitle, yTitle);
   }
 
