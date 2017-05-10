@@ -7,7 +7,6 @@ let main = function () {
     fileOpened = false,
     dataStyle = [],
     plotStyle = [],
-    reCalcIV = true,
     scale = undefined,
     userData = {
       estimatedParams: [],
@@ -136,16 +135,6 @@ let main = function () {
       fit.removeNonLinCurr(userData, CalculsqResSum, plot);
     }
 
-    function updateParamsClicked(event) {
-      reCalcIV = false;
-
-      const plot = true,
-        updateRangeInput = true;
-      fit.updateParams(userData.estimatedParams, plot, updateRangeInput);
-
-      reCalcIV = true;
-    }
-
     function fileInputChanged (event) {
       const file = this.files[0];
       $(this)
@@ -217,10 +206,7 @@ let main = function () {
       }
 
       syncInputs(this);
-
-      if (reCalcIV) {
-        calcIV(true);
-      }
+      calcIV(true);
     }
 
     function checkVoltageAndCalc(event) {
