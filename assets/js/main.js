@@ -38,15 +38,36 @@ let main = function () {
     $('input[type=radio].default')
       .attr('checked', true);
 
+    clearFileInput();
+
     // When page loaded, calculate a first time
     // IV using the initial parameters, and plot
     // the result
     const plot = true;
     calcIV(plot);
 
-    clearFileInput();
+    bindEvents();
 
-    // Bind events
+    var holder = document.getElementById('graph');
+
+    holder.ondragenter = holder.ondragover = function (event) {
+      event.preventDefault();
+      holder.className = 'hover';
+    }
+
+    holder.ondragleave = function (event) {
+      event.preventDefault();
+      holder.className = '';
+    }
+
+    holder.ondrop = function (e) {
+      e.preventDefault();
+      processFiles(e.dataTransfer.files);
+      holder.className = '';
+    }
+  });
+
+  function bindEvents() {
     $('input[type=range].syncme')
       .on('input', inputEvent)
       .mouseup(rangeInputMouseUp);
@@ -75,32 +96,14 @@ let main = function () {
       .click(useEstimatedParams);
 
     $('button#start')
-      .click(startButtonClicked)
+      .click(startButtonClicked);
 
     $('input#clear')
-      .click(clearData)
+      .click(clearData);
 
     $('[type=checkbox]')
-      .change(parameterCheckBoxChanged)
-
-    var holder = document.getElementById('graph');
-
-    holder.ondragenter = holder.ondragover = function (event) {
-      event.preventDefault();
-      holder.className = 'hover';
-    }
-
-    holder.ondragleave = function (event) {
-      event.preventDefault();
-      holder.className = '';
-    }
-
-    holder.ondrop = function (e) {
-      e.preventDefault();
-      processFiles(e.dataTransfer.files);
-      holder.className = '';
-    }
-  });
+      .change(parameterCheckBoxChanged);
+  }
 
   function changeScaleType(event) {
     calcIV(true);
