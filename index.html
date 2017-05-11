@@ -76,145 +76,145 @@
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-3 control-label" for="Iph">I<sub>ph</sub> (mA)</label>
+            <label class="col-sm-3 control-label">I<sub>ph</sub> (mA)</label>
             <div class="col-sm-9">
               <div class="row">
                 <div class="col-sm-2">
-                  <input type="checkbox" id="IphCheckBox" disabled="disabled">
+                  <input type="checkbox" class="iph" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="linearscale syncme" id="sliderIph" name="IphSlider" min="0" max="1" step="0.01" value="0">
+                  <input type="range" class="linearscale syncme iph" min="0" max="1" step="0.01" value="0">
                 </div>
                 <div class="col-sm-4">
-                  <input type="number" class="form-control linearscale syncme" id="Iph" name="Iph" min="0" step="0.001" value="0">
+                  <input type="number" class="form-control linearscale syncme iph" min="0" step="0.001" value="0">
                 </div>
               </div>
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-3 control-label" for="T">T (K)</label>
+            <label class="col-sm-3 control-label">T (K)</label>
             <div class="col-sm-9">
               <div class="row">
                 <div class="col-sm-2">
-                  <input type="checkbox" id="TCheckBox" disabled="disabled">
+                  <input type="checkbox" class="t" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="linearscale syncme" id="sliderT" name="TSlider" min="200" max="400" step="1" value="298">
+                  <input type="range" class="linearscale syncme t" min="200" max="400" step="1" value="298">
                 </div>
                 <div class="col-sm-4">
-                  <input type="number" class="form-control linearscale syncme" id="T" name="T" min="1" step="1" value="298">
+                  <input type="number" class="form-control linearscale syncme t" min="1" step="1" value="298">
                 </div>
               </div>
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-3 control-label" for="n1">n<sub>1</sub></label>
+            <label class="col-sm-3 control-label">n<sub>1</sub></label>
             <div class="col-sm-9">
               <div class="row">
                 <div class="col-sm-2">
-                  <input type="checkbox" id="n1CheckBox" checked="checked" disabled="disabled">
+                  <input type="checkbox" class="n1" checked="checked" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="linearscale syncme" id="slidern1" name="n1Slider" min="0" max="10" step="0.01" value="3">
+                  <input type="range" class="linearscale syncme n1" min="0" max="10" step="0.01" value="3">
                 </div>
                 <div class="col-sm-4">
-                  <input type="number" class="form-control linearscale syncme" id="n1" min="0" step="0.01" name="n1" value="3">
+                  <input type="number" class="form-control linearscale syncme n1" min="0" step="0.01" value="3">
                 </div>
               </div>
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-3 control-label" for="n2" id="n2label">n<sub>2</sub></label>
+            <label class="col-sm-3 control-label">n<sub>2</sub></label>
             <div class="col-sm-9">
               <div class="row">
                 <div class="col-sm-2">
-                  <input type="checkbox" id="n2CheckBox" disabled="disabled">
+                  <input type="checkbox" class="n2" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="linearscale syncme" id="slidern2" name="n2Slider" min="0" max="10" step="0.01" value="1">
+                  <input type="range" class="linearscale syncme n2" min="0" max="10" step="0.01" value="1">
                 </div>
                 <div class="col-sm-4">
-                  <input type="number" class="form-control linearscale syncme" id="n2" min="0" step="0.01" name="n2" value="1">
+                  <input type="number" class="form-control linearscale syncme n2" min="0" step="0.01" value="1">
                 </div>
               </div>
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-3 control-label" for="Is1">Is<sub>1</sub> (A)</label>
+            <label class="col-sm-3 control-label">Is<sub>1</sub> (A)</label>
             <div class="col-sm-9">
               <div class="row">
                 <div class="col-sm-2">
-                  <input type="checkbox" id="Is1CheckBox" checked="checked" disabled="disabled">
+                  <input type="checkbox" class="is1" checked="checked" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="logscale syncme" name="Is1slider" id="sliderIs1" min="-10" max="0" step="0.1" value="-8">
+                  <input type="range" class="logscale syncme is1" min="-10" max="0" step="0.1" value="-8">
                 </div>
                 <div class="col-sm-4">
-                  <input type="number" class="form-control logscale syncme" id="is1" name="Is1" min="0" value="1e-8" step="1e-10">
+                  <input type="number" class="form-control logscale syncme is1" min="0" value="1e-8" step="1e-10">
                 </div>
               </div>
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-3 control-label" for="Is2" id="Is2label">Is<sub>2</sub> (A)</label>
+            <label class="col-sm-3 control-label">Is<sub>2</sub> (A)</label>
             <div class="col-sm-9">
               <div class="row">
                 <div class="col-sm-2">
-                  <input type="checkbox" id="Is2CheckBox" checked="checked" disabled="disabled">
+                  <input type="checkbox" class="is2" checked="checked" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="logscale syncme" name="Is2slider" id="sliderIs2" min="-19" max="0" step="0.1" value="-16">
+                  <input type="range" class="logscale syncme is2" min="-19" max="0" step="0.1" value="-16">
                 </div>
                 <div class="col-sm-4">
-                  <input type="number" class="form-control logscale syncme" id="is2" name="Is2" min="0" value="1e-16" step="1e-18">
+                  <input type="number" class="form-control logscale syncme is2" min="0" value="1e-16" step="1e-18">
                 </div>
               </div>
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-3 control-label" for="Rp">R<sub>p1</sub> (&Omega;)</label>
+            <label class="col-sm-3 control-label">R<sub>p1</sub> (&Omega;)</label>
             <div class="col-sm-9">
               <div class="row">
                 <div class="col-sm-2">
-                  <input type="checkbox" id="Rp1CheckBox" checked="checked" disabled="disabled">
+                  <input type="checkbox" class="rp1" checked="checked" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="logscale syncme" name="Rpslider" id="sliderRp" min="3" max="9" step="0.1" value="5">
+                  <input type="range" class="logscale syncme rp1" min="3" max="9" step="0.1" value="5">
                 </div>
                 <div class="col-sm-4">
-                  <input type="number" class="form-control logscale syncme" id="rp1" name="Rp" min="1" value="1e5" step="1e3">
+                  <input type="number" class="form-control logscale syncme rp1" min="1" value="1e5" step="1e3">
                 </div>
               </div>
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-3 control-label" for="Rp2" id="Rp2label">R<sub>p2</sub> (&Omega;)</label>
+            <label class="col-sm-3 control-label">R<sub>p2</sub> (&Omega;)</label>
             <div class="col-sm-9">
               <div class="row">
                 <div class="col-sm-2">
-                  <input type="checkbox" id="Rp2CheckBox" disabled="disabled">
+                  <input type="checkbox" class="rp2" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="logscale syncme" name="Rp2slider" id="sliderRp2" min="3" max="9" step="0.1" value="4" disabled="disabled">
+                  <input type="range" class="logscale syncme rp2" min="3" max="9" step="0.1" value="4" disabled="disabled">
                 </div>
                 <div class="col-sm-4">
-                  <input type="number" class="form-control logscale syncme" id="rp2" name="Rp2" min="1" value="1e4" step="1e2" disabled="disabled">
+                  <input type="number" class="form-control logscale syncme rp2" min="1" value="1e4" step="1e2" disabled="disabled">
                 </div>
               </div>
             </div>
           </div>
           <div class="form-group">
-            <label class="col-sm-3 control-label" for="Rs">R<sub>s</sub> (&Omega;)</label>
+            <label class="col-sm-3 control-label">R<sub>s</sub> (&Omega;)</label>
             <div class="col-sm-9">
               <div class="row">
                 <div class="col-sm-2">
-                  <input type="checkbox" id="RsCheckBox" checked="checked" disabled="disabled">
+                  <input type="checkbox" class="rs" checked="checked" disabled="disabled">
                 </div>
                 <div class="col-sm-6">
-                  <input type="range" class="linearscale syncme" id="sliderRs" name="RsSlider" min="0" max="10" step="0.01" value="1.5">
+                  <input type="range" class="linearscale syncme rs" min="0" max="10" step="0.01" value="1.5">
                 </div>
                 <div class="col-sm-4">
-                  <input type="number" class="form-control linearscale syncme" id="rs" min="0" step="0.01" name="Rs" value="1.5">
+                  <input type="number" class="form-control linearscale syncme rs" min="0" step="0.01" value="1.5">
                 </div>
               </div>
             </div>
