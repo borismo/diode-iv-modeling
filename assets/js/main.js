@@ -197,7 +197,7 @@ let main = function () {
 
   function inputEvent(event) {
     // Fired when user moves range input or change number input
-    // So "this" is a number or range input
+    // So "this" is a number or range input element
 
     const isNumberInput = $(this).attr('type') === 'number';
 
@@ -283,22 +283,36 @@ let main = function () {
   };
 
   function adjustRange(element) {
-    const inputType = $(element).attr('type');
+    // When value reaches input's range limit,
+    // modifies range so user is able to use it again
+
+    const $input = $(element),
+      inputType = $input.attr('type'),
+      $rowDiv = $input
+        .closest('.row');
 
     if (inputType === 'range') {
-      var slider = element,
-        number = document.getElementById(element.id.replace('slider', ''));
+      var $rangeInput = $input,
+        $numberInput = $rowDiv
+          .find('[type=number]');
     } else {
-      var slider = document.getElementById('slider' + element.id),
-        number = element;
+      var $rangeInput = $rowDiv
+          .find('[type=range]'),
+        $numberInput = $input;
     }
-    var rangeChanged = false;
 
-    if ($(slider).hasClass('linearscale')) {
-      if (parseFloat(number.value) >= parseFloat(slider.max)) {
-        slider.max = remDecimals(number.value, 1.6 * number.value);
-        slider.value = number.value;
-        slider.min = remDecimals(number.value, 0.4 * number.value);
+    let rangeChanged = false;
+
+    const rangeMax = parseFloat($rangeInput.attr('max')),
+      rangeMin = parseFloat($rangeInput.attr('max')),
+      rangeValue = parseFloat($rangeInput.val()),
+      numberValue = parseFloat($numberInput.val())
+
+    if ($rangeInput.hasClass('linearscale')) {
+      if (numberValue >= rangeMax) {
+        slider.max = remDecimals(numberValue, 1.6 * numberValue);
+        slider.value = numberValue;
+        slider.min = remDecimals(numberValue, 0.4 * numberValue);
         rangeChanged = true;
       } else {
         if (parseFloat(number.value) <= parseFloat(slider.min)) {
@@ -311,8 +325,9 @@ let main = function () {
       while (2 * slider.step >= (slider.max - slider.min)) {
         slider.max = 2 * slider.step + slider.max;
       }
-    } else { //when scale is Log
-      if (parseFloat(number.value) >= Math.pow(10, parseFloat(slider.max))) {
+    } else {
+      // When scale is Log
+      if (parseFloat(number.value) >= Math.pow(10, rangeMax)) {
         slider.max = Math.round(log10(number.value) + 3);
         slider.value = number.value;
         slider.min = Math.round(log10(number.value) - 3);
