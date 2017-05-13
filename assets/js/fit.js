@@ -365,7 +365,7 @@ let fit = function () {
     
     const paramValues = params.value,
       paramChecked = params.checked;
-      
+
     let maxmin = findDiodesResult.diodes;
 
     if (maxmin === 'noDiode') {
@@ -490,7 +490,7 @@ let fit = function () {
       const id = param[0],
         value = param[1];
 
-      let element = document.getElementById(id);
+      let element = $('[type=number].' + id).get(0);
       
       if (updateRangeInput) {
         element.dispatchEvent(evt);
@@ -513,30 +513,32 @@ let fit = function () {
 
     var param, oOO, id, eps = main.mchEps;
 
-    var n1 = parseFloat(document.getElementById('n1').value),
-      n1vary = document.getElementById('n1CheckBox').checked,
-      Is1 = parseFloat(document.getElementById('is1').value),
-      Is1vary = document.getElementById('Is1CheckBox').checked,
-      Rp = parseFloat(document.getElementById('rp1').value),
-      Rpvary = document.getElementById('Rp1CheckBox').checked,
-      Rs = parseFloat(document.getElementById('rs').value),
-      Rsvary = document.getElementById('RsCheckBox').checked;
+    const allParams = main.getAllParams();
 
-    let params = [['n1', n1, eps, n1vary], ['is1', Is1, eps, Is1vary], ['rp1', Rp, eps, Rpvary], ['rs', Rs, eps, Rsvary]]; // single diode model
+    var n1 = allParams.value.n1,
+      n1vary = allParams.checked.n1,
+      Is1 = allParams.value.is1,
+      Is1vary = allParams.checked.is1,
+      Rp = allParams.value.rp1,
+      Rpvary = allParams.checked.rp1,
+      Rs = allParams.value.rs,
+      Rsvary = allParams.checked.rs;
+    
+    // Single diode model
+    let params = [
+      ['n1', n1, eps, n1vary],
+      ['is1', Is1, eps, Is1vary],
+      ['rp1', Rp, eps, Rpvary],
+      ['rs', Rs, eps, Rsvary]
+    ];
 
-    if (!document.getElementById('singleDiode').checked) {
+    if (document.getElementById('doubleDiode').checked) {
       // Dual diode model
-      var Is2 = parseFloat(document.getElementById('is2').value),
-        Is2vary = document.getElementById('Is2CheckBox').checked,
-        n2 = parseFloat(document.getElementById('n2').value),
-        n2vary = document.getElementById('n2CheckBox').checked;
+      var Is2 = allParams.value.Is2,
+        Is2vary = allParams.checked.Is2,
+        n2 = allParams.value.n2,
+        n2vary = allParams.checked.n2;
       params = [['n1', n1, eps, n1vary], ['n2', n2, eps, n2vary], ['is1', Is1, eps, Is1vary], ['is2', Is2, eps, Is2vary], ['rp1', Rp, eps, Rpvary], ['rs', Rs, eps, Rsvary]];
-    }
-    if (document.getElementById('series').checked) {
-      // Dual, series diode model
-      var Rp2 = parseFloat(document.getElementById('is2').value),
-        n1 = parseFloat(document.getElementById('n1').value);
-      params = [['n1', n1], ['n2', n2], ['is1', Is1], ['is2', Is2], ['rp1', Rp], ['rp2', Rp2], ['rs', Rs]];
     }
 
     var del,

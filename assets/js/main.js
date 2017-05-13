@@ -947,6 +947,7 @@ let main = function () { // eslint-disable-line
   return {
     calcIV: calcIV,
     combDataAndCalc: combDataAndCalc,
+    getAllParams: getAllParams,
     k: k,
     mchEps: mchEps,
     q: q,
