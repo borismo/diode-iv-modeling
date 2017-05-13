@@ -1,4 +1,4 @@
-let main = function () {
+let main = function () { // eslint-disable-line 
   'use strict';
 
   const mchEps = machineEpsilon();
@@ -53,18 +53,18 @@ let main = function () {
     holder.ondragenter = holder.ondragover = function (event) {
       event.preventDefault();
       holder.className = 'hover';
-    }
+    };
 
     holder.ondragleave = function (event) {
       event.preventDefault();
       holder.className = '';
-    }
+    };
 
     holder.ondrop = function (e) {
       e.preventDefault();
       processFiles(e.dataTransfer.files);
       holder.className = '';
-    }
+    };
   });
 
   function bindEvents() {
@@ -105,11 +105,14 @@ let main = function () {
       .change(parameterCheckBoxChanged);
   }
 
-  function changeScaleType(event) {
+  function changeScaleType() {
+    // Event handler
+    // fired when user clicks on a scale type radio button
     calcIV(true);
   }
 
-  function rangeInputMouseUp(event) {
+  function rangeInputMouseUp() {
+    // Event handler
     adjustRange(this);
   }
 
@@ -122,17 +125,6 @@ let main = function () {
       adjustRange(this);
       calcIV(true);
     }
-  }
-
-  function removeIrpClicked(event) {
-    let plot = true;
-    fit.removeIrp(userData.modifDataArray, userData.current.shunt, plot);
-  }
-
-  function removeNonLinCurrClicked(event) {
-    const CalculsqResSum = true,
-      plot = true
-    fit.removeNonLinCurr(userData, CalculsqResSum, plot);
   }
 
   function fileInputChanged(event) {
@@ -195,8 +187,9 @@ let main = function () {
       });
   }
 
-  function inputEvent(event) {
-    // Fired when user moves range input or change number input
+  function inputEvent() {
+    // Event handler
+    // fired when user moves range input or change number input
     // So "this" is a number or range input element
 
     const isNumberInput = $(this).attr('type') === 'number';
@@ -260,7 +253,7 @@ let main = function () {
     return i;
   }
 
-  // returns the min value of an array
+  /*// returns the min value of an array
   function min(array) {
     var min;
     for (var i = 0; i < array.length; i++) {
@@ -269,18 +262,18 @@ let main = function () {
       };
     };
     return min;
-  }
+  }*/
 
-  // returns the max value of an array
+  /*// returns the max value of an array
   function max(array) {
     var max;
     for (var i = 0; i < array.length; i++) {
       if (!max || array[i] > max) {
         max = array[i];
-      };
-    };
+      }
+    }
     return max;
-  };
+  }*/
 
   function adjustRange(element) {
     // When value reaches input's range limit,
@@ -291,61 +284,63 @@ let main = function () {
       $rowDiv = $input
         .closest('.row');
 
-    if (inputType === 'range') {
-      var $rangeInput = $input,
-        $numberInput = $rowDiv
-          .find('[type=number]');
-    } else {
-      var $rangeInput = $rowDiv
-          .find('[type=range]'),
-        $numberInput = $input;
+    let $rangeInput = $input,
+      rangeInputElem = element,
+      $numberInput = $rowDiv
+        .find('[type=number]'),
+      numberInputElem = $numberInput.get(0);
+
+    if (inputType === 'number') {
+      $rangeInput = $rowDiv
+          .find('[type=range]');
+      rangeInputElem = $rangeInput.get(0);
+      $numberInput = $input;
+      numberInputElem = element;
     }
 
     let rangeChanged = false;
 
-    const rangeMax = parseFloat($rangeInput.attr('max')),
-      rangeMin = parseFloat($rangeInput.attr('max')),
-      rangeValue = parseFloat($rangeInput.val()),
-      numberValue = parseFloat($numberInput.val())
+    const rangeMax = parseFloat(rangeInputElem.max),
+      rangeMin = parseFloat(rangeInputElem.min),
+      numberValue = parseFloat(numberInputElem.value);
 
     if ($rangeInput.hasClass('linearscale')) {
       if (numberValue >= rangeMax) {
-        slider.max = remDecimals(numberValue, 1.6 * numberValue);
-        slider.value = numberValue;
-        slider.min = remDecimals(numberValue, 0.4 * numberValue);
+        rangeInputElem.max = remDecimals(numberValue, 1.6 * numberValue);
+        rangeInputElem.value = numberValue;
+        rangeInputElem.min = remDecimals(numberValue, 0.4 * numberValue);
         rangeChanged = true;
       } else {
-        if (parseFloat(number.value) <= parseFloat(slider.min)) {
-          slider.min = remDecimals(number.value, 0.4 * number.value);
-          slider.value = number.value;
-          slider.max = remDecimals(number.value, 1.6 * number.value);
+        if (numberValue <= rangeMin) {
+          rangeInputElem.min = remDecimals(numberInputElem.value, 0.4 * numberInputElem.value);
+          rangeInputElem.value = numberInputElem.value;
+          rangeInputElem.max = remDecimals(numberInputElem.value, 1.6 * numberInputElem.value);
           rangeChanged = true;
         }
       }
-      while (2 * slider.step >= (slider.max - slider.min)) {
-        slider.max = 2 * slider.step + slider.max;
+      while (2 * rangeInputElem.step >= (rangeInputElem.max - rangeInputElem.min)) {
+        rangeInputElem.max = 2 * rangeInputElem.step + rangeInputElem.max;
       }
     } else {
       // When scale is Log
-      if (parseFloat(number.value) >= Math.pow(10, rangeMax)) {
-        slider.max = Math.round(log10(number.value) + 3);
-        slider.value = number.value;
-        slider.min = Math.round(log10(number.value) - 3);
+      if (numberValue >= Math.pow(10, rangeMax)) {
+        rangeInputElem.max = Math.round(log10(numberValue) + 3);
+        rangeInputElem.value = numberValue;
+        rangeInputElem.min = Math.round(log10(numberValue) - 3);
         rangeChanged = true;
       } else {
-        if (parseFloat(number.value) <= Math.pow(10, parseFloat(slider.min))) {
-          slider.min = Math.round(log10(number.value) - 3);
-          slider.value = number.value;
-          slider.max = Math.round(log10(number.value) + 3);
+        if (numberValue <= Math.pow(10, rangeMin)) {
+          rangeInputElem.min = Math.round(log10(numberValue) - 3);
+          rangeInputElem.value = numberValue;
+          rangeInputElem.max = Math.round(log10(numberValue) + 3);
           rangeChanged = true;
         }
       }
     }
-
     return rangeChanged;
   }
 
-  function changeStep(event) {
+  function changeStep() {
     let element = this;
     var slider = document.getElementById('slider' + element.id),
       val = element.value;
@@ -399,7 +394,7 @@ let main = function () {
     if (recalculate) {
       calcIV(true);
       if (!document.getElementById('clear').disabled && element.id.indexOf('T') != -1) { // <=> T has been changed and a experimental file is opened
-        fit.estimD1D2Rs(findDiodes());
+        fit.estimD1D2Rs(getAllParams(), fit.findDiodes());
       }
     }
   }
@@ -437,13 +432,13 @@ let main = function () {
     if (fileOpened) {
       findAndEstimateDiodes();
 
-      fit.calcSqResSum(userData.dataArray, arrayCalc);
+      fit.calcSqResSum(getAllParams(), userData.dataArray, arrayCalc);
     }
   }
 
   function findAndEstimateDiodes() {
     const findDiodesResult = fit.findDiodes(userData, IprShowed(), nonLinearCurrentShowed()),
-      estimatedParams = fit.estimD1D2Rs(userData, findDiodesResult);
+      estimatedParams = fit.estimD1D2Rs(getAllParams(), userData, findDiodesResult);
       
     displayEstimatedParams(estimatedParams);
   }
@@ -469,7 +464,7 @@ let main = function () {
         .hasClass('logscale');
   }
 
-  function useEstimatedParams(event) {
+  function useEstimatedParams() {
     // Fired when user clicks "Use estimated paameters" button
     $('td.estimation')
       .each(updateInput);
@@ -484,8 +479,8 @@ let main = function () {
     // Update a parameter input with an estimation
 
     const $td = $(element),
-      id = $td.attr('id'),
-      $input = $('input[type=number]#' + id);
+      paramClass = $td.attr('id'),
+      $input = $('input[type=number].' + paramClass);
 
     if ($input.prop('disabled') === false) {
       const value = parseFloat($td.text());
@@ -597,6 +592,62 @@ let main = function () {
     return [Ia, Id1, Id2, Irp1, Irp2];
   }
 
+  function getParam$(paramClass) {
+    return $('input[type=number]')
+      .filter('.' + paramClass);
+  }
+
+  function getParamValue(paramClass) {
+    return parseFloat(
+      getParam$(paramClass)
+        .val()
+    );
+  }
+
+  function getParamChecked(paramClass) {
+    return $('input[type=checkbox]')
+      .filter('.' + paramClass)
+      .is(':checked');
+  }
+
+  function getAllParams() {
+    let params = {
+      value: {
+        iph: undefined,
+        t: undefined,
+        n1: undefined,
+        n2: undefined,
+        is1: undefined,
+        is2: undefined,
+        rp1: undefined,
+        rp2: undefined,
+        rs: undefined
+      },
+      checked: {
+        iph: undefined,
+        t: undefined,
+        n1: undefined,
+        n2: undefined,
+        is1: undefined,
+        is2: undefined,
+        rp1: undefined,
+        rp2: undefined,
+        rs: undefined
+      }
+    };
+
+    for (let paramClass in params.value) {
+      params.value[paramClass] = getParamValue(paramClass);
+      params.checked[paramClass] = getParamChecked(paramClass);
+    }
+    return params;
+  }
+
+  function setParamValue(paramClass, value) {
+    getParam$(paramClass)
+        .val(value);
+  }
+
   function calcIV(plot) {
     // Calculates current for a range of voltage values
     // "plot" parameter is a boolean
@@ -604,23 +655,23 @@ let main = function () {
     const minVolt = parseFloat(document.getElementById('minVolt').value),
       maxVolt = parseFloat(document.getElementById('maxVolt').value),
       stepVolt = parseFloat(document.getElementById('stepVolt').value),
-      Iph = parseFloat(document.getElementById('Iph').value),
-      T = parseFloat(document.getElementById('T').value),
-      n1 = parseFloat(document.getElementById('n1').value),
-      Is1 = parseFloat(document.getElementById('is1').value);
+      Iph = getParamValue('iph'),
+      T = parseFloat($('input[type=number].t').val()),
+      n1 = parseFloat($('input[type=number].n1').val()),
+      Is1 = parseFloat($('input[type=number].is1').val());
+    
+    let n2 = parseFloat($('input[type=number].n2').val()),
+      Is2 = parseFloat($('input[type=number].is2').val()),
+      Rp2 = parseFloat($('input[type=number].rp2').val());
 
     if (document.getElementById('singleDiode').checked) {
-      var n2 = 1,
-        Is2 = 0,
-        Rp2;
-    } else {
-      var n2 = parseFloat(document.getElementById('n2').value),
-        Is2 = parseFloat(document.getElementById('is2').value),
-        Rp2 = parseFloat(document.getElementById('rp2').value);
+      n2 = 1;
+      Is2 = 0;
+      Rp2;
     }
 
-    var Rp = parseFloat(document.getElementById('rp1').value),
-      Rs = parseFloat(document.getElementById('rs').value);
+    var Rp = parseFloat($('input[type=number].rp1').val()),
+      Rs = parseFloat($('input[type=number].rs').val());
 
     var Ipar, Iser, I, Id1, Id2,
       arrayVI = [],
@@ -704,7 +755,7 @@ let main = function () {
     plotStyle = modelCases[model].plotStyle;
 
     if (fileOpened) {
-      fit.calcSqResSum(userData.dataArray, arrayCalc);
+      fit.calcSqResSum(getAllParams(), userData.dataArray, arrayCalc);
     }
 
     if (plot) {
@@ -745,8 +796,8 @@ let main = function () {
       T = prompt('Temperature? (K)', defaultT);
 
     if (isFinite(T) && T > 0) {
-      document.getElementById('T').value = T;
-      document.getElementById('sliderT').value = T;
+      setParamValue('t', T);
+      // document.getElementById('sliderT').value = T;
       userData.dataArray = [];
       userData.modifDataArray = [];
 
@@ -754,7 +805,7 @@ let main = function () {
     }
   }
 
-  function clearData(event) {
+  function clearData() {
     // Fired when user clicks on the Clear button
 
     userData.dataArray = [];
@@ -849,7 +900,7 @@ let main = function () {
 
     findAndEstimateDiodes();
 
-    fit.calcSqResSum(dataArray, arrayCalc);
+    fit.calcSqResSum(getAllParams(), dataArray, arrayCalc);
 
     combDataAndCalc();
   }
@@ -902,5 +953,5 @@ let main = function () {
     syncAllInputs: syncAllInputs,
     tableSuccessContext: tableSuccessContext,
     togglePlayButton: togglePlayButton
-  }
+  };
 }();
