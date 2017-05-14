@@ -252,28 +252,13 @@ let main = function () { // eslint-disable-line
     }
     return i;
   }
-
-  /*// returns the min value of an array
-  function min(array) {
-    var min;
-    for (var i = 0; i < array.length; i++) {
-      if (!min || array[i] < min) {
-        min = array[i];
-      };
-    };
-    return min;
-  }*/
-
-  /*// returns the max value of an array
-  function max(array) {
-    var max;
-    for (var i = 0; i < array.length; i++) {
-      if (!max || array[i] > max) {
-        max = array[i];
-      }
-    }
-    return max;
-  }*/
+  
+  function getRowDiv($input) {
+    // Get parameter inputs'
+    // closest common ancestor
+    return $input
+      .closest('.row');
+  }
 
   function adjustRange(element) {
     // When value reaches input's range limit,
@@ -281,8 +266,7 @@ let main = function () { // eslint-disable-line
 
     const $input = $(element),
       inputType = $input.attr('type'),
-      $rowDiv = $input
-        .closest('.row');
+      $rowDiv = getRowDiv($input);
 
     let $rangeInput = $input,
       rangeInputElem = element,
@@ -341,18 +325,21 @@ let main = function () { // eslint-disable-line
   }
 
   function changeStep() {
-    let element = this;
-    var slider = document.getElementById('slider' + element.id),
-      val = element.value;
+    // Event handle fired when
+    // user blurs number input
+    let numberInputElem = this,
+      $rangeInput = getRowDiv($(numberInputElem))
+        .find('[type=range]'),
+      value = numberInputElem.value;
 
-    if (element.className.indexOf('LogScale') == -1) { //Linear Scale
-      element.value = parseFloat(val);//for Chrome
-      var newStep = Math.pow(10, -1 * nbAfterDot(val));
+    if ($rangeInput.hasClass('linearscale')) {
+      numberInputElem.value = parseFloat(value); // For Chrome
+      var newStep = Math.pow(10, -1 * nbAfterDot(value));
 
-      element.step = newStep;
+      numberInputElem.step = newStep;
     }
 
-    slider.step = newStep;
+    $rangeInput.get().step = newStep;
   }
 
   function SyncSlidernBox(element, recalculate) {
