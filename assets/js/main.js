@@ -21,7 +21,8 @@ let main = function () { // eslint-disable-line
       },
       dataArray: [],
       modifDataArray: []
-    };
+    },
+    parameters = undefined;
 
   function machineEpsilon() {
     // Calculate Machine Epsilon
@@ -39,6 +40,8 @@ let main = function () { // eslint-disable-line
       .attr('checked', true);
 
     clearFileInput();
+
+    parameters = initParameters();
 
     // When page loaded, calculate a first time
     // IV using the initial parameters, and plot
@@ -66,6 +69,33 @@ let main = function () { // eslint-disable-line
       holder.className = '';
     };
   });
+
+  function initParameters() {
+    let params = {
+      minVolt: undefined,
+      maxVolt: undefined,
+      stepVolt: undefined,
+      iph: undefined,
+      t: undefined,
+      n1: undefined,
+      n2: undefined,
+      is1: undefined,
+      is2: undefined,
+      rp1: undefined,
+      rp2: undefined,
+      rs: undefined
+    };
+
+    for (let property in params) {
+      const $inputNumber = $('[type=number].' + property),
+        $inputCheckBox = $('[type=checkbox].' + property);
+      params[property] = {
+        value: Number($inputNumber.val()),
+        checked: $inputCheckBox.is(':checked')
+      };
+    }
+    return params;
+  }
 
   function bindEvents() {
     $('input[type=range].syncme')
@@ -635,9 +665,8 @@ let main = function () { // eslint-disable-line
         .val(value);
   }
 
-  function calcIV(plot) {
+  function calcIV(paramsValues) {
     // Calculates current for a range of voltage values
-    // "plot" parameter is a boolean
 
     const minVolt = parseFloat(document.getElementById('minVolt').value),
       maxVolt = parseFloat(document.getElementById('maxVolt').value),
