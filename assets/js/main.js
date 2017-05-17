@@ -22,7 +22,39 @@ let main = function () { // eslint-disable-line
       dataArray: [],
       modifDataArray: []
     },
-    parameters = undefined;
+    parameters = {
+      minVolt: undefined,
+      maxVolt: undefined,
+      stepVolt: undefined,
+      iph: undefined,
+      t: undefined,
+      n1: undefined,
+      n2: undefined,
+      is1: undefined,
+      is2: undefined,
+      rp1: undefined,
+      rp2: undefined,
+      rs: undefined,
+      init: function () {
+        for (let property in this) {
+          if (this[property] === undefined){
+            const $inputNumber = $('[type=number].' + property),
+              $inputCheckBox = $('[type=checkbox].' + property);
+            this[property] = {
+              value: parseFloat($inputNumber.val()),
+              checked: $inputCheckBox.is(':checked')
+            };
+          }
+        }},
+      update: function ($element, value) {
+        for (let property in this) {
+          if ($element.hasClass(property)) {
+
+          }
+        }
+        this.property = value;
+      }
+    };
 
   function machineEpsilon() {
     // Calculate Machine Epsilon
@@ -41,13 +73,13 @@ let main = function () { // eslint-disable-line
 
     clearFileInput();
 
-    parameters = initParameters();
+    parameters.init();
 
     // When page loaded, calculate a first time
-    // IV using the initial parameters, and plot
-    // the result
-    const plot = true;
-    calcIV(plot);
+    // IV using the initial parameters
+    calcIV(parameters, getModel());
+    // and plot the result
+    combDataAndCalc();
 
     bindEvents();
 
@@ -69,33 +101,6 @@ let main = function () { // eslint-disable-line
       holder.className = '';
     };
   });
-
-  function initParameters() {
-    let params = {
-      minVolt: undefined,
-      maxVolt: undefined,
-      stepVolt: undefined,
-      iph: undefined,
-      t: undefined,
-      n1: undefined,
-      n2: undefined,
-      is1: undefined,
-      is2: undefined,
-      rp1: undefined,
-      rp2: undefined,
-      rs: undefined
-    };
-
-    for (let property in params) {
-      const $inputNumber = $('[type=number].' + property),
-        $inputCheckBox = $('[type=checkbox].' + property);
-      params[property] = {
-        value: Number($inputNumber.val()),
-        checked: $inputCheckBox.is(':checked')
-      };
-    }
-    return params;
-  }
 
   function bindEvents() {
     $('input[type=range].syncme')
@@ -229,6 +234,9 @@ let main = function () { // eslint-disable-line
     }
 
     syncInputs(this);
+
+    parameters.update($(this), this.value)
+
     calcIV(true);
   }
 
@@ -665,50 +673,58 @@ let main = function () { // eslint-disable-line
         .val(value);
   }
 
-  function calcIV(paramsValues) {
+  function getModel() {
+    const isSingleDiodeChecked = document.getElementById('singleDiode').checked,
+      isParallelChecked = document.getElementById('parallel').checked;
+    return {
+      diodeCount: (isSingleDiodeChecked) ? 1 : 2,
+      circuit: (isParallelChecked) ? 'parallel' : 'series'
+    };
+  }
+
+  function calcIV(params, model) {
     // Calculates current for a range of voltage values
 
-    const minVolt = parseFloat(document.getElementById('minVolt').value),
-      maxVolt = parseFloat(document.getElementById('maxVolt').value),
-      stepVolt = parseFloat(document.getElementById('stepVolt').value),
-      Iph = getParamValue('iph'),
-      T = parseFloat($('input[type=number].t').val()),
-      n1 = parseFloat($('input[type=number].n1').val()),
-      Is1 = parseFloat($('input[type=number].is1').val());
+    const minVolt = params.minVolt.value,
+      maxVolt = params.maxVolt.value,
+      stepVolt = params.stepVolt.value,
+      Iph = params.iph.value,
+      T = params.t.value,
+      n1 = params.n1.value,
+      Is1 = params.is1.value;
     
-    let n2 = parseFloat($('input[type=number].n2').val()),
-      Is2 = parseFloat($('input[type=number].is2').val()),
-      Rp2 = parseFloat($('input[type=number].rp2').val());
+    let n2 = params.n2.value,
+      Is2 = params.is2.value,
+      Rp2 = params.rp2.value;
 
-    if (document.getElementById('singleDiode').checked) {
+    if (model.diodeCount === 1) {
       n2 = 1;
       Is2 = 0;
       Rp2;
     }
 
-    var Rp = parseFloat($('input[type=number].rp1').val()),
-      Rs = parseFloat($('input[type=number].rs').val());
+    var Rp = params.rp1.value,
+      Rs = params.rs.value;
 
-    var Ipar, Iser, I, Id1, Id2,
+    let Ipar, Iser, I, Id1, Id2,
       arrayVI = [],
-      arrayJustV = [],
-      arrayJustI = [],
-      arrayJustSum = [],
       arrayVId1 = [],
       arrayVId2 = [],
       arrayVIrp1 = [],
-      arrayVIrp2 = [];
+      arrayVIrp2 = [],
+      parallel, modelCase;
 
-    if (document.getElementById('parallel').checked) {
-      var parallel = true,
-        model = 'parallel';
+    if (model.circuit === 'parallel') {
+      parallel = true,
+        modelCase = 'parallel';
     }
-    if (document.getElementById('singleDiode').checked) {
-      var parallel = true,
-        model = 'single';
+
+    if (model.diodeCount === 1) {
+      parallel = true,
+      modelCase = 'single';
     }
     if (document.getElementById('series').checked) {
-      var model = 'series';
+      modelCase = 'series';
     }
 
     for (var V = minVolt; V <= maxVolt; V += stepVolt / 1000) {
@@ -767,16 +783,11 @@ let main = function () { // eslint-disable-line
       }
     };
 
-    arrayCalc = modelCases[model].arrayCalc;
-    plotStyle = modelCases[model].plotStyle;
+    arrayCalc = modelCases[modelCase].arrayCalc;
+    plotStyle = modelCases[modelCase].plotStyle;
 
     if (fileOpened) {
       fit.calcSqResSum(getAllParams(), userData.dataArray, arrayCalc);
-    }
-
-    if (plot) {
-
-      combDataAndCalc();
     }
   }
 
