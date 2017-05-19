@@ -61,7 +61,8 @@ let main = function () { // eslint-disable-line
           }
         }
       }
-    };
+    },
+    model = {};
 
   function machineEpsilon() {
     // Calculate Machine Epsilon
@@ -82,14 +83,11 @@ let main = function () { // eslint-disable-line
 
     parameters.init();
 
+    model = getModel();
+
     // When page loaded, calculate a first time
     // IV using the initial parameters
     calcIVandPlot();
-
-    // and calculate squared residue
-    /*if (fileOpened) {
-      calcSqResSum(getAllParams(), userData.dataArray, arrayCalc);
-    }*/
 
     bindEvents();
 
@@ -123,10 +121,10 @@ let main = function () { // eslint-disable-line
       .blur(changeStep);
 
     $('input[type=number].voltage')
-      .change(checkVoltageAndCalc);
+      .change(voltageInputChanged);
 
     $('input[type=radio].model')
-      .change(changeModel);
+      .change(modelChanged);
 
     $('input[type=radio].scale')
       .change(changeScaleType);
@@ -168,7 +166,7 @@ let main = function () { // eslint-disable-line
     if (upOrDownArrowKeyDown) {
       syncInputs(this);
       adjustRange(this);
-      calcIVandPlot()
+      calcIVandPlot();
     }
   }
 
@@ -182,7 +180,9 @@ let main = function () { // eslint-disable-line
     combDataAndCalc();
   }
 
-  function fileInputChanged(event) {
+  function fileInputChanged() {
+    // Fired when user selects a new file
+    // to import
     const file = this.files[0];
     $(this)
       .closest('.input-group')
@@ -191,7 +191,9 @@ let main = function () { // eslint-disable-line
     processFiles(file);
   }
 
-  function faToggleClicked(event) {
+  function faToggleClicked() {
+    // Fired when user clicks on any of the font-awesome toggle icons
+    // As of now there are 2 of these icons on the page
     const iElem = this; // <i> element
 
     $(iElem)
@@ -204,17 +206,23 @@ let main = function () { // eslint-disable-line
 
     if (iElem.id === 'hideNonLinCurr') {
       const toggleResult = toggleNonLinCurr(userData, userData.modifDataArray, nonLinearCurrentShowed());
-      userData.dataArray = toggleResult.dataArray
-      userData.modifDataArray = toggleResult.modifDataArray
+      userData.dataArray = toggleResult.dataArray;
+      userData.modifDataArray = toggleResult.modifDataArray;
       combDataAndCalc();
     }
   }
 
-  function parameterCheckBoxChanged(event) {
+  function parameterCheckBoxChanged() {
+    /* Fired when user clicks on any of the checkbox inputs
+    These checkboxes define whether the corresponding diode
+    parameter varies or not during optimization
+    Therefore, if unchecked, the parameter will not be estimated. */
     findAndEstimateDiodes();
   }
 
   function syncInputs(sourceElem) {
+    // Sync range and number inputs
+
     const $sourceInput = $(sourceElem),
       isSourceRange = $sourceInput.attr('type') === 'range',
       targetType = (isSourceRange) ? 'number' : 'range',
@@ -260,55 +268,66 @@ let main = function () { // eslint-disable-line
     calcIVandPlot();
   }
 
-  function checkVoltageAndCalc(event) {
+  function voltageInputChanged() {
+    // Fired when one of the 3 .voltage inputs is changed by user
 
-    var minVolt = document.getElementById('minVolt').value,
-      maxVolt = document.getElementById('maxVolt').value,
-      stepVolt = document.getElementById('stepVolt').value;
+    parameters
+      .update($(this));
 
+    checkVoltageInputs();
+
+    calcIVandPlot();
+  }
+
+  function checkVoltageInputs() {
+    const minVolt = parameters.minVolt.value,
+      maxVolt = parameters.maxVolt.value,
+      stepVolt = parameters.stepVolt.value;
+    
+    // Make sure maxVolt > minVolt
     if (maxVolt < minVolt) {
       document.getElementById('minVolt').value = maxVolt;
       document.getElementById('maxVolt').value = minVolt;
     }
 
-    if (stepVolt == 0) { document.getElementById('stepVolt').value = 25; }
+    // Make sure stepVolt != 0
+    if (stepVolt == 0) {
+      document.getElementById('stepVolt').value = 25;
+    }
 
-    if (stepVolt < 0) { document.getElementById('stepVolt').value = Math.abs(stepVolt); }
-
-    calcIVandPlot();
+    // Make sure stepVolt > 0
+    if (stepVolt < 0) {
+      document.getElementById('stepVolt').value = Math.abs(stepVolt);
+    }
   }
 
   function log10(val) {
+    // Returns base 10 logarithmic
+    // (Math.log10() method is not supported by IE11)
+    // Can stop using this function with a transpiler
     return Math.log(val) / Math.log(10);
   }
 
   function remDecimals(model, number) {
-    var nbDecimals = nbAfterDot(model);
+    // Change a number's precision
+    const nbDecimals = nbAfterDot(model);
     return Math.round(number * Math.pow(10, nbDecimals)) * Math.pow(10, -nbDecimals);
   }
 
-  function nbDecimals(number) {
-    var i = -1;
-    while (number != 0) {
-      i++;
-      number = Math.round(1e8 * (number - Math.floor(number))) * 1e-7;
-    }
-
-    return i;
-  }
-
   function nbAfterDot(number) {
-    var n = number.toString().indexOf('.');
+    // Return the number of digits
+    // after decimal separator
+    const n = number.toString().indexOf('.');
     if (n == -1) {
       return 0;
     }
     else {
-      var i = 0;
+      let i = 0;
       while (number.charAt(n + 1 + i) != '' && isFinite(number.charAt(n + 1 + i))) {
         i++;
       }
+      return i;
     }
-    return i;
   }
   
   function getRowDiv($input) {
@@ -400,77 +419,13 @@ let main = function () { // eslint-disable-line
     $rangeInput.get().step = newStep;
   }
 
-  function SyncSlidernBox(element, recalculate) {
-    //alert("caller is " + arguments.callee.caller.toString().slice(0,arguments.callee.caller.toString().indexOf('{')));
-    //log.innerHTML += [element.id,recalculate]+'<br>';
-
-    if (element.id.indexOf('slider') == -1) {//box changed
-      var sliderChanged = false;
-
-      var elToSync = document.getElementById('slider' + element.id);
-      //round
-      // var val = parseFloat(element.value),
-      // oOO = orderOfMagn(val);
-      // if (element.className.indexOf('LogScale') != -1){element.step = oOO / 100;}
-      // var	precision = Math.round(-log10(element.step / oOO) + 1);
-      // if (!isFinite(precision)) {precision = 3};
-      // val = parseFloat(val.toPrecision(precision));
-
-      if (adjustRange(element, false)) { var time = 100 } else { var time = 0 }
-      setTimeout(function () {// setTimeOut needed for Opera, otherwise value is not updated when range input's max and min modified
-        if (element.className.indexOf('LogScale') != -1) {//Are we dealing with a Log Scale?
-          elToSync.value = log10(element.value);
-          //element.value = val.toExponential(precision - 1);
-        } else {
-          elToSync.value = element.value;
-        }
-      }, time);
-    } else {
-      // Range input changed
-      var sliderChanged = true,
-        elToSync = document.getElementById(element.id.replace('slider', ''));
-      if (element.className.indexOf('LogScale') == -1) {//Linear Scale?
-        elToSync.value = element.value;
-      } else {
-        elToSync.value = Math.pow(10, element.value).toExponential(2);
-      }
-    }
-
-    if (recalculate) {
-      calcIVandPlot();
-      if (!document.getElementById('clear').disabled && element.id.indexOf('T') != -1) { // <=> T has been changed and a experimental file is opened
-        estimD1D2Rs(getAllParams(), findDiodes());
-      }
-    }
-  }
-
-  function changeModel(event) {
+  function modelChanged() {
     // Fired when user changes number of diodes or the equivalent circuit
 
-    if (document.getElementById('parallel').checked) {
-      disableAndCalc(['rp2', 'sliderRp2']);
-      var array = ['n2', 'slidern2', 'is2', 'sliderIs2', 'series', 'parallel'];
+    // Update model variable
+    model = getModel();
 
-      if (fileOpened) {
-        array = array.concat(['n1CheckBox', 'Is1CheckBox', 'Rp1CheckBox', 'RsCheckBox', 'n2CheckBox', 'Is2CheckBox']);
-      }
-      enableAndCalc(array);
-    }
-
-    if (document.getElementById('singleDiode').checked) {
-      document.getElementById('series').checked = false;
-      document.getElementById('parallel').checked = true;
-      disableAndCalc(['n2', 'slidern2', 'is2', 'sliderIs2', 'rp2', 'sliderRp2', 'series', 'parallel', 'n2CheckBox', 'Is2CheckBox']);
-      if (!document.getElementById('clear').disabled) {
-        enableAndCalc(['n1CheckBox', 'Is1CheckBox', 'Rp1CheckBox', 'RsCheckBox']);
-      }
-      document.getElementById('start').disabled = false;
-    }
-    if (document.getElementById('series').checked) {
-      enableAndCalc(['n2', 'slidern2', 'is2', 'sliderIs2', 'rp2', 'sliderRp2', 'series', 'parallel'])
-      disableAndCalc(['IphCheckBox', 'TCheckBox', 'n1CheckBox', 'Is1CheckBox', 'Rp1CheckBox', 'Rp2CheckBox', 'RsCheckBox', 'n2CheckBox', 'Is2CheckBox']);
-      document.getElementById('start').disabled = true;
-    }
+    changeInputStatusBasedOnModel();
 
     calcIVandPlot();
 
@@ -479,6 +434,59 @@ let main = function () { // eslint-disable-line
 
       calcSqResSum(parameters, userData.dataArray, arrayCalc);
     }
+  }
+
+  function changeInputStatusBasedOnModel() {
+    if (model.circuit === 'parallel') {
+      $('input.rp2')
+        .prop('disabled', true);
+
+      const $inputs = $('input.n2, input.is2, #series, #parallel');
+
+      if (!fileOpened) {
+        $inputs
+          .not('[type=checkbox]');
+      }
+
+      $inputs
+        .prop('disabled', false);
+      
+      document.getElementById('start').disabled = false;
+    }
+
+    if (model.diodeCount === 1) {
+      document.getElementById('series').checked = false;
+      document.getElementById('parallel').checked = true;
+      
+      model.circuit = 'parallel';
+
+      $('input.n2, input.is2, #series, #parallel, input.rp2')
+        .prop('disabled', true);
+
+      if (fileOpened) {
+        // Will also enable checkboxes
+        $('input.n1, input.is1, input.rp1')
+        .prop('disabled', false);
+      }
+
+      document.getElementById('start').disabled = false;
+    }
+
+    if (model.circuit === 'series') {
+      $('input.n2, input.is2, input.rp2')
+        .prop('disabled', false);
+
+      // Disable fitting inputs because
+      // series model not supported for optimization
+      disableCheckboxes();
+      $('button#start')
+        .prop('disabled', true);
+    }
+  }
+
+  function disableCheckboxes() {
+    $('[type=checkbox]')
+        .prop('disabled', true);
   }
 
   function findAndEstimateDiodes() {
@@ -534,7 +542,7 @@ let main = function () { // eslint-disable-line
     }
   }
 
-  function startButtonClicked(event) {
+  function startButtonClicked() {
     // Fired when user clicks on the play/pause button
     // to start or pause the fitting
 
@@ -551,32 +559,18 @@ let main = function () { // eslint-disable-line
       .toggleClass('play pause');
   }
 
-  function disableAndCalc(arrayOfId) {
-    for (var i = 0; i < arrayOfId.length; i++) {
-      var e = document.getElementById(arrayOfId[i]);
-      if (e) { //this is in case slider was removed because not supported by browser
-        e.disabled = true;
-      }
-    }
-  }
+  /* The two following functions calculate
+     the current at a given voltage */
 
-  function enableAndCalc(arrayOfId) {
-    //if (document.getElementById('series').checked) {arrayOfId.concat(['Rp2','sliderRp2']);}
-    for (var i = 0; i < arrayOfId.length; i++) {
-      var e = document.getElementById(arrayOfId[i]);
-      if (e) { //this is in case slider was removed because not supported by browser
-        e.disabled = false;
-      }
-    }
-  }
-
-  // Functions that calculate the current at a given voltage
-  // double diode (in parallel) model
   function Iparallel(V, Iph, prevI, T, n1, n2, Is1, Is2, Rp, Rs) {
+    // Double diode (in parallel) model
     var i = 0, I, f, df, r, Id1, Id2, Irp;
-    Iph = Iph / 1000 // mA -> A
+
+    Iph = Iph / 1000; // mA -> A
+
     if (!prevI) {
-      I = Iph; prevI = I;
+      I = Iph;
+      prevI = I;
     }
 
     do {
@@ -603,12 +597,13 @@ let main = function () { // eslint-disable-line
 
       i++;
 
-    } while (Math.abs(I - prevI) > mchEps && i < 500)
+    } while (Math.abs(I - prevI) > mchEps && i < 500);
 
     return [I, Id1, Id2, Irp, Id1 + Id2 + Irp];
-  };
-  // Double diode (in series) model
+  }
+
   function Iseries(V, T, Iph, n1, n2, Is1, Is2, Rp1, Rp2, Rs) {
+    // Double diode (in series) model
     var i = 0, Ia, Ib, V1, V2, Id1, Id2, Irp1, Irp2, H = 10, L = -10;
 
     do {
@@ -808,6 +803,7 @@ let main = function () { // eslint-disable-line
   }
 
   function scaleType() {
+    // Returns the type of scale for y axis
     const scaleIsLinear = document.getElementById('linear').checked;
     return (scaleIsLinear) ? 'linearScale' : 'logScale';
   }
@@ -880,7 +876,7 @@ let main = function () { // eslint-disable-line
 
     userData.estimatedParameters.Rp = undefined;
 
-    disableAndCalc(['IphCheckBox', 'TCheckBox', 'n1CheckBox', 'Is1CheckBox', 'Rp1CheckBox', 'Rp2CheckBox', 'RsCheckBox', 'n2CheckBox', 'Is2CheckBox']);
+    disableCheckboxes();
   }
 
   function clearFileInput() {
@@ -892,34 +888,40 @@ let main = function () { // eslint-disable-line
   }
 
   function stringToArray(data) {
+    // Convert the dataset from a string
+    // to an array of arrays of numbers
+
     let array = data.split('\n'),
-      row = [],
       skipRow,
       dataArray = [];
-    for (var i = 0; i < array.length; i++) {
+
+    for (let stringRow of array) {
       skipRow = false;
-      row = array[i].split('\t');
-      for (var j = 0; j < 2; j++) {
+      const row = stringRow.split('\t');
+
+      // Make sure each of the first two
+      // elements in the row is a number
+      for (let j = 0; j < 2; j++) {
         row[j] = Number(row[j]);
         skipRow += isNaN(row[j]);
       }
+
       if (!skipRow) {
         dataArray.push(row);
       }
     }
 
+    // Removes the semi-transparent
+    // overlay div
     $('.panel')
       .removeClass('nofile');
 
     fileOpened = true;
 
-    if (!document.getElementById('series').checked) {
-      array = ['n1CheckBox', 'Is1CheckBox', 'Rp1CheckBox', 'RsCheckBox'];
-      if (!document.getElementById('singleDiode').checked) {
-        array = array.concat(['n2CheckBox', 'Is2CheckBox']);
-      }
-      enableAndCalc(array);
-    }
+    // Enable checkboxes for the already
+    // enabled parameter inputs
+    $('[type=range]:enabled')
+      .each(enableCheckboxInput);
 
     document.getElementById('minVolt').value = dataArray[0][0];
     document.getElementById('maxVolt').value = dataArray[dataArray.length - 1][0] + document.getElementById('stepVolt').value / 1000;
@@ -947,6 +949,12 @@ let main = function () { // eslint-disable-line
     calcSqResSum(parameters, dataArray, arrayCalc);
 
     combDataAndCalc(ivResult);
+  }
+
+  function enableCheckboxInput(index, element) {
+    getRowDiv($(element))
+      .find('[type=checkbox]')
+      .prop('disabled', false);
   }
 
   function IprShowed() {
