@@ -744,7 +744,7 @@ let main = function () { // eslint-disable-line
       parallel = true,
       modelCase = 'single';
     }
-    if (document.getElementById('series').checked) {
+    if (model.circuit === 'series') {
       modelCase = 'series';
     }
 
