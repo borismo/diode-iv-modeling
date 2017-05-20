@@ -37,7 +37,9 @@ function log10(val) {
 	return Math.log(val) / Math.log(10);
 }
 
-function drawGraph(canvasId,arrayMult,focusedPlot,plotStyle,scaleType,xTitle,yTitle) {
+let array;
+
+export default function drawGraph(canvasId,arrayMult,focusedPlot,plotStyle,scaleType,xTitle,yTitle) {
 	
 	//array will be used to build the graph area, max and min, distance between 2 ticks etc.
 	array = arrayMult[focusedPlot];

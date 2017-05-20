@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Diode IV modeling</title>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.js"></script>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u"
+    crossorigin="anonymous">
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+    crossorigin="anonymous"></script>
+
+  <script src="https://use.fontawesome.com/46d50587ad.js"></script>
+
+  <script src="bundle.js"></script>
+
+  <link rel="stylesheet" href="index.css">
+  <script type="text/javascript">
+    var _gaq = _gaq || [];
+    _gaq.push(["_setAccount", "UA-34791046-1"]);
+    _gaq.push(["_trackPageview"]);
+    (function () {
+      var ga = document.createElement("script"); ga.type = "text/javascript"; ga.async = true;
+      ga.src = ("https:" == document.location.protocol ? "https://ssl" : "http://www") + ".google-analytics.com/ga.js";
+      var s = document.getElementsByTagName("script")[0]; s.parentNode.insertBefore(ga, s);
+    })();
+  </script>
+</head>
+
+<body>
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">Diode IV modeling</a>
+      </div>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+          <a target="_blank" href="https://github.com/borismo/diode-iv-modeling">
+            <i class="fa fa-github fa-2x" aria-hidden="true" title="GitHub Repository"></i>
+          </a>
+        </li>
+        <li>
+          <a target="_blank" href="https://www.linkedin.com/in/borismorel/">
+            <i class="fa fa-linkedin fa-2x" aria-hidden="true" title="LinkedIn Profile"></i>
+          </a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-4 sidebar">
+        <div class="form-horizontal" name="parameters" action="#" id="currentCalculation">
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="minVolt">V<sub>i</sub> (V)</label>
+            <div class="col-sm-4">
+              <input type="number" class="form-control linearscale voltage minVolt" id="minVolt" name="minVolt" step="0.01" value="-1.4">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="maxVolt">V<sub>f</sub> (V)</label>
+            <div class="col-sm-4">
+              <input type="number" class="form-control linearscale voltage maxVolt" id="maxVolt" name="maxVolt" step="0.01" value="1.4">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label" for="stepVolt">&Delta;V (mV)</label>
+            <div class="col-sm-4">
+              <input type="number" class="form-control linearscale voltage stepVolt" id="stepVolt" name="stepVolt" min="0.01" step="5"
+                value=25><br>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label">I<sub>ph</sub> (mA)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" class="iph" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="linearscale syncme iph" min="0" max="1" step="0.01" value="0">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control linearscale syncme iph" min="0" step="0.001" value="0">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label">T (K)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" class="t" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="linearscale syncme t" min="200" max="400" step="1" value="298">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control linearscale syncme t" min="1" step="1" value="298">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label">n<sub>1</sub></label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" class="n1" checked="checked" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="linearscale syncme n1" min="0" max="10" step="0.01" value="3">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control linearscale syncme n1" min="0" step="0.01" value="3">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label">n<sub>2</sub></label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" class="n2" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="linearscale syncme n2" min="0" max="10" step="0.01" value="1">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control linearscale syncme n2" min="0" step="0.01" value="1">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label">Is<sub>1</sub> (A)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" class="is1" checked="checked" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="logscale syncme is1" min="-10" max="0" step="0.1" value="-8">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control logscale syncme is1" min="0" value="1e-8" step="1e-10">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label">Is<sub>2</sub> (A)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" class="is2" checked="checked" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="logscale syncme is2" min="-19" max="0" step="0.1" value="-16">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control logscale syncme is2" min="0" value="1e-16" step="1e-18">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label">R<sub>p1</sub> (&Omega;)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" class="rp1" checked="checked" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="logscale syncme rp1" min="3" max="9" step="0.1" value="5">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control logscale syncme rp1" min="1" value="1e5" step="1e3">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label">R<sub>p2</sub> (&Omega;)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" class="rp2" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="logscale syncme rp2" min="3" max="9" step="0.1" value="4" disabled="disabled">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control logscale syncme rp2" min="1" value="1e4" step="1e2" disabled="disabled">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="col-sm-3 control-label">R<sub>s</sub> (&Omega;)</label>
+            <div class="col-sm-9">
+              <div class="row">
+                <div class="col-sm-2">
+                  <input type="checkbox" class="rs" checked="checked" disabled="disabled">
+                </div>
+                <div class="col-sm-6">
+                  <input type="range" class="linearscale syncme rs" min="0" max="10" step="0.01" value="1.5">
+                </div>
+                <div class="col-sm-4">
+                  <input type="number" class="form-control linearscale syncme rs" min="0" step="0.01" value="1.5">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-5 col-sm-offset-2">
+              <div class="radio">
+                <label>
+                  <input type="radio" class="model" name="nbDiodes" id="singleDiode" value="single">
+                  Single Diode
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" class="default model" name="nbDiodes" id="doubleDiode" value="double">
+                  Double Diode
+                </label>
+              </div>
+            </div>
+            <div class="col-sm-5">
+              <div class="radio">
+                <label>
+                  <input type="radio" class="default model" name="model" id="parallel" value="parallel">
+                  Parallel
+                </label>
+              </div>
+              <div class="radio">
+                <label>
+                  <input type="radio" class="model" name="model" id="series" value="series">
+                  Series <span class="label label-default">Experimental</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-8 col-md-offset-4 main">
+        <div class="row">
+          <div class="col-md-7">
+            <div class="row">
+              <div class="col-md-12">
+                <form name="graph" id="graphParam" action="#">
+                  <label>Scale type:</label>
+                  <label class="radio-inline">
+                    <input type="radio" class="scale" name="scale" id="linear" value="linear"> Linear
+                  </label>
+                  <label class="radio-inline">
+                    <input type="radio" class="default scale" name="scale" id="log" value="log"> Logarithmic
+                  </label>
+                </form>
+                <canvas id="graph" width="550" height="400" dropzone="link string:text/html file:image/png">
+                  [No canvas support. Consider upgrading your browser]
+                </canvas>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-12">
+                <br>
+                <div class="alert alert-info alert-dismissible" role="alert">
+                  <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                  <strong>Typical workflow:</strong>
+                  <ol>
+                    <li>Play around with the parameters on the left and observe how the IV curve is impacted</li>
+                    <li>Import one of your own data files (text file with 2 tab-separated Voltage and Current columns. <a href="samplefiles/T279K.txt" download>Here's a sample file</a>)</li>
+                    <li>Take a look at the estimated parameters. Looking good? Then click on "Use estimated parameters"</li>
+                    <li>You can adjust again the parameters manually, then start fitting (check the box next to a parameter's
+                      value to let it vary during optimization)</li>
+                    <li>The optimization can be interrupted at any time by clicking on "pause", otherwise it will stop when the
+                      condition on dS is satisfied
+                    </li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-5">
+              <div class="form-group">
+                <div class="input-group">
+                  <label class="input-group-btn">
+                      <span class="btn btn-default">
+                          Browse&hellip; <input type="file" style="display: none;">
+                      </span>
+                  </label>
+                  <input type="text" class="form-control" readonly>
+                </div>
+              </div>
+            <div class="panel panel-default nofile">
+              <div class="panel-body">
+                <div id="overlay"></div>
+                <form>
+                  <div class="form-group">
+                    <input type="button" class="btn btn-default" id="clear" value="Clear">
+                  </div>
+                </form>
+                <div class="form-horizontal">
+                  <div class="form-group">
+                    <label for="hideIrp" class="col-md-9 control-label">Hide Irp</label>
+                    <p class="col-md-3 form-control-static">
+                      <i class="fa fa-toggle-off fa-lg" id="hideIrp"></i>
+                    </p>
+                  </div>
+                  <div class="form-group">
+                    <label for="hideNonLinCurr" class="col-md-9 control-label">Hide non-linear reverse current</label>
+                    <p class="col-md-3 form-control-static">
+                      <i class="fa fa-toggle-off fa-lg" id="hideNonLinCurr"></i>
+                    </p>
+                  </div>
+                </div>
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>Parameter</th>
+                      <th>Estimation</th>
+                      <th>Final result</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th>n<sub>1</sub></th>
+                      <td class="estimation" id="n1"></td>
+                      <td class="final" id="final-n1"></td>
+                    </tr>
+                    <tr>
+                      <th>n<sub>2</sub></th>
+                      <td class="estimation" id="n2"></td>
+                      <td class="final" id="final-n2"></td>
+                    </tr>
+                    <tr>
+                      <th>I<sub>s1</sub></th>
+                      <td class="estimation" id="is1"></td>
+                      <td class="final" id="final-is1"></td>
+                    </tr>
+                    <tr>
+                      <th>I<sub>s2</sub></th>
+                      <td class="estimation" id="is2"></td>
+                      <td class="final" id="final-is2"></td>
+                    </tr>
+                    <tr>
+                      <th>R<sub>p1</sub></th>
+                      <td class="estimation" id="rp1"></td>
+                      <td class="final" id="final-rp1"></td>
+                    </tr>
+                    <tr>
+                      <th>R<sub>p2</sub></th>
+                      <td class="estimation" id="rp2"></td>
+                      <td class="final" id="final-rp2"></td>
+                    </tr>
+                    <tr>
+                      <th>R<sub>s</sub></th>
+                      <td class="estimation" id="rs"></td>
+                      <td class="final" id="final-rs"></td>
+                    </tr>
+                    <tr>
+                    </tr>
+                  </tbody>
+                </table>
+                <div class="form-group">
+                  <div class="btn-group" role="group" aria-label="...">
+                    <button type="button" class="btn btn-default" id="useestimatedparams">Use estimated parameters</button>
+                    <button type="button" class="btn btn-primary play" id="start">
+                      <span id="play">
+                        <i class="fa fa-play" aria-hidden="true"></i> Start fitting
+                      </span>
+                      <span id="pause">
+                        <i class="fa fa-pause" aria-hidden="true"></i> Pause fitting
+                      </span>
+                    </button>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <div class="input-group">
+                    <span class="input-group-addon">Threshold: |dS|</span>
+                    <input type="number" class="form-control" id="threshold" value="1e-9">
+                  </div>
+                </div>
+
+                <table class="table">
+                  <tbody>
+                    <tr>
+                      <th>S</th>
+                      <td id="s"></td>
+                    </tr>
+                    <tr>
+                      <th>dS</th>
+                      <td id="ds"></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>

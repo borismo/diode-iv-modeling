@@ -6,7 +6,7 @@
             "type": "chrome",
             "request": "attach",
             "port": 9222,
-            "url": "http://localhost/borismo/issue6/",
+            "url": "http://localhost/borismo/master/dist/",
             "webRoot": "${workspaceRoot}"
         },
         {
