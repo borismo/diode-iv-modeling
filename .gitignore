@@ -1,2 +1,5 @@
 # ESLint
 .eslintrc.json
+
+# npm
+node_modules/*

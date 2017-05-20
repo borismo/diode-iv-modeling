@@ -1,0 +1,23 @@
+{
+  "name": "diode-iv-modeling",
+  "version": "1.0.0",
+  "description": "The code behind [borismo.github.io/diode-iv-modeling](https://borismo.github.io/diode-iv-modeling).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/borismo/borismo.github.com.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/borismo/borismo.github.com/issues"
+  },
+  "homepage": "https://github.com/borismo/borismo.github.com#readme",
+  "devDependencies": {
+    "webpack": "^2.5.1"
+  }
+}
