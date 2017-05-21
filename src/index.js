@@ -45,8 +45,8 @@ require('assets/samplefiles/T279K.txt');
       init: function () {
         for (let property in this) {
           const isDataProperty = typeof this[property] !== 'function';
-          if (isDataProperty){
-            const  $inputNumber = $('[type=number].' + property),
+          if (isDataProperty) {
+            const $inputNumber = $('[type=number].' + property),
               $inputCheckBox = $('[type=checkbox].' + property);
             this[property] = {
               value: parseFloat($inputNumber.val()),
@@ -60,7 +60,7 @@ require('assets/samplefiles/T279K.txt');
           if ($element.hasClass(property)) {
             const elementValue = parseFloat($element.val()),
               inputIsLogRange = $element.hasClass('logscale') && $element.attr('type') === 'range',
-              newValue = (inputIsLogRange)? Math.pow(10, elementValue) : elementValue;
+              newValue = (inputIsLogRange) ? Math.pow(10, elementValue) : elementValue;
             this[property] = {
               value: newValue,
               checked: $element.is(':checked')
@@ -267,11 +267,11 @@ require('assets/samplefiles/T279K.txt');
     if (isNumberInput) {
       adjustRange(this);
     }
-    
+
     syncInputs(this);
 
     parameters.update($(this));
-    
+
     calcIVandPlot();
   }
 
@@ -290,7 +290,7 @@ require('assets/samplefiles/T279K.txt');
     const minVolt = parameters.minVolt.value,
       maxVolt = parameters.maxVolt.value,
       stepVolt = parameters.stepVolt.value;
-    
+
     // Make sure maxVolt > minVolt
     if (maxVolt < minVolt) {
       document.getElementById('minVolt').value = maxVolt;
@@ -336,7 +336,7 @@ require('assets/samplefiles/T279K.txt');
       return i;
     }
   }
-  
+
   function getRowDiv($input) {
     // Get parameter inputs'
     // closest common ancestor
@@ -360,7 +360,7 @@ require('assets/samplefiles/T279K.txt');
 
     if (inputType === 'number') {
       $rangeInput = $rowDiv
-          .find('[type=range]');
+        .find('[type=range]');
       rangeInputElem = $rangeInput.get(0);
       $numberInput = $input;
       numberInputElem = element;
@@ -457,14 +457,14 @@ require('assets/samplefiles/T279K.txt');
 
       $inputs
         .prop('disabled', false);
-      
+
       document.getElementById('start').disabled = false;
     }
 
     if (model.diodeCount === 1) {
       document.getElementById('series').checked = false;
       document.getElementById('parallel').checked = true;
-      
+
       model.circuit = 'parallel';
 
       $('input.n2, input.is2, #series, #parallel, input.rp2')
@@ -473,7 +473,7 @@ require('assets/samplefiles/T279K.txt');
       if (fileOpened) {
         // Will also enable checkboxes
         $('input.n1, input.is1, input.rp1')
-        .prop('disabled', false);
+          .prop('disabled', false);
       }
 
       document.getElementById('start').disabled = false;
@@ -493,13 +493,13 @@ require('assets/samplefiles/T279K.txt');
 
   function disableCheckboxes() {
     $('[type=checkbox]')
-        .prop('disabled', true);
+      .prop('disabled', true);
   }
 
   function findAndEstimateDiodes() {
     const findDiodesResult = findDiodes(userData, IprShowed(), nonLinearCurrentShowed()),
       estimatedParams = estimD1D2Rs(getAllParams(), userData, findDiodesResult);
-      
+
     displayEstimatedParams(estimatedParams);
   }
 
@@ -521,7 +521,7 @@ require('assets/samplefiles/T279K.txt');
     // Returns whether scale type used for
     // a given diode parameter is a logarithmic one
     return $('[type=number]#' + elemID)
-        .hasClass('logscale');
+      .hasClass('logscale');
   }
 
   function useEstimatedParams() {
@@ -693,7 +693,7 @@ require('assets/samplefiles/T279K.txt');
 
   function setParamValue(paramClass, value) {
     getParam$(paramClass)
-        .val(value);
+      .val(value);
   }
 
   function getModel() {
@@ -744,7 +744,7 @@ require('assets/samplefiles/T279K.txt');
 
     if (model.diodeCount === 1) {
       parallel = true,
-      modelCase = 'single';
+        modelCase = 'single';
     }
     if (model.circuit === 'series') {
       modelCase = 'series';
@@ -1004,7 +1004,7 @@ require('assets/samplefiles/T279K.txt');
     }
   }
 
-  function updateParameter ($element) {
+  function updateParameter($element) {
     parameters.update($element);
   }
 
@@ -1012,7 +1012,7 @@ require('assets/samplefiles/T279K.txt');
    *  Fit 
    */
 
-  
+
   let interval;
 
   function estimRp(dataArray) {
@@ -1065,7 +1065,7 @@ require('assets/samplefiles/T279K.txt');
     return {
       shunt: shuntCurrent,
       nonLinear: nonLinCurr
-    }
+    };
   }
 
   function toggleIrp(modifDataArray, shuntCurrent, show) {
@@ -1088,16 +1088,16 @@ require('assets/samplefiles/T279K.txt');
 
   function toggleNonLinCurr(userData, modifDataArray, show) {
 
-    const nonLinearCurrent =  userData.current.nonLinear;
+    const nonLinearCurrent = userData.current.nonLinear;
 
-    var array1 = userData.dataArray[0],
+    let array1 = userData.dataArray[0],
       array2 = userData.modifDataArray[0],
-      IV1, IV2,
+      IV2,
       newArray1 = [],
       newArray2 = [],
       sign = (show) ? 1 : -1,
       i = 0;
-      
+
     for (let IV1 of array1) {
       newArray1.push([IV1[0], IV1[1] + sign * nonLinearCurrent[i][1]]);
       IV2 = array2[i];
@@ -1108,12 +1108,10 @@ require('assets/samplefiles/T279K.txt');
     return {
       dataArray: [newArray1],
       modifDataArray: [newArray2]
-    }
+    };
   }
 
   let SqResSum,
-    prevSqResSum = undefined,
-    dS,
     delS = [];
 
   function calcSqResSum(params, dataArray, arrayCalc) {
@@ -1124,27 +1122,27 @@ require('assets/samplefiles/T279K.txt');
       Rp = params.rp1.value,
       Rs = params.rs.value,
       T = params.t.value,
-      single = document.getElementById('singleDiode').checked;
+      single = document.getElementById('singleDiode').checked,
+      n2, Is2;
 
     SqResSum = 0;
 
     if (single) {
       // Single diode model
-      var Is2 = 0,
-        n2 = 1;
+      Is2 = 0;
+      n2 = 1;
     } else {
       // Dual diode model
-      var Is2 = params.is2.value,
-        n2 = params.n2.value;
+      Is2 = params.is2.value;
+      n2 = params.n2.value;
     }
 
     if (document.getElementById('series').checked) {
       // Dual, series diode model
-      let Rp2 = params.rp2.value;
       n1 = params.n1.value;
     }
 
-    var r, calcI, j = 1, x1, x2, xy1, xy2, y1, y2, slope, x,
+    let r, calcI, j = 1, x1, x2, xy1, xy2, y1, y2, slope, x,
       calcIV = arrayCalc[0],
       array = dataArray[0],
       data,
@@ -1154,13 +1152,12 @@ require('assets/samplefiles/T279K.txt');
       dSdIs2 = 0,
       dSdRp = 0,
       dSdRs = 0;
-    //d2Sdn2 = 0;
-    var A = Is1 * q / (k * T),
-      dIdn1, dIdn2, dIdIs1, dIdIs2, dIdRp, dIdRs, exp1, exp2;
 
-    for (var i = 0; i < array.length; i++) {
-      //for each data point
-      x = array[i][0];
+    let dIdn1, dIdn2, dIdIs1, dIdIs2, dIdRp, dIdRs, exp1, exp2;
+
+    for (let row of array) {
+      // For each data point
+      x = row[0];
 
       while (x > calcIV[j][0]) { j++; }
       xy1 = calcIV[j - 1];
@@ -1169,9 +1166,9 @@ require('assets/samplefiles/T279K.txt');
       x2 = xy2[0];
       y1 = xy1[1];
       y2 = xy2[1];
-      data = array[i][1];
+      data = row[1];
 
-      //linear interpolation
+      // Linear interpolation
       slope = (y2 - y1) / (x2 - x1);
       calcI = y1 + slope * (x - x1);
 
@@ -1212,8 +1209,6 @@ require('assets/samplefiles/T279K.txt');
 
     // Display residue
     $('#s').text(SqResSum.toExponential(2));
-
-    prevSqResSum = SqResSum;
 
     return SqResSum;
   }
@@ -1259,9 +1254,11 @@ require('assets/samplefiles/T279K.txt');
     let noIrpNoSCLCarray = modifDataArray[0],
       array = modifDataArray[0];
 
-    let array1 = deriv(lnOfArray(array));// 1st order derivative
+    // 1st order derivative
+    let array1 = deriv(lnOfArray(array));
 
-    array = deriv(array1);//2nd order derivative
+    // 2nd order derivative
+    array = deriv(array1);
 
     let i = array.length - 2,
       prev,
@@ -1270,15 +1267,16 @@ require('assets/samplefiles/T279K.txt');
       deltaLnMax = 0,
       j = 0;
 
-    var avDelta = function (array) {
+    let avDelta = function (array) {
       var sum = 0,
         length = array.length;
       for (var i = 1; i < length; i++) {
         sum += Math.abs(array[i][1] - array[i - 1][1]);
       }
       return sum / (length - 1);
-    }
-    var avD = avDelta(array);
+    };
+
+    const avD = avDelta(array);
 
     var iMin = i,
       fluctIn2ndHalf = false;
@@ -1286,7 +1284,8 @@ require('assets/samplefiles/T279K.txt');
       i = iMin;
       dLn = array[i][1];
       var maxPassed = false;
-      do {// looking for minima between 0.04 V and Vmax
+      do {
+        // Looking for minima between 0.04 V and Vmax
         i--;
         prev = dLn;
         dLn = array[i][1];
@@ -1294,15 +1293,19 @@ require('assets/samplefiles/T279K.txt');
         fluctIn2ndHalf += Math.abs(dLn - prev) > avD && i < array.length / 2;
         maxPassed += prev > dLn && Math.abs(dLn - prev) < avD;
         var carryOn = !maxPassed || dLn < prev;
-      } while (i >= 0 && array[i][0] > 0.04 && carryOn && !fluctIn2ndHalf)
+      } while (i >= 0 && array[i][0] > 0.04 && carryOn && !fluctIn2ndHalf);
+
       iMin = i + 1;
       dLnMin = prev;
 
-      var dLnMax = dLnMin;
+      let dLnMax = dLnMin;
+
       prev = -Infinity;
       i = iMin - 1;
       var iMax = iMin;
-      while (i >= 0 && array[i][0] > 0.04) {// looking for a maxima between 0.04 V and Vmax
+
+      while (i >= 0 && array[i][0] > 0.04) {
+        // Looking for a maxima between 0.04 V and Vmax
         dLn = array[i][1];
 
         if (dLn < prev && prev > dLnMax && Math.abs(dLn - prev) < avD) {
@@ -1318,9 +1321,11 @@ require('assets/samplefiles/T279K.txt');
         var iMaxMax = iMax;
       }
       j++;
-    } while (iMax != iMin && j < 10 && !fluctIn2ndHalf)
+    } while (iMax != iMin && j < 10 && !fluctIn2ndHalf);
 
-    if (!iMaxMax) { return 'noDiode'; }
+    if (!iMaxMax) {
+      return 'noDiode';
+    }
 
     i = iMax = iMaxMax;
     dLn = array[i][1];
@@ -1328,26 +1333,30 @@ require('assets/samplefiles/T279K.txt');
       prev = dLn;
       i--;
       dLn = array[i][1];
-    } while (Math.abs(dLn) < Math.abs(prev) || dLn >= 0)
-    var iD1 = i + 2;
-    var D1dLn = array1[iD1 + 1][1];
+    } while (Math.abs(dLn) < Math.abs(prev) || dLn >= 0);
+
+    let iD1 = i + 2,
+      D1dLn = array1[iD1 + 1][1];
 
     i = iMax;
+
     do {
       prev = dLn;
       i++;
       dLn = array[i][1];
-    } while (Math.abs(dLn) < Math.abs(prev) || dLn >= 0)
-    var iD2 = i - 1;
-    var D2dLn = array1[iD2 + 1][1];
+    } while (Math.abs(dLn) < Math.abs(prev) || dLn >= 0);
 
-    var length = array.length - 2;
+    let iD2 = i - 1,
+      D2dLn = array1[iD2 + 1][1];
+
+    const length = array.length - 2;
 
     iD2 = length - iD2;
     iD1 = length - iD1;
+
     /* iD2 (and iD1) are the indexes of the maxima (and minima), starting from the *end* of the original array,
     in case points in reverse are missing after removal of Irp and SCLC */
-    
+
     return {
       noIrpNoSCLCarray: noIrpNoSCLCarray,
       diodes: [D2dLn, D1dLn, iD2, iD1]
@@ -1359,7 +1368,7 @@ require('assets/samplefiles/T279K.txt');
       // For now, no estimation for series model
       return;
     }
-    
+
     const paramValues = params.value,
       paramChecked = params.checked;
 
@@ -1369,72 +1378,63 @@ require('assets/samplefiles/T279K.txt');
       // TODO: Display message
       return;
     }
-    
+
     let dualDiode = !document.getElementById('singleDiode').checked,
       array = findDiodesResult.noIrpNoSCLCarray,
-      
+
       D1dLn = maxmin[1],
       D2dLn = maxmin[0],
       VIAtd1 = array[array.length - 4 - maxmin[3]],
       VIAtd2 = array[array.length - 4 - maxmin[2]],
       T = paramValues.t,
       A = q / (k * T),
-      n2 = A / D2dLn;
+      n2 = A / D2dLn,
+      n, n1, Is1, Rs, Is2;
 
     if (dualDiode) {
       if (paramChecked.n2) {
-        var n = n2,
-          n2Fixed = '';
+        n = n2;
       } else {
-        var n = n2 = paramValues.n2,
-          n2Fixed = ' <span style="color:grey">(fixed)</span>';
+        n = n2 = paramValues.n2;
       }
       if (paramChecked.n1) {
-        var n1 = A / D1dLn,
-          n1Fixed = '';
+        n1 = A / D1dLn;
       } else {
-        var n1 = paramValues.n1,
-          n1Fixed = ' <span style="color:grey">(fixed)</span>';
+        n1 = paramValues.n1;
       }
       if (paramChecked.is1) {
-        var Is1 = VIAtd1[1] / (Math.exp((VIAtd1[0] * A / n1) - 1)),
-          Is1Fixed = '';
+        Is1 = VIAtd1[1] / (Math.exp((VIAtd1[0] * A / n1) - 1));
       } else {
-        var Is1 = paramValues.is1,
-          Is1Fixed = ' <span style="color:grey">(fixed)</span>';
+        Is1 = paramValues.is1;
       }
     } else {
-      //single diode
-      var n = n2;
+      // Single diode
+      n = n2;
     }
 
     if (paramChecked.rs) {
-      var Rs = estimRs(array, T, n),
-        RsFixed = '';
+      Rs = estimRs(array, T, n);
     } else {
-      var Rs = paramValues.rs,
-        RsFixed = ' <span style="color:grey">(fixed)</span>';
+      Rs = paramValues.rs;
     }
 
     if (paramChecked.is2) {
-      var Is2 = VIAtd2[1] / (Math.exp((VIAtd2[0] - VIAtd2[1] * Rs) * A / n2) - 1),
-        Is2Fixed = '';
+      Is2 = VIAtd2[1] / (Math.exp((VIAtd2[0] - VIAtd2[1] * Rs) * A / n2) - 1);
     } else {
-      var Is2 = paramValues.is2,
-        Is2Fixed = ' <span style="color:grey">(fixed)</span>';
+      Is2 = paramValues.is2;
     }
 
+    let newRp;
+
     if (paramChecked.rp1) {
-      var newRp = userData.estimatedParameters.Rp,
-        RpFixed = '';
+      newRp = userData.estimatedParameters.Rp;
     } else {
-      var newRp = paramValues.rp1,
-        RpFixed = ' <span style="color:grey">(fixed)</span>';
+      newRp = paramValues.rp1;
     }
 
     $('td.estimation#rp1').text(newRp.toPrecision(3));
     $('td.estimation#rs').text(Rs.toPrecision(2));
-  
+
     if (dualDiode) {
       return {
         n1: n1,
@@ -1471,7 +1471,8 @@ require('assets/samplefiles/T279K.txt');
       B = A * exp / (exp - 1);
       C = B / (1 / I + Rs * B);
       Rs += 0.01;
-    } while (C > dIdVati)
+    } while (C > dIdVati);
+
     return Rs;
   }
 
@@ -1488,7 +1489,7 @@ require('assets/samplefiles/T279K.txt');
         value = param[1];
 
       let element = $('[type=number].' + id).get(0);
-      
+
       if (updateRangeInput) {
         element.dispatchEvent(evt);
       }
@@ -1516,7 +1517,7 @@ require('assets/samplefiles/T279K.txt');
     // Varies checked diode parameters until
     // sum of square residuals is minimized
 
-    var param, oOO, id, eps = mchEps;
+    const eps = mchEps;
 
     var n1 = parameters.n1.value,
       n1vary = parameters.n1.checked,
@@ -1526,7 +1527,7 @@ require('assets/samplefiles/T279K.txt');
       Rpvary = parameters.rp1.checked,
       Rs = parameters.rs.value,
       Rsvary = parameters.rs.checked;
-    
+
     // Single diode model
     let params = [
       ['n1', n1, eps, n1vary],
@@ -1596,7 +1597,7 @@ require('assets/samplefiles/T279K.txt');
 
         const dS = SqResSum - S;
 
-        if (typeof S === 'number'){
+        if (typeof S === 'number') {
           $('#ds').text(dS.toExponential(2));
         } else {
           $('#ds').empty();
@@ -1606,11 +1607,7 @@ require('assets/samplefiles/T279K.txt');
           fitSuccessful = Math.abs(dS) < threshold;
 
         if (fitSuccessful || ii > 1000 || stop) {
-          console.log('fitSuccessful: ' + fitSuccessful);
-          console.log('Too many iterations: ' +  (ii > 1000));
-          console.log('NaN: ' + stop);
-
-          if (fitSuccessful){
+          if (fitSuccessful) {
             const addContext = true;
             tableSuccessContext(addContext);
           }
@@ -1622,12 +1619,12 @@ require('assets/samplefiles/T279K.txt');
           syncAllInputs();
         }
         if (document.webkitHidden) {
-          // no use to plot: the page is not visible (Webkit only)
+          // No use to plot: the page is not visible (Webkit only)
         } else {
           combDataAndCalc(/*arrayCalc, plotStyle, scale*/);
         }
       }
-      , 1)
+      , 1);
   }
 
   function startPauseVary(start) {
