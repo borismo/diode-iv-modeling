@@ -1,10 +1,11 @@
 import drawGraph from 'bobGraph';
-// require.context('.', true, /^\.\/.*\.html/);
+
 require('index.html');
 require('index.css');
 require('assets/samplefiles/T279K.txt');
 
-let main = function () { // eslint-disable-line 
+// Immediately Invoked Function Expression
+(function () {
   'use strict';
 
   const mchEps = machineEpsilon();
@@ -1642,4 +1643,4 @@ let main = function () { // eslint-disable-line
   }
 
   return {};
-}();
+})();
