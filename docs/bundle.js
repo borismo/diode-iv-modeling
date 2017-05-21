@@ -1,4 +1,1026 @@
-import drawGraph from 'bobGraph';
+/******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// identity function for calling harmony imports with the correct context
+/******/ 	__webpack_require__.i = function(value) { return value; };
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 8);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "assets/samplefiles/T279K.txt";
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = __webpack_require__.p + "index.html";
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+// style-loader: Adds some css to the DOM by adding a <style> tag
+
+// load the styles
+var content = __webpack_require__(4);
+if(typeof content === 'string') content = [[module.i, content, '']];
+// Prepare cssTransformation
+var transform;
+
+var options = {}
+options.transform = transform
+// add the styles to the DOM
+var update = __webpack_require__(6)(content, options);
+if(content.locals) module.exports = content.locals;
+// Hot Module Replacement
+if(false) {
+	// When the styles change, update the <style> tags
+	if(!content.locals) {
+		module.hot.accept("!!../node_modules/css-loader/index.js!./index.css", function() {
+			var newContent = require("!!../node_modules/css-loader/index.js!./index.css");
+			if(typeof newContent === 'string') newContent = [[module.id, newContent, '']];
+			update(newContent);
+		});
+	}
+	// When the module is disposed, remove the <style> tags
+	module.hot.dispose(function() { update(); });
+}
+
+/***/ }),
+/* 3 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+/* harmony export (immutable) */ __webpack_exports__["a"] = drawGraph;
+function changePrecision(precision,number) {
+	return Math.round(number * Math.pow(10,precision))/Math.pow(10,precision);
+}
+
+// returns the min value of an array
+function min(array) {
+	var min = '+Infinity',
+		element;
+
+	for (var i = 1; i < array.length; i++) {
+		element = array[i];
+		if (element < min && element != '-Infinity') {
+			min = element;
+			
+		};
+	};
+	//alert(min);
+	return min;
+}
+
+// returns the max value of an array
+function max(array) {
+	var max;
+	for (var i = 0; i < array.length; i++) {
+		if (!max || array[i] > max) {
+		max = array[i];
+		};
+	};
+	return max;
+};
+
+function orderOfMagn(value) {
+	return Math.pow(10,Math.floor(log10(Math.abs(value))));
+}
+
+function log10(val) {
+	return Math.log(val) / Math.log(10);
+}
+
+let array;
+
+function drawGraph(canvasId,arrayMult,focusedPlot,plotStyle,scaleType,xTitle,yTitle) {
+	
+	//array will be used to build the graph area, max and min, distance between 2 ticks etc.
+	array = arrayMult[focusedPlot];
+	var xArray = [],
+		yArray = [],
+		y, xy;
+
+	for (var i = 0; i <= array.length - 1; i++) {
+		xy = array[i];
+		y = xy[1];
+		if (scaleType == 'logScale') {
+			if (y != 0) { //when scale is Log, don't include the points for which y = 0
+				xArray.push(xy[0]);
+				yArray.push(log10(Math.abs(y)));
+			}
+		}	else {
+				xArray.push(xy[0]);
+				yArray.push(y);
+			}
+	}
+
+	var yMin = min(yArray);
+	if (scaleType == 'logScale' && yMin < -15) {
+		var index = yArray.indexOf(yMin);
+		xArray.splice(index,1);
+		yArray.splice(index,1);
+	}
+	var xMin = min(xArray),
+		xMax = max(xArray),
+		yMin = min(yArray),
+		yMax = max(yArray),
+		
+		//alert(xMin);
+		xyStep = calcStep(xMin,xMax,yMin,yMax),
+		xStep = xyStep[0],
+		yStep = xyStep[1],
+		
+		axesMaxMin = calcAxesMaxMin(xMin,xMax,xStep,yMin,yMax,yStep),
+		xAxisMin = axesMaxMin[0],
+		xAxisMax = axesMaxMin[1],
+		yAxisMin = axesMaxMin[2],
+		yAxisMax = axesMaxMin[3],
+		
+		canvas = document.getElementById(canvasId),
+		context = canvas.getContext('2d'),
+		canvasWidth = canvas.width,
+		canvasHeight = canvas.height,
+		margin = 40.5,
+		unitPx = calcUnitPx (xAxisMin,xAxisMax,canvasWidth,yAxisMin,yAxisMax,canvasHeight,margin),
+		xUnitPx = unitPx[0],
+		yUnitPx = unitPx[1];
+		
+		canvas.height = canvasHeight; //clears the canvas
+		
+	var	axesPosition = drawAxis(context,scaleType,margin,xAxisMin,xAxisMax,canvasWidth,xUnitPx,xTitle,yAxisMin,yAxisMax,canvasHeight,yUnitPx,yTitle),
+		xAxisPosition = axesPosition[0],
+		xTicksSide = axesPosition[1] / Math.abs(axesPosition[1]),
+		yAxisPosition = axesPosition[2],
+		yTicksSide = axesPosition[3] / Math.abs(axesPosition[3]);
+		
+		drawTicks (context,scaleType,margin,xAxisMin,xAxisMax,xStep,canvasWidth,xUnitPx,xAxisPosition,xTicksSide,yAxisMin,yAxisMax,yStep,canvasHeight,yUnitPx,yAxisPosition,yTicksSide)
+		
+		legend (context,scaleType,arrayMult,plotStyle,margin,xAxisMin,xUnitPx,yAxisMin,yUnitPx,canvasHeight);
+		
+		for (var i = 0; i < arrayMult.length; i++) {
+			plot (arrayMult[i],context,scaleType,plotStyle[i],margin,xAxisMin,xAxisMax,canvasWidth,xUnitPx,yAxisMin,yAxisMax,canvasHeight,yUnitPx,yAxisPosition)
+		}
+}
+
+function calcStep (xMin,xMax,yMin,yMax) {
+
+	var oOfMagn = orderOfMagn(xMax - xMin),
+		xStep = oOfMagn * 0.2,
+		xAxisMax,
+		xAxisMin;
+		
+	if (xMax - xMin > oOfMagn * 4 / 3) {
+		xStep = oOfMagn * 0.5;
+	}
+	if (xMax - xMin > oOfMagn * 10 / 3) {
+		xStep = oOfMagn;
+	}
+	if (xMax - xMin > oOfMagn * 20 / 3) {
+		xStep = oOfMagn * 2;
+	}
+	
+	oOfMagn = orderOfMagn(yMax - yMin);
+	var	yStep = oOfMagn * 0.2,
+		yAxisMax,
+		yAxisMin;
+		
+	if (yMax - yMin > oOfMagn * 4 / 3) {
+		yStep = oOfMagn * 0.5;
+	}
+	if (yMax - yMin > oOfMagn * 10 / 3) {
+		yStep = oOfMagn ;
+	}
+	if (yMax - yMin > oOfMagn * 20 / 3) {
+		yStep = oOfMagn * 2;
+	}
+
+	return [xStep,yStep];
+}
+
+function calcAxesMaxMin (xMin,xMax,xStep,yMin,yMax,yStep) {
+
+	var min = [xMin,yMin],
+		max = [xMax,yMax],
+		step = [xStep,yStep],
+		axisMin = [0,0],
+		axisMax = [0,0];
+
+	for (var i = 0; i <= 1; i++) {
+		if (min[i] <= 0) {
+			while (axisMin[i] >= min[i]) {
+				axisMin[i] = axisMin[i] - step[i];
+			}
+			axisMax[i] = axisMin[i];
+			while (axisMax[i] <= max[i]) {
+				axisMax[i] = axisMax[i] + step[i];
+			}
+		} 	else {
+				while (axisMax[i] <= max[i]) {
+					axisMax[i] = axisMax[i] + step[i];
+				}
+				axisMin[i] = axisMax[i];
+				while (axisMin[i] >= min[i]) {
+					axisMin[i] = axisMin[i] - step[i];					
+				}
+			}
+	}
+	return [axisMin[0],axisMax[0],axisMin[1],axisMax[1]];
+}
+
+function calcUnitPx (xAxisMin,xAxisMax,canvasWidth,yAxisMin,yAxisMax,canvasHeight,margin) {
+	var xUnitPx = (canvasWidth - 2 * margin) / (xAxisMax - xAxisMin),
+		yUnitPx = (canvasHeight - 2 * margin) / (yAxisMax - yAxisMin);
+	
+	return [xUnitPx,yUnitPx];
+}
+
+function xDataToCanvas (value,margin,unitPx) {
+	return margin + Math.floor(value * unitPx);
+}
+
+function yDataToCanvas (value,margin,unitPx,canvasHeight) {
+	return canvasHeight - margin - Math.floor(value * unitPx);
+}		
+
+function drawAxis (context,type,margin,xAxisMin,xAxisMax,canvasWidth,xUnitPx,xTitle,yAxisMin,yAxisMax,canvasHeight,yUnitPx,yTitle) {
+	context.font = '10px Arial';
+	context.strokeStyle = 'black';
+	context.lineWidth = 1;
+	var yAxisPosition,
+		xAxisPosition,
+		yTitlePosition,
+		xTitlePosition,
+		yTitleSide,
+		xTitleSide;
+	
+	//determine yAxis position
+	if (xAxisMin <= 0 && xAxisMax >= 0) {yAxisPosition = 0;}
+		else {
+			if (xAxisMin > 0) {yAxisPosition = xAxisMin;}
+				else {yAxisPosition = xAxisMax;}
+		}
+	
+	//draw y Axis
+	context.beginPath(); // prevents weird behavior with IE9
+	context.moveTo(Math.floor((yAxisPosition - xAxisMin) * xUnitPx) + margin,canvasHeight - margin);
+	context.lineTo(Math.floor((yAxisPosition - xAxisMin) * xUnitPx) + margin,margin);
+
+	//determine x title position and y title's side
+	if (xAxisMax - yAxisPosition >= yAxisPosition - xAxisMin) {xTitlePosition = (xAxisMax + yAxisPosition)/2; yTitleSide = -30;}
+		else {xTitlePosition = (yAxisPosition + xAxisMin)/2; yTitleSide = +30;}
+	//alert(xTitlePosition);
+	
+	//determine xAxis position
+	if (yAxisMin <= 0 && yAxisMax >= 0 && type == 'linearScale') {xAxisPosition = 0;}
+		else {
+			if (yAxisMin > 0 || type == 'logScale') {xAxisPosition = yAxisMin;}
+				else {xAxisPosition = yAxisMax;}
+		}
+	
+	//draw x Axis
+	
+	context.moveTo(margin,canvasHeight - margin - Math.floor((xAxisPosition - yAxisMin) * yUnitPx));
+	context.lineTo(canvasWidth - margin,canvasHeight - margin - Math.floor((xAxisPosition - yAxisMin) * yUnitPx));
+	
+	//determine y title position and x title's side
+	if (yAxisMax - xAxisPosition >= xAxisPosition - yAxisMin) {yTitlePosition = (yAxisMax + xAxisPosition)/2; xTitleSide = 25;}
+		else {yTitlePosition = (xAxisPosition + yAxisMin)/2; xTitleSide = -25;}
+	
+	//write x title
+	context.textAlign = 'center';
+	if (xTitleSide > 0 ) {context.textBaseline = 'top';}
+		else {context.textBaseline = 'bottom';}
+	context.fillText(xTitle,margin + Math.floor((xTitlePosition - xAxisMin) * xUnitPx),canvasHeight - margin - Math.floor((xAxisPosition - yAxisMin) * yUnitPx) + xTitleSide);
+	
+	//write y title
+	context.rotate(-Math.PI / 2); //rotate the whole canvas to write y title vertically
+	context.textAlign = 'center';
+	if (yTitleSide > 0 ) {context.textBaseline = 'top';}
+		else {context.textBaseline = 'bottom';}
+	
+	var x = margin + Math.floor((yAxisPosition - xAxisMin) * xUnitPx) + yTitleSide,
+		y = canvasHeight - margin - Math.floor((yTitlePosition - yAxisMin) * yUnitPx);
+	context.fillText(yTitle,-y,x);
+	context.rotate(Math.PI / 2);
+
+
+	return [xAxisPosition,xTitleSide,yAxisPosition,yTitleSide];
+}
+
+function drawTicks (context,type,margin,xAxisMin,xAxisMax,xStep,canvasWidth,xUnitPx,xAxisPosition,xTicksSide,yAxisMin,yAxisMax,yStep,canvasHeight,yUnitPx,yAxisPosition,yTicksSide) {
+	var xPx,
+		yPx,
+		tickLabel;
+	
+	//x Axis
+	context.textAlign = 'center';
+	if (xTicksSide > 0 ) {context.textBaseline = 'top';}
+		else {context.textBaseline = 'bottom';}
+	
+	//major ticks
+	for (var x = xAxisMin; x <= xAxisMax; x+= xStep) {
+		xPx = margin + Math.floor((x - xAxisMin) * xUnitPx);
+		yPx = canvasHeight - margin - Math.floor((xAxisPosition - yAxisMin) * yUnitPx);
+		context.moveTo(xPx,yPx);
+		context.lineTo(xPx,yPx + 2 * xTicksSide);
+		
+		if (x == xAxisPosition && xAxisPosition != yAxisMin && xAxisPosition != yAxisMax) {xPx = xPx - 10 * yTicksSide} //avoids the messy zero labels at the axes' intersections
+		tickLabel = changePrecision(7,x);
+		context.fillText(tickLabel, xPx, yPx + 5 * xTicksSide); //tick label
+	}
+	
+	//minor ticks
+	for (var x = xAxisMin; x < xAxisMax; x+= xStep / 2) {
+		xPx = margin + Math.floor((x - xAxisMin) * xUnitPx);
+		yPx = canvasHeight - margin - Math.floor((xAxisPosition - yAxisMin) * yUnitPx);
+		context.moveTo(xPx,yPx);
+		context.lineTo(xPx,yPx + 1 * xTicksSide);
+	}
+	
+	//y Axis
+	context.textBaseline = 'middle';
+	if (yTicksSide > 0 ) {context.textAlign = 'left';}
+		else {context.textAlign = 'right';}
+	//major ticks
+	for (var y = yAxisMin; y <= yAxisMax; y+= yStep) {
+		yPx = canvasHeight - margin - Math.floor((y - yAxisMin) * yUnitPx);
+		xPx = margin + Math.floor((yAxisPosition - xAxisMin) * xUnitPx);
+		context.moveTo(xPx,yPx);
+		context.lineTo(xPx + 2 * yTicksSide,yPx);
+		
+		if (type == 'logScale' && y < yAxisMax) {
+			for (var j = 1; j <= 10; j++) {
+					var yMinor = Math.floor(yPx - yStep * yUnitPx * log10(j/10) - yStep * yUnitPx) + 0.5;
+					
+					context.moveTo(xPx, yMinor);
+					context.lineTo(xPx + 1 * yTicksSide, yMinor);
+				}
+		}
+		tickLabel = changePrecision(7,y);
+		if (type == 'logScale') {tickLabel = '1E' + y;}
+		if (y == xAxisPosition && yAxisPosition != xAxisMin && yAxisPosition != xAxisMax) {yPx = yPx - 10 * xTicksSide} //avoids the messy labels at the axes' intersections
+		context.fillText(tickLabel, xPx + 5 * yTicksSide, yPx); //tick label
+	}
+	//minor ticks
+	if (type == 'linearScale') {
+		for (var y = yAxisMin; y < yAxisMax; y+= yStep / 2) {
+		
+			yPx = canvasHeight - margin - Math.floor((y - yAxisMin) * yUnitPx);
+			xPx = margin + Math.floor((yAxisPosition - xAxisMin) * xUnitPx);
+		
+			context.moveTo(xPx,yPx);
+			context.lineTo(xPx + 1 * yTicksSide,yPx);
+		}
+	}
+	context.stroke();
+}
+
+function legend (context,type,arrayMult,plotStyle,margin,xAxisMin,xUnitPx,yAxisMin,yUnitPx,canvasHeight) {
+	context.textBaseline = 'middle';
+	context.textAlign = 'left';
+	var x, y, xPx, yPx = '+Infinity', index, xy, array = [];
+	for (var i = 0; i < arrayMult.length;i++) {
+		array = arrayMult[i];
+		index = array.length - 1;//last point
+		xy = array[index];
+		x = xy[0];
+		y = xy[1];
+		
+		xPx = 10 + margin + Math.floor((x - xAxisMin) * xUnitPx);
+		if (type == 'logScale') {y = log10(Math.abs(y));}
+		if (isFinite(y)) {
+			yPx = canvasHeight - margin - Math.floor((y - yAxisMin) * yUnitPx);
+			context.fillStyle = plotStyle[i][1]; //color
+			context.fillText(plotStyle[i][2],xPx,yPx);
+		}
+	}
+}
+
+function plot (array,context,type,plotStyle,margin,xAxisMin,xAxisMax,canvasWidth,xUnitPx,yAxisMin,yAxisMax,canvasHeight,yUnitPx,yAxisPosition) {
+	var xPx, yPx, y, j = 0;
+	context.strokeStyle = plotStyle[1];
+		for (var i = 0; i < array.length; i++) { //one loop for each data point
+			xPx = margin + Math.floor((array[i][0] - xAxisMin) * xUnitPx);
+			y = (array[i][1]);
+			if (type == 'logScale') {y = log10(Math.abs(y))}
+			if (y != '-Infinity') {//y = '-Infinity' when y = 0 and scale is Log
+				yPx = canvasHeight - margin - Math.floor((y - yAxisMin) * yUnitPx);
+				switch (plotStyle[0]) {
+					case 'line':
+						if (j == 0) { // j==0 <=> 1st plotted point, not necessarily 1st point in the array 
+							context.beginPath();
+							context.moveTo(xPx, yPx);
+						}
+						context.lineTo(xPx, yPx);
+						break;
+					case 'circles':
+						context.beginPath();
+						context.arc(xPx,yPx,3,0,2 * Math.PI);
+						context.stroke();
+						break;
+					case 'diagonalCross':
+						context.beginPath();
+						context.moveTo(xPx - 2,yPx - 2);
+						context.lineTo(xPx + 2, yPx + 2);
+						context.moveTo(xPx + 2,yPx - 2);
+						context.lineTo(xPx - 2, yPx + 2);
+						context.stroke();
+						break;
+					case 'verticalCross':
+						context.beginPath();
+						context.moveTo(xPx,yPx - 2);
+						context.lineTo(xPx, yPx + 2);
+						context.moveTo(xPx + 2,yPx);
+						context.lineTo(xPx - 2, yPx);
+						context.stroke();
+						break;
+				}
+				j++;
+			}
+		}
+	if (plotStyle[0] == 'line') {context.stroke();}
+}
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+exports = module.exports = __webpack_require__(5)(undefined);
+// imports
+
+
+// module
+exports.push([module.i, "/*\r\n * Base structure\r\n */\r\n\r\n/* Move down content because we have a fixed navbar that is 50px tall */\r\nbody {\r\n  padding-top: 60px;\r\n}\r\n\r\n.navbar-brand {\r\n  font-size: 36px;\r\n}\r\n\r\n/*\r\n * Global add-ons\r\n */\r\n\r\n.sub-header {\r\n  padding-bottom: 10px;\r\n  border-bottom: 1px solid #eee;\r\n}\r\n\r\n/*\r\n * Top navigation\r\n * Hide default border to remove 1px line.\r\n */\r\n.navbar-fixed-top {\r\n  border: 0;\r\n  height: 60px;\r\n}\r\n\r\n/*\r\n * Sidebar\r\n */\r\n\r\n@media (min-width: 768px) {\r\n  .sidebar {\r\n    position: fixed;\r\n    top: 60px;\r\n    bottom: 0;\r\n    left: 0;\r\n    z-index: 1000;\r\n    display: block;\r\n    padding: 20px;\r\n    overflow-x: hidden;\r\n    overflow-y: auto; /* Scrollable contents if viewport is shorter than content. */\r\n    background-color: #f5f5f5;\r\n    border-right: 1px solid #eee;\r\n  }\r\n}\r\n\r\n/* Sidebar navigation */\r\n.nav-sidebar {\r\n  margin-right: -21px; /* 20px padding + 1px border */\r\n  margin-bottom: 20px;\r\n  margin-left: -20px;\r\n}\r\n.nav-sidebar > li > a {\r\n  padding-right: 20px;\r\n  padding-left: 20px;\r\n}\r\n.nav-sidebar > .active > a,\r\n.nav-sidebar > .active > a:hover,\r\n.nav-sidebar > .active > a:focus {\r\n  color: #fff;\r\n  background-color: #428bca;\r\n}\r\n\r\n\r\n/*\r\n * Main content\r\n */\r\n\r\n.main {\r\n  padding: 20px;\r\n}\r\n@media (min-width: 768px) {\r\n  .main {\r\n    padding-right: 40px;\r\n    padding-left: 40px;\r\n  }\r\n}\r\n.main .page-header {\r\n  margin-top: 0;\r\n}\r\n\r\n/* fa icons */\r\n.fa-toggle-on, .fa-toggle-off {\r\n  cursor: pointer;\r\n}\r\n\r\n.fa-toggle-on {\r\n  /*color: #f1f1f1;*/\r\n  color: #dddddd;\r\n  color: #8ce196;\r\n}\r\n\r\n.fa-toggle-off {\r\n  color: #dddddd;\r\n}\r\n\r\nbutton.play > span#pause {\r\n  display: none;\r\n}\r\n\r\nbutton.pause > span#play {\r\n  display: none;\r\n}\r\n\r\ndiv.input-group#ds {\r\n  width: 60%;\r\n}\r\n\r\n.panel {\r\n  position: relative;\r\n}\r\n\r\n.panel.nofile:after {\r\n  content: \" \";\r\n  z-index: 10;\r\n  display: block;\r\n  position: absolute;\r\n  height: 100%;\r\n  top: 0;\r\n  left: 0;\r\n  right: 0;\r\n  background: rgba(255, 255, 255, 0.5);\r\n  border-radius: 4px;\r\n}", ""]);
+
+// exports
+
+
+/***/ }),
+/* 5 */
+/***/ (function(module, exports) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+// css base code, injected by the css-loader
+module.exports = function(useSourceMap) {
+	var list = [];
+
+	// return the list of modules as css string
+	list.toString = function toString() {
+		return this.map(function (item) {
+			var content = cssWithMappingToString(item, useSourceMap);
+			if(item[2]) {
+				return "@media " + item[2] + "{" + content + "}";
+			} else {
+				return content;
+			}
+		}).join("");
+	};
+
+	// import a list of modules into the list
+	list.i = function(modules, mediaQuery) {
+		if(typeof modules === "string")
+			modules = [[null, modules, ""]];
+		var alreadyImportedModules = {};
+		for(var i = 0; i < this.length; i++) {
+			var id = this[i][0];
+			if(typeof id === "number")
+				alreadyImportedModules[id] = true;
+		}
+		for(i = 0; i < modules.length; i++) {
+			var item = modules[i];
+			// skip already imported module
+			// this implementation is not 100% perfect for weird media query combinations
+			//  when a module is imported multiple times with different media queries.
+			//  I hope this will never occur (Hey this way we have smaller bundles)
+			if(typeof item[0] !== "number" || !alreadyImportedModules[item[0]]) {
+				if(mediaQuery && !item[2]) {
+					item[2] = mediaQuery;
+				} else if(mediaQuery) {
+					item[2] = "(" + item[2] + ") and (" + mediaQuery + ")";
+				}
+				list.push(item);
+			}
+		}
+	};
+	return list;
+};
+
+function cssWithMappingToString(item, useSourceMap) {
+	var content = item[1] || '';
+	var cssMapping = item[3];
+	if (!cssMapping) {
+		return content;
+	}
+
+	if (useSourceMap && typeof btoa === 'function') {
+		var sourceMapping = toComment(cssMapping);
+		var sourceURLs = cssMapping.sources.map(function (source) {
+			return '/*# sourceURL=' + cssMapping.sourceRoot + source + ' */'
+		});
+
+		return [content].concat(sourceURLs).concat([sourceMapping]).join('\n');
+	}
+
+	return [content].join('\n');
+}
+
+// Adapted from convert-source-map (MIT)
+function toComment(sourceMap) {
+	// eslint-disable-next-line no-undef
+	var base64 = btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap))));
+	var data = 'sourceMappingURL=data:application/json;charset=utf-8;base64,' + base64;
+
+	return '/*# ' + data + ' */';
+}
+
+
+/***/ }),
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/*
+	MIT License http://www.opensource.org/licenses/mit-license.php
+	Author Tobias Koppers @sokra
+*/
+var stylesInDom = {},
+	memoize = function(fn) {
+		var memo;
+		return function () {
+			if (typeof memo === "undefined") memo = fn.apply(this, arguments);
+			return memo;
+		};
+	},
+	isOldIE = memoize(function() {
+		// Test for IE <= 9 as proposed by Browserhacks
+		// @see http://browserhacks.com/#hack-e71d8692f65334173fee715c222cb805
+		// Tests for existence of standard globals is to allow style-loader 
+		// to operate correctly into non-standard environments
+		// @see https://github.com/webpack-contrib/style-loader/issues/177
+		return window && document && document.all && !window.atob;
+	}),
+	getElement = (function(fn) {
+		var memo = {};
+		return function(selector) {
+			if (typeof memo[selector] === "undefined") {
+				memo[selector] = fn.call(this, selector);
+			}
+			return memo[selector]
+		};
+	})(function (styleTarget) {
+		return document.querySelector(styleTarget)
+	}),
+	singletonElement = null,
+	singletonCounter = 0,
+	styleElementsInsertedAtTop = [],
+	fixUrls = __webpack_require__(7);
+
+module.exports = function(list, options) {
+	if(typeof DEBUG !== "undefined" && DEBUG) {
+		if(typeof document !== "object") throw new Error("The style-loader cannot be used in a non-browser environment");
+	}
+
+	options = options || {};
+	options.attrs = typeof options.attrs === "object" ? options.attrs : {};
+
+	// Force single-tag solution on IE6-9, which has a hard limit on the # of <style>
+	// tags it will allow on a page
+	if (typeof options.singleton === "undefined") options.singleton = isOldIE();
+
+	// By default, add <style> tags to the <head> element
+	if (typeof options.insertInto === "undefined") options.insertInto = "head";
+
+	// By default, add <style> tags to the bottom of the target
+	if (typeof options.insertAt === "undefined") options.insertAt = "bottom";
+
+	var styles = listToStyles(list, options);
+	addStylesToDom(styles, options);
+
+	return function update(newList) {
+		var mayRemove = [];
+		for(var i = 0; i < styles.length; i++) {
+			var item = styles[i];
+			var domStyle = stylesInDom[item.id];
+			domStyle.refs--;
+			mayRemove.push(domStyle);
+		}
+		if(newList) {
+			var newStyles = listToStyles(newList, options);
+			addStylesToDom(newStyles, options);
+		}
+		for(var i = 0; i < mayRemove.length; i++) {
+			var domStyle = mayRemove[i];
+			if(domStyle.refs === 0) {
+				for(var j = 0; j < domStyle.parts.length; j++)
+					domStyle.parts[j]();
+				delete stylesInDom[domStyle.id];
+			}
+		}
+	};
+};
+
+function addStylesToDom(styles, options) {
+	for(var i = 0; i < styles.length; i++) {
+		var item = styles[i];
+		var domStyle = stylesInDom[item.id];
+		if(domStyle) {
+			domStyle.refs++;
+			for(var j = 0; j < domStyle.parts.length; j++) {
+				domStyle.parts[j](item.parts[j]);
+			}
+			for(; j < item.parts.length; j++) {
+				domStyle.parts.push(addStyle(item.parts[j], options));
+			}
+		} else {
+			var parts = [];
+			for(var j = 0; j < item.parts.length; j++) {
+				parts.push(addStyle(item.parts[j], options));
+			}
+			stylesInDom[item.id] = {id: item.id, refs: 1, parts: parts};
+		}
+	}
+}
+
+function listToStyles(list, options) {
+	var styles = [];
+	var newStyles = {};
+	for(var i = 0; i < list.length; i++) {
+		var item = list[i];
+		var id = options.base ? item[0] + options.base : item[0];
+		var css = item[1];
+		var media = item[2];
+		var sourceMap = item[3];
+		var part = {css: css, media: media, sourceMap: sourceMap};
+		if(!newStyles[id])
+			styles.push(newStyles[id] = {id: id, parts: [part]});
+		else
+			newStyles[id].parts.push(part);
+	}
+	return styles;
+}
+
+function insertStyleElement(options, styleElement) {
+	var styleTarget = getElement(options.insertInto)
+	if (!styleTarget) {
+		throw new Error("Couldn't find a style target. This probably means that the value for the 'insertInto' parameter is invalid.");
+	}
+	var lastStyleElementInsertedAtTop = styleElementsInsertedAtTop[styleElementsInsertedAtTop.length - 1];
+	if (options.insertAt === "top") {
+		if(!lastStyleElementInsertedAtTop) {
+			styleTarget.insertBefore(styleElement, styleTarget.firstChild);
+		} else if(lastStyleElementInsertedAtTop.nextSibling) {
+			styleTarget.insertBefore(styleElement, lastStyleElementInsertedAtTop.nextSibling);
+		} else {
+			styleTarget.appendChild(styleElement);
+		}
+		styleElementsInsertedAtTop.push(styleElement);
+	} else if (options.insertAt === "bottom") {
+		styleTarget.appendChild(styleElement);
+	} else {
+		throw new Error("Invalid value for parameter 'insertAt'. Must be 'top' or 'bottom'.");
+	}
+}
+
+function removeStyleElement(styleElement) {
+	styleElement.parentNode.removeChild(styleElement);
+	var idx = styleElementsInsertedAtTop.indexOf(styleElement);
+	if(idx >= 0) {
+		styleElementsInsertedAtTop.splice(idx, 1);
+	}
+}
+
+function createStyleElement(options) {
+	var styleElement = document.createElement("style");
+	options.attrs.type = "text/css";
+
+	attachTagAttrs(styleElement, options.attrs);
+	insertStyleElement(options, styleElement);
+	return styleElement;
+}
+
+function createLinkElement(options) {
+	var linkElement = document.createElement("link");
+	options.attrs.type = "text/css";
+	options.attrs.rel = "stylesheet";
+
+	attachTagAttrs(linkElement, options.attrs);
+	insertStyleElement(options, linkElement);
+	return linkElement;
+}
+
+function attachTagAttrs(element, attrs) {
+	Object.keys(attrs).forEach(function (key) {
+		element.setAttribute(key, attrs[key]);
+	});
+}
+
+function addStyle(obj, options) {
+	var styleElement, update, remove, transformResult;
+
+	// If a transform function was defined, run it on the css
+	if (options.transform && obj.css) {
+	    transformResult = options.transform(obj.css);
+	    
+	    if (transformResult) {
+	    	// If transform returns a value, use that instead of the original css.
+	    	// This allows running runtime transformations on the css.
+	    	obj.css = transformResult;
+	    } else {
+	    	// If the transform function returns a falsy value, don't add this css. 
+	    	// This allows conditional loading of css
+	    	return function() {
+	    		// noop
+	    	};
+	    }
+	}
+
+	if (options.singleton) {
+		var styleIndex = singletonCounter++;
+		styleElement = singletonElement || (singletonElement = createStyleElement(options));
+		update = applyToSingletonTag.bind(null, styleElement, styleIndex, false);
+		remove = applyToSingletonTag.bind(null, styleElement, styleIndex, true);
+	} else if(obj.sourceMap &&
+		typeof URL === "function" &&
+		typeof URL.createObjectURL === "function" &&
+		typeof URL.revokeObjectURL === "function" &&
+		typeof Blob === "function" &&
+		typeof btoa === "function") {
+		styleElement = createLinkElement(options);
+		update = updateLink.bind(null, styleElement, options);
+		remove = function() {
+			removeStyleElement(styleElement);
+			if(styleElement.href)
+				URL.revokeObjectURL(styleElement.href);
+		};
+	} else {
+		styleElement = createStyleElement(options);
+		update = applyToTag.bind(null, styleElement);
+		remove = function() {
+			removeStyleElement(styleElement);
+		};
+	}
+
+	update(obj);
+
+	return function updateStyle(newObj) {
+		if(newObj) {
+			if(newObj.css === obj.css && newObj.media === obj.media && newObj.sourceMap === obj.sourceMap)
+				return;
+			update(obj = newObj);
+		} else {
+			remove();
+		}
+	};
+}
+
+var replaceText = (function () {
+	var textStore = [];
+
+	return function (index, replacement) {
+		textStore[index] = replacement;
+		return textStore.filter(Boolean).join('\n');
+	};
+})();
+
+function applyToSingletonTag(styleElement, index, remove, obj) {
+	var css = remove ? "" : obj.css;
+
+	if (styleElement.styleSheet) {
+		styleElement.styleSheet.cssText = replaceText(index, css);
+	} else {
+		var cssNode = document.createTextNode(css);
+		var childNodes = styleElement.childNodes;
+		if (childNodes[index]) styleElement.removeChild(childNodes[index]);
+		if (childNodes.length) {
+			styleElement.insertBefore(cssNode, childNodes[index]);
+		} else {
+			styleElement.appendChild(cssNode);
+		}
+	}
+}
+
+function applyToTag(styleElement, obj) {
+	var css = obj.css;
+	var media = obj.media;
+
+	if(media) {
+		styleElement.setAttribute("media", media)
+	}
+
+	if(styleElement.styleSheet) {
+		styleElement.styleSheet.cssText = css;
+	} else {
+		while(styleElement.firstChild) {
+			styleElement.removeChild(styleElement.firstChild);
+		}
+		styleElement.appendChild(document.createTextNode(css));
+	}
+}
+
+function updateLink(linkElement, options, obj) {
+	var css = obj.css;
+	var sourceMap = obj.sourceMap;
+
+	/* If convertToAbsoluteUrls isn't defined, but sourcemaps are enabled
+	and there is no publicPath defined then lets turn convertToAbsoluteUrls
+	on by default.  Otherwise default to the convertToAbsoluteUrls option
+	directly
+	*/
+	var autoFixUrls = options.convertToAbsoluteUrls === undefined && sourceMap;
+
+	if (options.convertToAbsoluteUrls || autoFixUrls){
+		css = fixUrls(css);
+	}
+
+	if(sourceMap) {
+		// http://stackoverflow.com/a/26603875
+		css += "\n/*# sourceMappingURL=data:application/json;base64," + btoa(unescape(encodeURIComponent(JSON.stringify(sourceMap)))) + " */";
+	}
+
+	var blob = new Blob([css], { type: "text/css" });
+
+	var oldSrc = linkElement.href;
+
+	linkElement.href = URL.createObjectURL(blob);
+
+	if(oldSrc)
+		URL.revokeObjectURL(oldSrc);
+}
+
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports) {
+
+
+/**
+ * When source maps are enabled, `style-loader` uses a link element with a data-uri to
+ * embed the css on the page. This breaks all relative urls because now they are relative to a
+ * bundle instead of the current page.
+ *
+ * One solution is to only use full urls, but that may be impossible.
+ *
+ * Instead, this function "fixes" the relative urls to be absolute according to the current page location.
+ *
+ * A rudimentary test suite is located at `test/fixUrls.js` and can be run via the `npm test` command.
+ *
+ */
+
+module.exports = function (css) {
+  // get current location
+  var location = typeof window !== "undefined" && window.location;
+
+  if (!location) {
+    throw new Error("fixUrls requires window.location");
+  }
+
+	// blank or null?
+	if (!css || typeof css !== "string") {
+	  return css;
+  }
+
+  var baseUrl = location.protocol + "//" + location.host;
+  var currentDir = baseUrl + location.pathname.replace(/\/[^\/]*$/, "/");
+
+	// convert each url(...)
+	/*
+	This regular expression is just a way to recursively match brackets within
+	a string.
+
+	 /url\s*\(  = Match on the word "url" with any whitespace after it and then a parens
+	   (  = Start a capturing group
+	     (?:  = Start a non-capturing group
+	         [^)(]  = Match anything that isn't a parentheses
+	         |  = OR
+	         \(  = Match a start parentheses
+	             (?:  = Start another non-capturing groups
+	                 [^)(]+  = Match anything that isn't a parentheses
+	                 |  = OR
+	                 \(  = Match a start parentheses
+	                     [^)(]*  = Match anything that isn't a parentheses
+	                 \)  = Match a end parentheses
+	             )  = End Group
+              *\) = Match anything and then a close parens
+          )  = Close non-capturing group
+          *  = Match anything
+       )  = Close capturing group
+	 \)  = Match a close parens
+
+	 /gi  = Get all matches, not the first.  Be case insensitive.
+	 */
+	var fixedCss = css.replace(/url\s*\(((?:[^)(]|\((?:[^)(]+|\([^)(]*\))*\))*)\)/gi, function(fullMatch, origUrl) {
+		// strip quotes (if they exist)
+		var unquotedOrigUrl = origUrl
+			.trim()
+			.replace(/^"(.*)"$/, function(o, $1){ return $1; })
+			.replace(/^'(.*)'$/, function(o, $1){ return $1; });
+
+		// already a full url? no change
+		if (/^(#|data:|http:\/\/|https:\/\/|file:\/\/\/)/i.test(unquotedOrigUrl)) {
+		  return fullMatch;
+		}
+
+		// convert the url to a full url
+		var newUrl;
+
+		if (unquotedOrigUrl.indexOf("//") === 0) {
+		  	//TODO: should we add protocol?
+			newUrl = unquotedOrigUrl;
+		} else if (unquotedOrigUrl.indexOf("/") === 0) {
+			// path should be relative to the base url
+			newUrl = baseUrl + unquotedOrigUrl; // already starts with '/'
+		} else {
+			// path should be relative to current directory
+			newUrl = currentDir + unquotedOrigUrl.replace(/^\.\//, ""); // Strip leading './'
+		}
+
+		// send back the fixed url(...)
+		return "url(" + JSON.stringify(newUrl) + ")";
+	});
+
+	// send back the fixed css
+	return fixedCss;
+};
+
+
+/***/ }),
+/* 8 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_bobGraph__ = __webpack_require__(3);
+
+// require.context('.', true, /^\.\/.*\.html/);
+__webpack_require__(1);
+__webpack_require__(2);
+__webpack_require__(0);
 
 let main = function () { // eslint-disable-line 
   'use strict';
@@ -983,7 +2005,7 @@ let main = function () { // eslint-disable-line
       style = plotStyle;
     }
 
-    drawGraph(canvasID, data, primaryPlotIndex, style, scaleType(), xTitle, yTitle);
+    __webpack_require__.i(__WEBPACK_IMPORTED_MODULE_0_bobGraph__["a" /* default */])(canvasID, data, primaryPlotIndex, style, scaleType(), xTitle, yTitle);
   }
 
   function tableSuccessContext(add) {
@@ -1639,3 +2661,6 @@ let main = function () { // eslint-disable-line
 
   return {};
 }();
+
+/***/ })
+/******/ ]);
