@@ -42,34 +42,41 @@ require('assets/samplefiles/T279K.txt');
       rp1: undefined,
       rp2: undefined,
       rs: undefined,
-      init: function () {
-        for (let property in this) {
-          const isDataProperty = typeof this[property] !== 'function';
-          if (isDataProperty) {
-            const $inputNumber = $('[type=number].' + property),
-              $inputCheckBox = $('[type=checkbox].' + property);
-            this[property] = {
-              value: parseFloat($inputNumber.val()),
-              checked: $inputCheckBox.is(':checked')
-            };
-          }
-        }
-      },
-      update: function ($element) {
-        for (let property in this) {
-          if ($element.hasClass(property)) {
-            const elementValue = parseFloat($element.val()),
-              inputIsLogRange = $element.hasClass('logscale') && $element.attr('type') === 'range',
-              newValue = (inputIsLogRange) ? Math.pow(10, elementValue) : elementValue;
-            this[property] = {
-              value: newValue,
-              checked: $element.is(':checked')
-            };
-          }
-        }
-      }
+      // Methods:
+      init: initParameters,
+      update: updateParameter
     },
     model = {};
+
+  function initParameters() {
+    // Used as a method by parameter object
+    for (let property in this) {
+      const isDataProperty = typeof this[property] !== 'function';
+      if (isDataProperty) {
+        const $inputNumber = $('[type=number].' + property),
+          $inputCheckBox = $('[type=checkbox].' + property);
+        this[property] = {
+          value: parseFloat($inputNumber.val()),
+          checked: $inputCheckBox.is(':checked')
+        };
+      }
+    }
+  }
+
+  function updateParameter($element) {
+    // Used as a method by parameter object
+    for (let property in this) {
+      if ($element.hasClass(property)) {
+        const elementValue = parseFloat($element.val()),
+          inputIsLogRange = $element.hasClass('logscale') && $element.attr('type') === 'range',
+          newValue = (inputIsLogRange) ? Math.pow(10, elementValue) : elementValue;
+        this[property] = {
+          value: newValue,
+          checked: $element.is(':checked')
+        };
+      }
+    }
+  }
 
   function machineEpsilon() {
     // Calculate Machine Epsilon
@@ -83,6 +90,8 @@ require('assets/samplefiles/T279K.txt');
   }
 
   $(function () {
+    // When page is loaded
+
     $('input[type=radio].default')
       .attr('checked', true);
 
@@ -92,29 +101,11 @@ require('assets/samplefiles/T279K.txt');
 
     model = getModel();
 
-    // When page loaded, calculate a first time
+    // Calculate a first time
     // IV using the initial parameters
     calcIVandPlot();
 
     bindEvents();
-
-    var holder = document.getElementById('graph');
-
-    holder.ondragenter = holder.ondragover = function (event) {
-      event.preventDefault();
-      holder.className = 'hover';
-    };
-
-    holder.ondragleave = function (event) {
-      event.preventDefault();
-      holder.className = '';
-    };
-
-    holder.ondrop = function (e) {
-      e.preventDefault();
-      processFiles(e.dataTransfer.files);
-      holder.className = '';
-    };
   });
 
   function bindEvents() {
@@ -571,7 +562,7 @@ require('assets/samplefiles/T279K.txt');
 
   function Iparallel(V, Iph, prevI, T, n1, n2, Is1, Is2, Rp, Rs) {
     // Double diode (in parallel) model
-    var i = 0, I, f, df, r, Id1, Id2, Irp;
+    let i = 0, I, f, df, r, Id1, Id2, Irp;
 
     Iph = Iph / 1000; // mA -> A
 
@@ -611,7 +602,7 @@ require('assets/samplefiles/T279K.txt');
 
   function Iseries(V, T, Iph, n1, n2, Is1, Is2, Rp1, Rp2, Rs) {
     // Double diode (in series) model
-    var i = 0, Ia, Ib, V1, V2, Id1, Id2, Irp1, Irp2, H = 10, L = -10;
+    let i = 0, Ia, Ib, V1, V2, Id1, Id2, Irp1, Irp2, H = 10, L = -10;
 
     do {
       V1 = (H + L) / 2;
@@ -1002,10 +993,6 @@ require('assets/samplefiles/T279K.txt');
     } else {
       $td.removeClass('success');
     }
-  }
-
-  function updateParameter($element) {
-    parameters.update($element);
   }
 
   /*
@@ -1502,7 +1489,7 @@ require('assets/samplefiles/T279K.txt');
       $td
         .text(formattedValue);
 
-      updateParameter($(element));
+      parameters.update($(element));
     }
 
     const ivResult = calcIV(parameters, getModel());
