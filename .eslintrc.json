@@ -28,5 +28,10 @@
             "error",
             "always"
         ]
+    },
+    "globals": {
+        "document": true,
+        "require": true,
+        "window": true
     }
 }
