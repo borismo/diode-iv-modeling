@@ -1,5 +1,6 @@
 import drawGraph from 'bobGraph';
 
+// Use webpack loaders to copy needed files to docs directory
 require('index.html');
 require('index.css');
 require('assets/samplefiles/T279K.txt');
@@ -48,18 +49,20 @@ require('assets/samplefiles/T279K.txt');
     },
     model = {};
 
+  // Set parameter object's methods as non-enumerable so they
+  // do not show up in a (for in) loop
+  Object.defineProperty(parameters, 'init', { enumerable: false });
+  Object.defineProperty(parameters, 'update', { enumerable: false });
+
   function initParameters() {
     // Used as a method by parameter object
     for (let property in this) {
-      const isDataProperty = typeof this[property] !== 'function';
-      if (isDataProperty) {
-        const $inputNumber = $('[type=number].' + property),
-          $inputCheckBox = $('[type=checkbox].' + property);
-        this[property] = {
-          value: parseFloat($inputNumber.val()),
-          checked: $inputCheckBox.is(':checked')
-        };
-      }
+      const $inputNumber = $('[type=number].' + property),
+        $inputCheckBox = $('[type=checkbox].' + property);
+      this[property] = {
+        value: parseFloat($inputNumber.val()),
+        checked: $inputCheckBox.is(':checked')
+      };
     }
   }
 
@@ -74,6 +77,7 @@ require('assets/samplefiles/T279K.txt');
           value: newValue,
           checked: $element.is(':checked')
         };
+        break;
       }
     }
   }
@@ -302,7 +306,7 @@ require('assets/samplefiles/T279K.txt');
   function log10(val) {
     // Returns base 10 logarithmic
     // (Math.log10() method is not supported by IE11)
-    // Can stop using this function with a transpiler
+    // Could stop using this function with a transpiler
     return Math.log(val) / Math.log(10);
   }
 
