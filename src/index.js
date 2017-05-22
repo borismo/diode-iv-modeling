@@ -1,3 +1,5 @@
+'use strict';
+
 import drawGraph from 'bobGraph';
 
 // Use webpack loaders to copy needed files to docs directory
@@ -7,8 +9,6 @@ require('assets/samplefiles/T279K.txt');
 
 // Immediately Invoked Function Expression
 (function () {
-  'use strict';
-
   const mchEps = machineEpsilon();
 
   // Elementary charge and Boltzmann constant
