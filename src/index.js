@@ -96,6 +96,8 @@ require('assets/samplefiles/T279K.txt');
   $(function () {
     // When page is loaded
 
+    // Set all radio buttons to their default
+    // value as defined by the .default class
     $('input[type=radio].default')
       .attr('checked', true);
 
